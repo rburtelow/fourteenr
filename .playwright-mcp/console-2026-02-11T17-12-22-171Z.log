@@ -1,0 +1,17 @@
+[  180288ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=RoSzXJtXosjvz1qybh3lw' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/38e83_next_dist_client_cad49bac._.js:10878
+[  181291ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=RoSzXJtXosjvz1qybh3lw' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/38e83_next_dist_client_cad49bac._.js:10878
+[  182295ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=RoSzXJtXosjvz1qybh3lw' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/38e83_next_dist_client_cad49bac._.js:10878
+[  183296ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=RoSzXJtXosjvz1qybh3lw' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/38e83_next_dist_client_cad49bac._.js:10878
+[  749328ms] [WARNING] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297
+[  993823ms] [WARNING] Image with src "/hero.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297
+[ 1187557ms] [WARNING] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree. @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297
+[ 1188278ms] [WARNING] Image with src "/hero.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297
+[ 1188284ms] [WARNING] Image with src "/hero.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297

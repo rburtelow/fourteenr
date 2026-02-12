@@ -1,0 +1,707 @@
+{
+  "meta": {
+    "name": "Hiker Marketing + App UI Design System",
+    "purpose": "High-level creative-direction guidelines and design tokens to reproduce the attached UI screenshots consistently across web and product surfaces.",
+    "voice": "Friendly, outdoorsy, modern, calm confidence. Approachable tech with playful illustration, not corporate.",
+    "version": "1.0.0"
+  },
+  "design_principles": [
+    {
+      "name": "Air + clarity first",
+      "guideline": "Prioritize whitespace, clear hierarchy, and simple shapes. Default to fewer elements with stronger spacing rather than dense layouts."
+    },
+    {
+      "name": "Rounded + soft",
+      "guideline": "Use large radii (pill buttons, rounded cards) and soft shadows. Avoid sharp corners and heavy borders."
+    },
+    {
+      "name": "Illustration-led storytelling",
+      "guideline": "Hero and cards use colorful, flat/soft-vector outdoor illustrations to communicate features quickly. UI chrome stays neutral; illustrations provide personality."
+    },
+    {
+      "name": "Forest green as the single dominant accent",
+      "guideline": "Use one primary accent (forest green) for primary CTAs and key highlights. Everything else stays muted and supportive."
+    },
+    {
+      "name": "Lightweight UI chrome",
+      "guideline": "Navigation and components feel floating: light backgrounds, subtle shadows, minimal borders, and ample padding."
+    },
+    {
+      "name": "Readable at distance",
+      "guideline": "Marketing headings are large, bold, and centered; body copy is short, high-contrast, and comfortable line-length."
+    }
+  ],
+  "foundations": {
+    "layout": {
+      "grid": {
+        "type": "12-column",
+        "containerMaxWidthPx": 1120,
+        "gutterPx": 24,
+        "outerPaddingPx": {
+          "mobile": 20,
+          "tablet": 24,
+          "desktop": 32
+        }
+      },
+      "breakpointsPx": {
+        "mobile": 360,
+        "tablet": 768,
+        "desktop": 1024,
+        "wide": 1280
+      },
+      "sectionRhythmPx": {
+        "heroPaddingY": 96,
+        "sectionPaddingY": 80,
+        "sectionGap": 64,
+        "stackGapLg": 40,
+        "stackGapMd": 24,
+        "stackGapSm": 12
+      },
+      "alignmentRules": [
+        "Top-level marketing sections: centered headings and centered supporting copy.",
+        "Card grids: equal height cards, consistent gutters, consistent image aspect ratio and corner rounding.",
+        "Primary CTA placement: centered under hero copy; single dominant CTA per section."
+      ]
+    },
+    "spacingScalePx": [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 120],
+    "radiiPx": {
+      "xs": 8,
+      "sm": 12,
+      "md": 16,
+      "lg": 20,
+      "xl": 24,
+      "pill": 9999
+    },
+    "elevation": {
+      "shadowColorRgba": "rgba(17, 24, 39, 0.10)",
+      "levels": {
+        "none": "none",
+        "sm": "0 1px 2px rgba(17, 24, 39, 0.08)",
+        "md": "0 8px 24px rgba(17, 24, 39, 0.10)",
+        "lg": "0 16px 40px rgba(17, 24, 39, 0.12)"
+      },
+      "usageRules": [
+        "Cards use md; floating nav uses sm-to-md; avoid heavy drop shadows.",
+        "Prefer subtle shadow + light border over strong shadow."
+      ]
+    },
+    "borders": {
+      "widthPx": 1,
+      "colors": {
+        "default": "#E8ECEF",
+        "subtle": "#EEF2F5"
+      }
+    },
+    "color": {
+      "mode": "light",
+      "backgrounds": {
+        "page": "#F6F7F6",
+        "surface": "#FFFFFF",
+        "surfaceMuted": "#F3F5F4",
+        "heroWashTop": "#F5F1E8",
+        "heroWashBottom": "#F0E8D8"
+      },
+      "text": {
+        "primary": "#111827",
+        "secondary": "#6B7280",
+        "muted": "#9CA3AF",
+        "onDark": "#FFFFFF"
+      },
+      "brand": {
+        "forestGreen": {
+          "base": "#228B22",
+          "hover": "#1E7A1E",
+          "pressed": "#1A6B1A",
+          "tint": "#B8E6B8",
+          "on": "#FFFFFF"
+        },
+        "mint": {
+          "base": "#7FE3D2",
+          "deep": "#4DCFB8",
+          "tint": "#D8F7F0"
+        }
+      },
+      "functional": {
+        "info": "#2B6EEA",
+        "success": "#22C55E",
+        "warning": "#F59E0B",
+        "danger": "#EF4444"
+      },
+      "neutral": {
+        "ink": "#111827",
+        "slate700": "#334155",
+        "slate600": "#475569",
+        "slate500": "#64748B",
+        "slate300": "#CBD5E1",
+        "slate200": "#E2E8F0"
+      },
+      "specialSurfaces": {
+        "storeBadgeDark": "#1F2937",
+        "storeBadgeText": "#FFFFFF"
+      },
+      "colorUsageRules": [
+        "Primary CTA uses brand.forestGreen.base background with white text for a bold, natural feel.",
+        "Secondary/tertiary CTAs are neutral surfaces with subtle border; never compete with primary forest green.",
+        "Hero and some feature areas use a mint-to-teal wash behind illustration; keep copy readable with dark text."
+      ]
+    },
+    "typography": {
+      "fontFamilies": {
+        "display": [
+          "Plus Jakarta Sans",
+          "Manrope",
+          "Inter",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "sans-serif"
+        ],
+        "body": [
+          "Inter",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "sans-serif"
+        ],
+        "mono": [
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Monaco",
+          "Consolas",
+          "Liberation Mono",
+          "Courier New",
+          "monospace"
+        ]
+      },
+      "scalePx": {
+        "displayXL": 56,
+        "displayLg": 44,
+        "h1": 40,
+        "h2": 32,
+        "h3": 24,
+        "h4": 20,
+        "bodyLg": 18,
+        "body": 16,
+        "bodySm": 14,
+        "caption": 12
+      },
+      "lineHeights": {
+        "tight": 1.1,
+        "snug": 1.25,
+        "normal": 1.5,
+        "relaxed": 1.65
+      },
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700,
+        "extrabold": 800
+      },
+      "letterSpacingEm": {
+        "tight": -0.02,
+        "normal": 0,
+        "wide": 0.02
+      },
+      "typeUsageRules": [
+        "Hero headline: display family, bold/extrabold, tight line-height, centered, 2-line headline.",
+        "Section headline: bold, centered; supporting copy in secondary color and short (1–2 lines).",
+        "Cards: title semibold; body/captions secondary; metrics use compact type and iconography."
+      ]
+    },
+    "iconography": {
+      "style": "Thin-to-medium stroke line icons with rounded caps; simple filled glyphs allowed for platform badges and emphasis.",
+      "strokeWidthPx": 1.5,
+      "cornerStyle": "rounded",
+      "sizesPx": {
+        "sm": 16,
+        "md": 20,
+        "lg": 24
+      },
+      "usageRules": [
+        "Use icons as supporting metadata (distance, elevation, time) and nav affordances (dropdown chevrons).",
+        "Keep icons low-contrast compared to primary text (use slate500/slate600)."
+      ]
+    },
+    "illustrationAndImagery": {
+      "primaryStyle": "Friendly vector landscape illustrations with soft gradients and clean shapes (trees, mountains, tents).",
+      "colorBehavior": "Illustrations can be saturated; UI chrome stays neutral with lime as the only strong UI accent.",
+      "cornerTreatment": "Illustrations inside cards are clipped with large radii (xl) and flush to card top.",
+      "aspectRatios": {
+        "trailCardMedia": "16:9",
+        "featureCardMedia": "4:3"
+      }
+    },
+    "motion": {
+      "principle": "Subtle, quick, and purposeful. Motion should feel light and friendly, never flashy.",
+      "durationsMs": {
+        "fast": 120,
+        "normal": 180,
+        "slow": 260
+      },
+      "easing": {
+        "standard": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "entrance": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "exit": "cubic-bezier(0.7, 0, 0.84, 0)"
+      },
+      "patterns": [
+        "Button hover: slight lift (translateY -1px) + shadow increase sm→md.",
+        "Card hover: subtle lift + shadow increase.",
+        "Dropdown: fade + 4px slide."
+      ]
+    }
+  },
+  "components": {
+    "appShell": {
+      "pageBackground": "color.backgrounds.page",
+      "contentContainer": "foundations.layout.grid.containerMaxWidthPx",
+      "defaultSectionSpacing": "foundations.layout.sectionRhythmPx.sectionPaddingY"
+    },
+    "topNavigation": {
+      "type": "Floating pill nav on hero wash",
+      "container": {
+        "heightPx": 56,
+        "radiusPx": "foundations.radiiPx.pill",
+        "background": "color.backgrounds.surface",
+        "shadow": "elevation.levels.sm",
+        "paddingX": 18,
+        "paddingY": 10
+      },
+      "brand": {
+        "logoMark": "simple mountain mark",
+        "wordmark": "semibold body or h4",
+        "gapPx": 10
+      },
+      "navLinks": {
+        "font": "typography.fontFamilies.body",
+        "sizePx": 14,
+        "weight": 500,
+        "color": "color.text.secondary",
+        "hoverColor": "color.text.primary",
+        "itemGapPx": 24,
+        "dropdownIndicator": "chevron-down icon, 16px"
+      },
+      "actions": {
+        "primary": "button.primary",
+        "secondary": "button.ghostPill",
+        "placement": "right",
+        "gapPx": 12
+      }
+    },
+    "hero": {
+      "layout": "Centered copy over illustrated landscape background",
+      "background": {
+        "type": "Illustration + soft mint wash",
+        "washGradient": {
+          "from": "color.backgrounds.heroWashTop",
+          "to": "color.backgrounds.heroWashBottom",
+          "direction": "top-to-bottom"
+        }
+      },
+      "headline": {
+        "typeStyle": "displayXL",
+        "maxWidthPx": 760,
+        "alignment": "center",
+        "color": "color.text.primary"
+      },
+      "subhead": {
+        "typeStyle": "body",
+        "maxWidthPx": 640,
+        "alignment": "center",
+        "color": "color.text.secondary"
+      },
+      "primaryActions": {
+        "pattern": "Platform badges centered (App Store / Google Play)",
+        "gapPx": 12
+      }
+    },
+    "button": {
+      "base": {
+        "heightPx": 44,
+        "minWidthPx": 120,
+        "radiusPx": "foundations.radiiPx.pill",
+        "paddingX": 18,
+        "paddingY": 10,
+        "fontSizePx": 14,
+        "fontWeight": 600,
+        "focusRing": {
+          "widthPx": 3,
+          "color": "rgba(34, 139, 34, 0.35)",
+          "offsetPx": 2
+        }
+      },
+      "primary": {
+        "background": "color.brand.forestGreen.base",
+        "textColor": "color.brand.forestGreen.on",
+        "hover": {
+          "background": "color.brand.forestGreen.hover",
+          "shadow": "elevation.levels.md"
+        },
+        "pressed": {
+          "background": "color.brand.forestGreen.pressed",
+          "transform": "translateY(0px)"
+        }
+      },
+      "ghostPill": {
+        "background": "transparent",
+        "textColor": "color.text.secondary",
+        "border": {
+          "widthPx": 1,
+          "color": "color.borders.default"
+        },
+        "hover": {
+          "background": "color.backgrounds.surfaceMuted",
+          "textColor": "color.text.primary"
+        }
+      },
+      "secondary": {
+        "background": "color.backgrounds.surface",
+        "textColor": "color.text.primary",
+        "border": {
+          "widthPx": 1,
+          "color": "color.borders.default"
+        },
+        "hover": {
+          "background": "color.backgrounds.surfaceMuted"
+        }
+      },
+      "link": {
+        "background": "transparent",
+        "textColor": "color.text.primary",
+        "underlineOnHover": true
+      }
+    },
+    "platformBadge": {
+      "type": "Store badge (App Store / Google Play)",
+      "container": {
+        "heightPx": 44,
+        "radiusPx": 10,
+        "background": "color.specialSurfaces.storeBadgeDark",
+        "paddingX": 16,
+        "gapPx": 10
+      },
+      "icon": {
+        "sizePx": 18,
+        "color": "color.specialSurfaces.storeBadgeText"
+      },
+      "text": {
+        "topLine": {
+          "sizePx": 10,
+          "color": "rgba(255,255,255,0.80)"
+        },
+        "brandLine": {
+          "sizePx": 14,
+          "weight": 600,
+          "color": "color.specialSurfaces.storeBadgeText"
+        }
+      }
+    },
+    "sectionHeader": {
+      "layout": "Centered title + short subtitle",
+      "title": {
+        "typeStyle": "h1",
+        "alignment": "center",
+        "color": "color.text.primary"
+      },
+      "subtitle": {
+        "typeStyle": "body",
+        "alignment": "center",
+        "color": "color.text.secondary",
+        "maxWidthPx": 720
+      },
+      "spacing": {
+        "gapPx": 12,
+        "marginBottomPx": 40
+      }
+    },
+    "card": {
+      "base": {
+        "background": "color.backgrounds.surface",
+        "radiusPx": "foundations.radiiPx.xl",
+        "shadow": "elevation.levels.sm",
+        "border": {
+          "widthPx": 1,
+          "color": "color.borders.subtle"
+        },
+        "paddingPx": 20
+      },
+      "hover": {
+        "shadow": "elevation.levels.md",
+        "transform": "translateY(-2px)"
+      }
+    },
+    "trailCard": {
+      "type": "Image-top card with badge + metadata",
+      "container": "card.base",
+      "media": {
+        "position": "top",
+        "radiusPx": "foundations.radiiPx.xl",
+        "aspectRatio": "16:9",
+        "treatment": "Illustration clipped to top corners; bottom edges align to content area."
+      },
+      "badge": {
+        "type": "pill",
+        "placement": "content-top",
+        "background": "color.backgrounds.surface",
+        "border": {
+          "widthPx": 1,
+          "color": "color.borders.default"
+        },
+        "textColor": "color.text.secondary",
+        "paddingX": 12,
+        "heightPx": 28,
+        "radiusPx": "foundations.radiiPx.pill"
+      },
+      "title": {
+        "typeStyle": "h4",
+        "weight": 700,
+        "color": "color.text.primary"
+      },
+      "description": {
+        "typeStyle": "bodySm",
+        "color": "color.text.secondary"
+      },
+      "metaRow": {
+        "layout": "2–3 items, left aligned",
+        "iconSizePx": 16,
+        "textSizePx": 12,
+        "textColor": "color.text.secondary",
+        "gapPx": 14
+      }
+    },
+    "featureTile": {
+      "type": "Large card with big visual (phone/map/compass) + caption",
+      "container": {
+        "extends": "card.base",
+        "paddingPx": 24,
+        "minHeightPx": 260
+      },
+      "visual": {
+        "treatment": "Prominent center/right visual with generous whitespace; overlays allowed (small floating panels).",
+        "cornerRadiusPx": "foundations.radiiPx.xl"
+      },
+      "title": {
+        "typeStyle": "h4",
+        "weight": 700,
+        "color": "color.text.primary"
+      },
+      "subtitle": {
+        "typeStyle": "bodySm",
+        "color": "color.text.secondary"
+      }
+    },
+    "statChipGroup": {
+      "type": "Small floating panel with metrics + actions (End/Pause)",
+      "container": {
+        "background": "color.backgrounds.surface",
+        "radiusPx": "foundations.radiiPx.xl",
+        "shadow": "elevation.levels.md",
+        "paddingPx": 14,
+        "gapPx": 12
+      },
+      "statChip": {
+        "layout": "icon or value + label",
+        "radiusPx": 12,
+        "background": "color.backgrounds.surfaceMuted",
+        "paddingX": 14,
+        "paddingY": 10,
+        "value": {
+          "sizePx": 14,
+          "weight": 700,
+          "color": "color.text.primary"
+        },
+        "label": {
+          "sizePx": 12,
+          "color": "color.text.secondary"
+        }
+      },
+      "inlineButtons": {
+        "end": {
+          "style": "button.secondary",
+          "accent": "danger outline (subtle)"
+        },
+        "pause": {
+          "style": "button.primary",
+          "size": "sm"
+        }
+      }
+    },
+    "weatherCard": {
+      "type": "Two-tone card with lime top area + neutral bottom area",
+      "container": {
+        "extends": "card.base",
+        "paddingPx": 0
+      },
+      "top": {
+        "background": "color.brand.forestGreen.base",
+        "paddingPx": 20,
+        "radiusPx": "foundations.radiiPx.xl",
+        "textColor": "color.brand.forestGreen.on",
+        "primaryValue": {
+          "sizePx": 44,
+          "weight": 800
+        }
+      },
+      "bottom": {
+        "background": "color.backgrounds.surface",
+        "paddingPx": 20
+      },
+      "dayPills": {
+        "radiusPx": "foundations.radiiPx.pill",
+        "pillSizePx": 28,
+        "selected": {
+          "background": "rgba(17,24,39,0.10)",
+          "textColor": "color.text.primary"
+        },
+        "default": {
+          "background": "rgba(255,255,255,0.65)",
+          "textColor": "color.text.secondary"
+        }
+      }
+    },
+    "routePreviewCard": {
+      "type": "Card with map-texture background and route line + small stat panel",
+      "container": "card.base",
+      "mapTexture": {
+        "colors": ["#9BB558", "#B8CC73", "#D7E6A8"],
+        "lineColor": "#B89BFF",
+        "nodeStyle": {
+          "fill": "#FFFFFF",
+          "stroke": "color.brand.forestGreen.base",
+          "sizePx": 10
+        }
+      },
+      "overlayStats": {
+        "style": "statChipGroup",
+        "placement": "bottom-right"
+      }
+    },
+    "twoColumnFeatureSection": {
+      "layout": "Two large cards side-by-side on wide screens; stack on mobile",
+      "gapPx": 24,
+      "background": "color.backgrounds.page",
+      "responsiveRules": [
+        "Desktop: 2 columns equal width",
+        "Tablet: 1 column stacked, preserve visual prominence",
+        "Keep section header centered above grid"
+      ]
+    },
+    "ctaFooterButton": {
+      "type": "Centered primary CTA under content",
+      "buttonStyle": "button.primary",
+      "spacing": {
+        "marginTopPx": 48
+      }
+    },
+    "pillBadge": {
+      "type": "Small rounded label (e.g., Rookie/Intermediate/Advanced)",
+      "container": {
+        "heightPx": 28,
+        "paddingX": 12,
+        "radiusPx": "foundations.radiiPx.pill",
+        "background": "color.backgrounds.surface",
+        "border": {
+          "widthPx": 1,
+          "color": "color.borders.default"
+        }
+      },
+      "text": {
+        "sizePx": 12,
+        "weight": 500,
+        "color": "color.text.secondary"
+      }
+    },
+    "input": {
+      "textField": {
+        "heightPx": 44,
+        "radiusPx": "foundations.radiiPx.pill",
+        "background": "color.backgrounds.surface",
+        "border": {
+          "widthPx": 1,
+          "color": "color.borders.default"
+        },
+        "placeholderColor": "color.text.muted",
+        "focus": {
+          "borderColor": "color.brand.forestGreen.base",
+          "ring": "rgba(34, 139, 34, 0.30)"
+        }
+      },
+      "select": {
+        "style": "textField",
+        "affordance": "chevron-down icon 16px"
+      }
+    },
+    "modal": {
+      "overlay": {
+        "color": "rgba(17, 24, 39, 0.45)",
+        "blurPx": 2
+      },
+      "container": {
+        "background": "color.backgrounds.surface",
+        "radiusPx": "foundations.radiiPx.xl",
+        "shadow": "elevation.levels.lg",
+        "paddingPx": 24,
+        "maxWidthPx": 520
+      }
+    },
+    "toast": {
+      "container": {
+        "background": "color.backgrounds.surface",
+        "radiusPx": "foundations.radiiPx.xl",
+        "shadow": "elevation.levels.md",
+        "border": {
+          "widthPx": 1,
+          "color": "color.borders.subtle"
+        },
+        "paddingPx": 16
+      },
+      "title": {
+        "sizePx": 14,
+        "weight": 700,
+        "color": "color.text.primary"
+      },
+      "body": {
+        "sizePx": 13,
+        "color": "color.text.secondary"
+      }
+    }
+  },
+  "page_patterns": {
+    "marketingLanding": {
+      "sequence": [
+        "topNavigation over hero",
+        "hero (illustration-led) + platform badges",
+        "sectionHeader + trailCard grid (3-up)",
+        "sectionHeader + twoColumnFeatureSection (featureTile variants)",
+        "sectionHeader + mixed cards (weatherCard, routePreviewCard)",
+        "left-aligned text + device mock + primary CTA (learn more)"
+      ],
+      "backgroundAlternation": [
+        "Hero uses mint wash + illustration",
+        "Most sections sit on warm off-white page background",
+        "Cards sit on white surface with soft shadow"
+      ]
+    }
+  },
+  "do_and_dont": {
+    "do": [
+      "Do keep CTAs pill-shaped and friendly.",
+      "Do keep section copy concise (1–2 lines).",
+      "Do use subtle elevation and large radii to create a soft, modern feel.",
+      "Do let illustrations carry color; keep UI elements mostly neutral except forest green accents."
+    ],
+    "dont": [
+      "Don’t introduce multiple competing accent colors for CTAs.",
+      "Don’t use heavy borders, harsh shadows, or sharp corners.",
+      "Don’t overcrowd cards with long text; keep metadata compact and icon-supported.",
+      "Don’t use stark white backgrounds everywhere; keep the warm off-white canvas."
+    ]
+  }
+}

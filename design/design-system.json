@@ -1,0 +1,470 @@
+{
+  "meta": {
+    "name": "My14er Design System",
+    "purpose": "A comprehensive, AI-oriented design guide describing the visual system the My14er site implements. Source of truth is the live implementation in app/globals.css and app/layout.tsx.",
+    "lastUpdated": "2026-02-11",
+    "version": "2.1.0",
+    "appliesTo": {
+      "framework": "Next.js App Router",
+      "styling": "Tailwind CSS v4 + global CSS variables in app/globals.css"
+    }
+  },
+  "sourceOfTruth": {
+    "tokens": [
+      {
+        "name": "CSS Variables",
+        "location": "app/globals.css",
+        "notes": "All design tokens are defined as CSS custom properties using Tailwind v4's @theme inline syntax."
+      },
+      {
+        "name": "Font Configuration",
+        "location": "app/layout.tsx",
+        "notes": "Fonts loaded via next/font/google and exposed as CSS variables (--font-sans, --font-display)."
+      }
+    ],
+    "componentImplementations": [
+      {
+        "name": "Landing page",
+        "location": "app/page.tsx",
+        "notes": "Defines hero/feature cards/peaks table/trip reports/CTA band/footer styling."
+      },
+      {
+        "name": "Community feed",
+        "location": "app/community/page.tsx",
+        "notes": "Defines app shell header, feed cards, composer, right rail widgets."
+      },
+      {
+        "name": "Peak bagger profile",
+        "location": "app/profile/page.tsx",
+        "notes": "Defines profile header, stats bar, checklist, timeline, pinned reports."
+      }
+    ],
+    "designNotes": [
+      {
+        "topic": "Brand color consistency",
+        "rule": "Use `brand.primary` (#064E3B) for primary CTAs, `brand.accent` (#065F46) for hover states, and reserve `brand.highlight` (#11D432) for success/verified badges only."
+      }
+    ]
+  },
+  "highLevelGuidelines": {
+    "productFeel": "Modern alpine/outdoors, confident, high-contrast, and slightly premium. Clean surfaces with soft shadows, strong forest-green CTAs, and tasteful imagery/gradients.",
+    "principles": [
+      "High-contrast hierarchy: big headings, strong weights, tight tracking, short copy.",
+      "Soft surfaces: rounded-xl/2xl/3xl cards with subtle borders and shadows.",
+      "Forest-green branding: primary actions and key UI affordances are green; everything else is slate/neutral.",
+      "Subtle motion: hover lift, scale, and shadow increase; no busy animations.",
+      "Dark mode-ready: provide paired light/dark surfaces and borders."
+    ],
+    "do": [
+      "Use `rounded-xl` cards as the default surface; use `rounded-2xl` for feature cards; `rounded-3xl` for big CTA bands.",
+      "Use thin borders: mint/green-tinted in the app UIs and slate-tinted in marketing sections.",
+      "Use `font-bold`/`font-extrabold` for headings and CTAs; use tight tracking on brand headings.",
+      "Use sticky, blurred headers for app pages (feed).",
+      "Use image covers with subtle black gradients for readability."
+    ],
+    "dont": [
+      "Don’t mix multiple primary greens in one view. Keep one `brand.primary` and reserve neon green for status highlights.",
+      "Don’t use sharp corners or heavy borders.",
+      "Don't introduce new typography families; keep DM Sans for body/UI and Playfair Display for headlines.",
+      "Don’t overuse gradients; keep them for hero imagery and a small number of highlight cards."
+    ]
+  },
+  "foundations": {
+    "implementation": {
+      "tailwind": {
+        "version": "v4",
+        "utilityFirstRule": "Prefer Tailwind utilities for layout/spacing/typography; map all colors/radii/shadows to CSS variables; avoid ad-hoc hex colors."
+      },
+      "fonts": {
+        "configuredIn": "app/layout.tsx",
+        "primary": {
+          "name": "DM Sans",
+          "cssVar": "--font-sans",
+          "weights": ["400", "500", "600", "700"],
+          "usage": "Body text, UI elements, labels, navigation"
+        },
+        "display": {
+          "name": "Playfair Display",
+          "cssVar": "--font-display",
+          "weights": ["400", "500", "600", "700", "800", "900"],
+          "usage": "Hero headlines, section titles, editorial emphasis. Use italic for accent."
+        },
+        "mono": "Use default system mono only where needed",
+        "typographyRules": [
+          "Use DM Sans for all body text and UI.",
+          "Use Playfair Display for large headlines and section titles (apply via fontFamily: 'var(--font-display)').",
+          "Use tight tracking on display headings for editorial feel.",
+          "Use bold/semibold weights for CTAs and navigation."
+        ]
+      }
+    },
+    "layout": {
+      "container": {
+        "tailwindMarketing": "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
+        "tailwindApp": "mx-auto max-w-[1280px] px-4 md:px-10 lg:px-40",
+        "maxWidthPx": 1280,
+        "notes": "Marketing sections use max-w-7xl; app pages in the mocks use max-w-[1280px] and larger side paddings at lg."
+      },
+      "page": {
+        "minHeight": "min-h-screen",
+        "background": {
+          "cssVar": "--color-page",
+          "lightHex": "#F6F8F6",
+          "darkHex": "#0D1A10",
+          "notes": "App pages use a slightly warm light background; marketing can use cooler slate (#F8FAFC)."
+        }
+      },
+      "responsiveBreakpoints": {
+        "tailwindDefaultsPx": {
+          "sm": 640,
+          "md": 768,
+          "lg": 1024,
+          "xl": 1280,
+          "2xl": 1536
+        },
+        "usedInMocks": [
+          "App header nav links: hidden on mobile, visible at md+ (md:flex).",
+          "Feed layout: 1 column on mobile, 12-col grid on lg with sticky side rails.",
+          "Landing hero: typography scales at md (5xl -> 7xl).",
+          "Profile header: stacks on mobile, splits on md."
+        ]
+      }
+    },
+    "color": {
+      "mode": "light + dark",
+      "tokens": {
+        "brand": {
+          "primary": { "cssVar": "--color-brand-primary", "hex": "#064E3B", "notes": "Landing mock primary and forest-green brand." },
+          "accent": { "cssVar": "--color-brand-accent", "hex": "#065F46", "notes": "Hover/secondary brand green used for CTA hover." },
+          "highlight": { "cssVar": "--color-brand-highlight", "hex": "#11D432", "notes": "Reserved for verified/pro/success highlights (profile mock)." }
+        },
+        "page": {
+          "light": { "cssVar": "--color-page", "hex": "#F6F8F6" },
+          "marketingLight": { "hex": "#F8FAFC" },
+          "dark": { "cssVar": "--color-page-dark", "hex": "#0D1A10" }
+        },
+        "surface": {
+          "light": { "cssVar": "--color-surface", "hex": "#FFFFFF" },
+          "dark": { "cssVar": "--color-surface-dark", "hex": "#0F172A", "notes": "Marketing dark surface (landing)." },
+          "appDarkCard": { "hex": "#1A2E1D", "notes": "Profile dark card background." }
+        },
+        "surfaceSubtle": {
+          "light": { "cssVar": "--color-surface-subtle", "hex": "#E7F3E9", "notes": "Minty light surface used for inputs/buttons in app pages." },
+          "marketingLight": { "hex": "#F1F5F9", "notes": "Slate-100 marketing section background." }
+        },
+        "text": {
+          "primary": { "cssVar": "--color-text-primary", "hex": "#0D1B10" },
+          "secondary": { "cssVar": "--color-text-secondary", "hex": "#334155", "notes": "Slate-blue used heavily in marketing copy." },
+          "mutedGreen": { "cssVar": "--color-text-muted-green", "hex": "#4C9A59", "notes": "Profile supporting text." },
+          "onBrand": { "cssVar": "--color-text-on-brand", "hex": "#FFFFFF" }
+        },
+        "border": {
+          "app": { "cssVar": "--color-border-app", "hex": "#E7F3E9" },
+          "appStrong": { "cssVar": "--color-border-app-strong", "hex": "#CFE7D3" },
+          "marketing": { "cssVar": "--color-border-marketing", "hex": "#E2E8F0", "notes": "Slate-200 borders in marketing sections." },
+          "dark": { "cssVar": "--color-border-dark", "hex": "rgba(255,255,255,0.10)" }
+        },
+        "status": {
+          "success": { "cssVar": "--color-success", "hex": "#11D432" }
+        },
+        "accent": {
+          "stoneWarm": { "cssVar": "--color-stone-warm", "hex": "#D4C4B0", "notes": "Warm beige for borders and backgrounds." },
+          "stoneLight": { "cssVar": "--color-stone-light", "hex": "#EDE8E0", "notes": "Light warm surface for CTA bands." },
+          "amberGlow": { "cssVar": "--color-amber-glow", "hex": "#E8A838", "notes": "Warm amber for editorial accents, underlines, hover highlights." }
+        },
+        "legacy": {
+          "mint": { "cssVar": "--color-mint", "hex": "#7FE3D2", "notes": "Back-compat alias." },
+          "mintTint": { "cssVar": "--color-mint-tint", "hex": "#D8F7F0", "notes": "Back-compat alias." },
+          "lime": { "cssVar": "--color-lime", "hex": "#B9D60F", "notes": "Back-compat alias." }
+        }
+      },
+      "gradients": {
+        "heroImageOverlay": {
+          "tailwind": "bg-[linear-gradient(rgba(15,23,42,0.3),rgba(15,23,42,0.6))]",
+          "usage": "Landing hero image overlay for readability."
+        },
+        "marketingSidebarCard": {
+          "tailwind": "bg-gradient-to-br from-[#1A472A] to-[#0A1E12]",
+          "stops": ["#1A472A", "#0A1E12"],
+          "usage": "Community feed right-rail 'Live Map View' card."
+        }
+      }
+    },
+    "typography": {
+      "weights": {
+        "regular": "font-normal",
+        "medium": "font-medium",
+        "semibold": "font-semibold",
+        "bold": "font-bold",
+        "extrabold": "font-extrabold"
+      },
+      "sizesUsed": {
+        "heroH1": {
+          "tailwind": "text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-[0.9]",
+          "fontFamily": "var(--font-display)",
+          "usage": ["Landing hero headline - use Playfair Display, italic for accent words"]
+        },
+        "sectionH2": {
+          "tailwind": "text-4xl lg:text-5xl font-bold tracking-tight",
+          "fontFamily": "var(--font-display)",
+          "usage": ["Section titles, feature headers"]
+        },
+        "ctaH2": {
+          "tailwind": "text-4xl lg:text-6xl font-bold tracking-tight",
+          "fontFamily": "var(--font-display)",
+          "usage": ["CTA band title"]
+        },
+        "cardH3": { "tailwind": "text-xl font-semibold", "usage": ["Feature cards", "Profile section titles"] },
+        "bodyLg": { "tailwind": "text-lg leading-relaxed", "usage": ["Hero subhead", "Section descriptions"] },
+        "body": { "tailwind": "text-sm", "usage": ["Feed copy", "Nav links", "Labels"] },
+        "caption": { "tailwind": "text-xs font-semibold tracking-widest uppercase", "usage": ["Section eyebrows", "Category labels"] },
+        "micro": { "tailwind": "text-xs font-medium", "usage": ["Timestamps", "Metadata"] }
+      },
+      "colorRules": [
+        "On light surfaces, primary text is #0D1B10; marketing copy often uses slate #334155.",
+        "Muted/supporting green text uses #4C9A59 (profile).",
+        "Text on brand/dark/imagery should use white with appropriate opacity (e.g. white/90, white/70)."
+      ]
+    },
+    "spacing": {
+      "baseline": "Tailwind spacing scale",
+      "sectionRhythmObserved": {
+        "appHeaderPaddingY": { "tailwind": "py-3", "px": 12 },
+        "appMainPaddingY": { "tailwind": "py-8", "px": 32 },
+        "marketingSectionPaddingY": [
+          { "tailwind": "py-20", "px": 80 },
+          { "tailwind": "py-24", "px": 96 },
+          { "tailwind": "lg:py-32", "px": 128 }
+        ],
+        "cardPadding": [
+          { "tailwind": "p-4", "px": 16 },
+          { "tailwind": "p-5", "px": 20 },
+          { "tailwind": "p-6", "px": 24 },
+          { "tailwind": "p-8", "px": 32 }
+        ],
+        "gaps": [
+          { "tailwind": "gap-4", "px": 16 },
+          { "tailwind": "gap-6", "px": 24 },
+          { "tailwind": "gap-8", "px": 32 }
+        ]
+      }
+    },
+    "radii": {
+      "globalTokens": {
+        "sm": { "cssVar": "--radius-sm", "rem": 0.5, "px": 8, "tailwind": "rounded-lg" },
+        "md": { "cssVar": "--radius-md", "rem": 0.75, "px": 12, "tailwind": "rounded-xl" },
+        "lg": { "cssVar": "--radius-lg", "rem": 1.0, "px": 16, "tailwind": "rounded-2xl" },
+        "xl": { "cssVar": "--radius-xl", "rem": 1.5, "px": 24, "tailwind": "rounded-3xl" },
+        "pill": { "cssVar": "--radius-pill", "px": 9999, "tailwind": "rounded-full" }
+      },
+      "tailwindClassesUsed": [
+        "rounded-lg",
+        "rounded-xl",
+        "rounded-2xl",
+        "rounded-3xl",
+        "rounded-full"
+      ],
+      "rule": "Default cards are `rounded-xl`. Feature cards and big CTAs often use `rounded-2xl`/`rounded-3xl`. Pills/badges use `rounded-full`."
+    },
+    "borders": {
+      "default": {
+        "widthPx": 1,
+        "colors": {
+          "app": "#E7F3E9",
+          "appStrong": "#CFE7D3",
+          "marketing": "#E2E8F0",
+          "dark": "rgba(255,255,255,0.10)"
+        },
+        "rule": "Use 1px borders as subtle separators; mint-tinted borders in app pages and slate-tinted borders in marketing."
+      }
+    },
+    "elevation": {
+      "globalTokens": {
+        "sm": { "cssVar": "--shadow-sm", "value": "0 1px 2px rgba(2, 6, 23, 0.06)" },
+        "lg": { "cssVar": "--shadow-lg", "value": "0 10px 24px rgba(2, 6, 23, 0.12)" },
+        "xl": { "cssVar": "--shadow-xl", "value": "0 20px 40px rgba(2, 6, 23, 0.18)" },
+        "2xl": { "cssVar": "--shadow-2xl", "value": "0 30px 60px rgba(2, 6, 23, 0.22)" }
+      },
+      "tailwindUsageObserved": {
+        "default": "shadow-sm",
+        "cardHover": "hover:shadow-xl hover:-translate-y-2",
+        "cta": "shadow-xl shadow-black/20",
+        "stickyHeader": "backdrop-blur-md"
+      },
+      "rule": "Default surfaces are subtle (`shadow-sm`). Interactive marketing cards lift and deepen shadow noticeably."
+    },
+    "motion": {
+      "rule": "Use subtle hover interactions: shadow increase, small lift, occasional slight scale on primary CTA.",
+      "patternsUsed": [
+        { "component": "MarketingFeatureCard", "tailwind": "transition-all duration-300 hover:shadow-xl hover:-translate-y-2" },
+        { "component": "HeroPrimaryCta", "tailwind": "transition-all hover:bg-[var(--color-brand-accent)] hover:scale-105" },
+        { "component": "ImageCardOverlay", "tailwind": "group-hover:scale-105 transition-transform duration-500" }
+      ]
+    },
+    "animations": {
+      "description": "Custom CSS animations defined in globals.css for editorial page transitions.",
+      "keyframes": [
+        { "name": "fade-up", "description": "Fade in while translating up 30px. Use for staggered hero content.", "class": "animate-fade-up" },
+        { "name": "fade-in", "description": "Simple opacity fade in.", "class": "animate-fade-in" },
+        { "name": "scale-in", "description": "Scale from 95% with fade.", "class": "animate-scale-in" },
+        { "name": "float", "description": "Gentle floating up/down loop.", "class": "animate-float" }
+      ],
+      "delays": ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500", "delay-600", "delay-700"],
+      "usage": "Apply animate-fade-up with staggered delays (delay-100, delay-200, etc.) to hero elements for editorial entrance."
+    },
+    "decorativePatterns": {
+      "description": "CSS classes for textural overlays and decorative elements.",
+      "classes": [
+        { "name": "topo-pattern", "description": "Subtle topographic line pattern overlay using SVG background. Use on section backgrounds." },
+        { "name": "grain-overlay", "description": "Noise texture overlay via ::before pseudo-element. Apply to dark sections for film grain effect." },
+        { "name": "mountain-divider", "description": "Zigzag mountain silhouette divider using gradients." },
+        { "name": "editorial-underline", "description": "Animated underline that scales in on hover. Use for editorial text links." },
+        { "name": "diagonal-slice", "description": "Clip-path for angled section edges." },
+        { "name": "card-hover", "description": "Premium card hover with lift, rotation, and green-tinted shadow." }
+      ]
+    }
+  },
+  "components": {
+    "ButtonPrimary": {
+      "description": "Rounded button used for primary calls to action (solid forest green with slide-up hover).",
+      "base": {
+        "tailwind": "group relative bg-[var(--color-brand-primary)] text-white font-semibold overflow-hidden transition-all hover:shadow-2xl hover:shadow-[var(--color-brand-primary)]/30",
+        "hoverEffect": "Nested div with bg-[var(--color-brand-accent)] translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+      },
+      "sizesObserved": [
+        { "name": "navCta", "tailwind": "px-5 py-2.5 rounded-full text-sm" },
+        { "name": "heroCta", "tailwind": "px-8 py-4 rounded-2xl text-base" },
+        { "name": "ctaBand", "tailwind": "px-10 py-5 rounded-2xl text-lg" }
+      ]
+    },
+    "ButtonSecondary": {
+      "description": "Secondary CTA for outline/subtle actions.",
+      "variants": {
+        "outline": {
+          "tailwind": "px-8 py-4 rounded-2xl font-semibold text-base text-[var(--color-text-secondary)] border-2 border-[var(--color-border-app-strong)] bg-white/50 backdrop-blur-sm hover:bg-white hover:border-[var(--color-brand-primary)]/20 transition-all"
+        },
+        "stoneOutline": {
+          "tailwind": "px-10 py-5 rounded-2xl font-semibold text-lg text-[var(--color-text-secondary)] border-2 border-[var(--color-stone-warm)] hover:border-[var(--color-brand-primary)]/20 hover:bg-white/50 transition-all"
+        },
+        "soft": {
+          "tailwind": "bg-[var(--color-surface-subtle)] text-[var(--color-brand-primary)] font-semibold text-sm rounded-lg px-4 py-2 hover:bg-[color-mix(in_srgb,var(--color-surface-subtle),#000_6%)] transition-all"
+        }
+      }
+    },
+    "AppHeaderSticky": {
+      "description": "Floating pill-shaped header with blurred background. Fixed at top with margin for floating effect.",
+      "container": {
+        "tailwind": "fixed top-0 left-0 right-0 z-50"
+      },
+      "inner": {
+        "tailwind": "mx-4 mt-4 md:mx-8 md:mt-6 max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)] flex items-center justify-between"
+      },
+      "logo": {
+        "tailwind": "flex items-center gap-3 group",
+        "icon": "w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6",
+        "text": "text-lg font-bold tracking-tight text-[var(--color-brand-primary)]"
+      },
+      "navLink": {
+        "tailwind": "px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] rounded-full hover:bg-[var(--color-surface-subtle)] transition-all"
+      },
+      "search": {
+        "tailwind": "hidden sm:flex items-center min-w-40 h-10 max-w-64 w-full",
+        "inputShell": "flex w-full items-stretch rounded-lg bg-[var(--color-surface-subtle)] dark:bg-white/5 overflow-hidden",
+        "icon": "text-[var(--color-text-secondary)] flex items-center justify-center pl-4",
+        "input": "w-full border-none bg-transparent focus:ring-0 px-4 pl-2 text-sm placeholder:opacity-70"
+      }
+    },
+    "CardSurface": {
+      "description": "Default surface used across app pages and marketing cards (rounded, bordered, softly elevated).",
+      "container": {
+        "tailwindApp": "bg-white dark:bg-white/5 rounded-xl shadow-sm border border-[var(--color-border-app)] dark:border-white/10",
+        "tailwindMarketing": "bg-white dark:bg-slate-900/50 rounded-2xl shadow-sm border border-[var(--color-border-marketing)] dark:border-white/10"
+      }
+    }
+  },
+  "pagePatterns": {
+    "LandingPage": {
+      "file": "app/page.tsx",
+      "structure": [
+        "Fixed pill-shaped header with blur + border (floating style)",
+        "Hero with full-bleed image, gradient overlays, large Playfair H1, subhead, dual CTAs, stats card",
+        "Peaks table section with topo-pattern background",
+        "Trip reports section (dark green bg with grain overlay)",
+        "Feature cards grid (3 cards) with card-hover effect",
+        "Large CTA band (stone-light bg, rounded-[2.5rem]) with mountain silhouette",
+        "Footer with nav columns and social links"
+      ],
+      "layoutRules": [
+        "Use max-w-7xl and `px-4 sm:px-8` for marketing layout.",
+        "Hero is min-h-[100vh] with responsive typography scaling.",
+        "Feature cards use `rounded-3xl`, white bg, and card-hover class.",
+        "Use animate-fade-up with staggered delays for hero content entrance."
+      ]
+    },
+    "CommunityFeedPage": {
+      "file": "app/community/page.tsx",
+      "structure": [
+        "AppHeaderSticky (same as landing)",
+        "12-col layout on lg: left profile/achievements rail (sticky), feed column (composer + posts), right widgets rail (sticky)",
+        "Feed post cards: header row + image + content + action bar"
+      ],
+      "layoutRules": [
+        "App pages use max-w-[1280px] and larger side padding at lg (`lg:px-40`).",
+        "Cards use minty borders (#E7F3E9) and `shadow-sm`.",
+        "Use sticky side rails with top offsets (top-24)."
+      ]
+    },
+    "PeakBaggerProfilePage": {
+      "file": "app/profile/page.tsx",
+      "structure": [
+        "Hero image header (cover) with black-to-transparent gradient overlay",
+        "Profile header card (rounded-xl, mint border) with avatar, verified badge, primary follow button",
+        "Stats bar (3 cards) with progress bar and minty surfaces",
+        "Main grid: checklist (left) and timeline + pinned reports (right)"
+      ],
+      "layoutRules": [
+        "Use `max-w-6xl` container for profile content; overlap header card on hero via negative margin.",
+        "Borders are green-tinted (#CFE7D3) and dark-mode variants (#2D4A32).",
+        "Neon green is reserved for verified/pro highlights and progress fills."
+      ]
+    }
+  },
+  "accessibilityAndUX": {
+    "contrast": [
+      "Primary text (#0D1B10) on light surfaces has high contrast; ensure slate copy remains readable on #F8FAFC/#F6F8F6.",
+      "Brand buttons use white text on deep green (#064E3B). Keep text at least `text-sm font-bold`."
+    ],
+    "focus": [
+      "Add focus rings to all interactive elements: `focus-visible:ring-2 focus-visible:ring-[var(--color-brand-primary)] focus-visible:ring-offset-2`."
+    ],
+    "touchTargets": [
+      "Buttons should be at least 40px tall (the mocks commonly use `h-10` for header/app controls)."
+    ],
+    "motion": [
+      "Use hover motion sparingly; prefer `transition-all` with short durations (200–300ms). Respect reduced motion settings if adding animations beyond hover."
+    ]
+  },
+  "aiImplementationRules": {
+    "whenAddingNewUI": [
+      "Use DM Sans for body/UI and Playfair Display for display headlines (apply via fontFamily: 'var(--font-display)').",
+      "Use semantic tokens: `brand.primary` (#064E3B), `brand.accent` (#065F46), reserve `brand.highlight` (#11D432) for success/verified only.",
+      "Default card: `rounded-3xl bg-white border border-[var(--color-border-app)]` with card-hover class for interactive cards.",
+      "Primary buttons: `rounded-full` or `rounded-2xl` + `font-semibold` + subtle shadow; add hover slide-up effect with accent color.",
+      "Use warm stone palette (`stone-light`, `stone-warm`, `amber-glow`) for CTA sections and editorial accents.",
+      "Apply animate-fade-up with staggered delays (delay-100, delay-200, etc.) for entrance animations.",
+      "Use topo-pattern class for subtle topographic texture on light sections; grain-overlay for dark sections."
+    ],
+    "avoid": [
+      "Avoid inventing new greens; do not treat neon green as a primary CTA color.",
+      "Avoid introducing additional font families beyond DM Sans and Playfair Display.",
+      "Avoid sharp corners; prefer rounded-xl, rounded-2xl, rounded-3xl, or rounded-full.",
+      "Avoid heavy outlines; keep borders subtle and shadow-driven elevation."
+    ],
+    "preferredColorUsage": {
+      "backgrounds": "Use `page` (#F6F8F6) for app pages; white surfaces for cards; `brand.primary` for dark sections; `stone-light` for warm CTA bands.",
+      "text": "Use `text.primary` (#0D1B10) and `text.secondary` (#334155); use white for text on imagery/brand; `amber-glow` for editorial accents.",
+      "borders": "Use `border.app` (#E7F3E9) and `border.appStrong` (#CFE7D3) in app pages; use `border.marketing` (#E2E8F0) in marketing.",
+      "primaryCta": "brand.primary (#064E3B) with hover brand.accent (#065F46); use rounded-2xl with slide-up hover animation."
+    }
+  }
+}
