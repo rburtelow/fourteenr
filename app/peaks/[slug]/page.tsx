@@ -2,7 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPeakBySlug } from "@/lib/peaks";
+import { createClient } from "@/lib/supabase/server";
 import type { PeakWithRoutes, Route } from "@/lib/database.types";
+import UserNav from "../../components/UserNav";
+import WatchButton from "./WatchButton";
 
 // Mock weather data (will be replaced with real weather API)
 const mockWeather = {
@@ -38,6 +41,41 @@ export default async function PeakProfilePage({
     notFound();
   }
 
+  // Get auth state
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null = null;
+  let isWatched = false;
+  if (user) {
+    const [{ data: profile }, { data: watchRow }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("screen_name, avatar_url")
+        .eq("id", user.id)
+        .single(),
+      supabase
+        .from("peak_watchlist")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("peak_id", peak.id)
+        .maybeSingle(),
+    ]);
+    userNav = {
+      email: user.email || "",
+      screen_name: profile?.screen_name || null,
+      avatar_url: profile?.avatar_url || null,
+    };
+    isWatched = !!watchRow;
+  }
+
+  // The rest of the page uses `peak` (already checked above)
+  if (!peak) {
+    notFound();
+  }
+
   // Use mock weather for now (will integrate weather API later)
   const weather = mockWeather;
 
@@ -66,14 +104,7 @@ export default async function PeakProfilePage({
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button className="hidden sm:block text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-4 py-2">
-                  Sign In
-                </button>
-                <button className="bg-[var(--color-brand-primary)] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[var(--color-brand-accent)] transition-all hover:shadow-lg hover:shadow-[var(--color-brand-primary)]/20">
-                  Get Started
-                </button>
-              </div>
+              <UserNav user={userNav} />
             </div>
           </div>
         </nav>
@@ -418,10 +449,7 @@ export default async function PeakProfilePage({
                       </span>
                       <div className="absolute inset-0 bg-[var(--color-brand-accent)] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                     </button>
-                    <button className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-sm text-[var(--color-text-secondary)] border-2 border-[var(--color-border-app-strong)] bg-white hover:bg-[var(--color-surface-subtle)] transition-all">
-                      <BookmarkIcon className="w-5 h-5" />
-                      Save to List
-                    </button>
+                    <WatchButton peakId={peak.id} initialWatched={isWatched} isLoggedIn={!!user} />
                     <button className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-sm text-[var(--color-text-secondary)] border-2 border-[var(--color-border-app-strong)] bg-white hover:bg-[var(--color-surface-subtle)] transition-all">
                       <ShareIcon className="w-5 h-5" />
                       Share Peak

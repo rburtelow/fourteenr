@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import type { PeakWithRouteCount } from "@/lib/peaks";
+import { createClient } from "@/lib/supabase/client";
+import UserNav from "../components/UserNav";
 
 const regions = ["All Regions", "Sawatch Range", "Sangre de Cristo Range", "San Juan Range", "Front Range", "Elk Range", "Mosquito Range", "Tenmile Range"];
 const difficulties = ["All Classes", "Class 1", "Class 2", "Class 3", "Class 4"];
@@ -17,15 +19,57 @@ const sortOptions = [
 
 interface PeaksClientProps {
   peaks: PeakWithRouteCount[];
+  userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null;
+  initialWatchedPeakIds?: string[];
 }
 
-export default function PeaksClient({ peaks }: PeaksClientProps) {
+export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = [] }: PeaksClientProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedRegion, setSelectedRegion] = useState("All Regions");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All Classes");
   const [sortBy, setSortBy] = useState("rank");
   const [searchQuery, setSearchQuery] = useState("");
+  const [watchedPeaks, setWatchedPeaks] = useState<Set<string>>(() => new Set(initialWatchedPeakIds));
   const filtersRef = useRef<HTMLDivElement>(null);
+
+  const toggleWatchPeak = useCallback((peakId: string) => {
+    if (!userNav) return; // not logged in
+
+    const wasWatched = watchedPeaks.has(peakId);
+
+    // Optimistic update
+    setWatchedPeaks((prev) => {
+      const next = new Set(prev);
+      if (next.has(peakId)) {
+        next.delete(peakId);
+      } else {
+        next.add(peakId);
+      }
+      return next;
+    });
+
+    // Persist to Supabase
+    const supabase = createClient();
+    const persist = wasWatched
+      ? supabase.from("peak_watchlist").delete().eq("peak_id", peakId)
+      : supabase.from("peak_watchlist").insert({ peak_id: peakId });
+
+    persist.then(({ error }) => {
+      if (error) {
+        console.error("Watchlist toggle failed:", error);
+        // Rollback
+        setWatchedPeaks((prev) => {
+          const next = new Set(prev);
+          if (wasWatched) {
+            next.add(peakId);
+          } else {
+            next.delete(peakId);
+          }
+          return next;
+        });
+      }
+    });
+  }, [userNav, watchedPeaks]);
 
   const handleRegionSelect = (regionFilter: string) => {
     setSelectedRegion(regionFilter);
@@ -106,14 +150,7 @@ export default function PeaksClient({ peaks }: PeaksClientProps) {
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button className="hidden sm:block text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-4 py-2">
-                  Sign In
-                </button>
-                <button className="bg-[var(--color-brand-primary)] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[var(--color-brand-accent)] transition-all hover:shadow-lg hover:shadow-[var(--color-brand-primary)]/20">
-                  Get Started
-                </button>
-              </div>
+              <UserNav user={userNav} />
             </div>
           </div>
         </nav>
@@ -261,7 +298,7 @@ export default function PeaksClient({ peaks }: PeaksClientProps) {
             {viewMode === "grid" ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {filteredAndSortedPeaks.map((peak, index) => (
-                  <PeakCard key={peak.id} peak={peak} index={index} />
+                  <PeakCard key={peak.id} peak={peak} index={index} watched={watchedPeaks.has(peak.id)} onToggleWatch={toggleWatchPeak} />
                 ))}
               </div>
             ) : (
@@ -293,7 +330,7 @@ export default function PeaksClient({ peaks }: PeaksClientProps) {
                     </thead>
                     <tbody>
                       {filteredAndSortedPeaks.map((peak) => (
-                        <PeakRow key={peak.id} peak={peak} />
+                        <PeakRow key={peak.id} peak={peak} watched={watchedPeaks.has(peak.id)} onToggleWatch={toggleWatchPeak} />
                       ))}
                     </tbody>
                   </table>
@@ -486,7 +523,7 @@ function FilterSelect({
   );
 }
 
-function PeakCard({ peak, index }: { peak: PeakWithRouteCount; index: number }) {
+function PeakCard({ peak, index, watched, onToggleWatch }: { peak: PeakWithRouteCount; index: number; watched: boolean; onToggleWatch: (id: string) => void }) {
   const difficultyColors = {
     "Class 1": "bg-emerald-100 text-emerald-700 border-emerald-200",
     "Class 2": "bg-sky-100 text-sky-700 border-sky-200",
@@ -518,12 +555,31 @@ function PeakCard({ peak, index }: { peak: PeakWithRouteCount; index: number }) 
       </div>
 
       <div className="p-5">
-        <h3 className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors mb-1">
-          {peak.name}
-        </h3>
-        <p className="text-sm text-[var(--color-text-muted-green)] mb-3">{peak.range}</p>
+        <div className="flex items-start justify-between mb-1">
+          <div>
+            <h3 className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+              {peak.name}
+            </h3>
+            <p className="text-sm text-[var(--color-text-muted-green)] mt-1">{peak.range}</p>
+          </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleWatch(peak.id);
+            }}
+            className={`p-2 -mr-2 -mt-1 rounded-lg transition-all ${
+              watched
+                ? "text-[var(--color-amber-glow)] bg-[var(--color-amber-glow)]/10"
+                : "text-[var(--color-text-secondary)] hover:text-[var(--color-amber-glow)] hover:bg-[var(--color-amber-glow)]/10"
+            }`}
+            aria-label={watched ? `Remove ${peak.name} from watchlist` : `Save ${peak.name} to watchlist`}
+          >
+            <BookmarkIcon className="w-5 h-5" filled={watched} />
+          </button>
+        </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-3">
           <div>
             <p className="text-2xl font-bold text-[var(--color-brand-primary)] font-mono">
               {peak.elevation.toLocaleString()}&apos;
@@ -539,7 +595,7 @@ function PeakCard({ peak, index }: { peak: PeakWithRouteCount; index: number }) 
   );
 }
 
-function PeakRow({ peak }: { peak: PeakWithRouteCount }) {
+function PeakRow({ peak, watched, onToggleWatch }: { peak: PeakWithRouteCount; watched: boolean; onToggleWatch: (id: string) => void }) {
   const difficultyColors = {
     "Class 1": "bg-emerald-100 text-emerald-700",
     "Class 2": "bg-sky-100 text-sky-700",
@@ -572,7 +628,20 @@ function PeakRow({ peak }: { peak: PeakWithRouteCount }) {
         <span className="text-sm text-[var(--color-text-secondary)]">{(peak.completions || 0).toLocaleString()}</span>
       </td>
       <td className="px-6 py-5 text-right">
-        <ArrowRight className="w-4 h-4 text-[var(--color-text-muted-green)] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all inline-block" />
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleWatch(peak.id);
+          }}
+          className={`p-2 rounded-lg transition-all ${
+            watched
+              ? "text-[var(--color-amber-glow)] bg-[var(--color-amber-glow)]/10"
+              : "text-[var(--color-text-secondary)] hover:text-[var(--color-amber-glow)] hover:bg-[var(--color-amber-glow)]/10"
+          }`}
+          aria-label={watched ? `Remove ${peak.name} from watchlist` : `Save ${peak.name} to watchlist`}
+        >
+          <BookmarkIcon className="w-5 h-5" filled={watched} />
+        </button>
       </td>
     </tr>
   );
@@ -683,6 +752,14 @@ function ListIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </svg>
+  );
+}
+
+function BookmarkIcon({ className, filled }: { className?: string; filled?: boolean }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
     </svg>
   );
 }

@@ -1,5 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import UserNav from "../components/UserNav";
+import CommunityFeed from "./CommunityFeed";
+import PeaksWatchedPanel from "./PeaksWatchedPanel";
 
 const feedPosts = [
   {
@@ -11,6 +15,7 @@ const feedPosts = [
     content: "Just summited Mount Bierstadt this morning. The sunrise painted the entire Front Range in shades of gold and pink. Already planning my next 14er adventure.",
     image: "/hero.png",
     peak: "Mt. Bierstadt",
+    peakSlug: "mt-bierstadt",
     elevation: "14,065'",
     likes: 124,
     comments: 18,
@@ -36,6 +41,7 @@ const feedPosts = [
     content: "Trail conditions update for Grays & Torreys: Main trail is clear to the saddle. Still some snow patches near the Torreys summit—microspikes recommended. Winds were brutal above treeline yesterday.",
     image: "/hero.png",
     peak: "Grays Peak",
+    peakSlug: "grays-peak",
     elevation: "14,270'",
     likes: 89,
     comments: 31,
@@ -55,13 +61,82 @@ const upcomingEvents = [
   { title: "Trail Maintenance Day", date: "Feb 22", location: "Quandary", attendees: 12 },
 ];
 
-const suggestedHikers = [
-  { name: "Alex Thompson", summits: 34, mutual: 3 },
-  { name: "Jessica Park", summits: 52, mutual: 5 },
-  { name: "David Kim", summits: 28, mutual: 2 },
-];
 
-export default function CommunityPage() {
+export default async function CommunityPage() {
+  // Get auth state
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null = null;
+  let userProfile: { full_name: string | null; screen_name: string | null; avatar_url: string | null } | null = null;
+  let summitCount = 0;
+
+  if (user) {
+    const [{ data: profile }, { count }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("screen_name, full_name, avatar_url")
+        .eq("id", user.id)
+        .single(),
+      supabase
+        .from("summit_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id),
+    ]);
+
+    userNav = {
+      email: user.email || "",
+      screen_name: profile?.screen_name || null,
+      avatar_url: profile?.avatar_url || null,
+    };
+    userProfile = {
+      full_name: profile?.full_name || null,
+      screen_name: profile?.screen_name || null,
+      avatar_url: profile?.avatar_url || null,
+    };
+    summitCount = count ?? 0;
+  }
+
+  // Resolve peak slugs from mock data to peak IDs, and fetch user's watchlist
+  const postSlugs = feedPosts.map((p) => p.peakSlug).filter(Boolean) as string[];
+  const { data: peakRows } = await supabase
+    .from("peaks")
+    .select("id, slug")
+    .in("slug", postSlugs);
+  const slugToId: Record<string, string> = {};
+  for (const row of peakRows || []) {
+    slugToId[row.slug] = row.id;
+  }
+
+  let watchedPeakIds: string[] = [];
+  let watchedPeaks: { peak_id: string; name: string; elevation: number; slug: string }[] = [];
+  if (user) {
+    const { data: watchlist } = await supabase
+      .from("peak_watchlist")
+      .select("peak_id, peaks(name, elevation, slug)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    watchedPeakIds = watchlist?.map((w) => w.peak_id) || [];
+    watchedPeaks = (watchlist || []).map((w) => ({
+      peak_id: w.peak_id,
+      name: (w.peaks as unknown as { name: string; elevation: number; slug: string }).name,
+      elevation: (w.peaks as unknown as { name: string; elevation: number; slug: string }).elevation,
+      slug: (w.peaks as unknown as { name: string; elevation: number; slug: string }).slug,
+    }));
+  }
+
+  // Derive display values for profile card
+  const displayName = userProfile?.full_name || userProfile?.screen_name || user?.email?.split("@")[0] || "Hiker";
+  const displayHandle = userProfile?.screen_name ? `@${userProfile.screen_name}` : user?.email ? `@${user.email.split("@")[0]}` : null;
+  const avatarInitials = displayName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased">
       {/* Navigation - matching landing page */}
@@ -85,15 +160,7 @@ export default function CommunityPage() {
                 <NavLink href="#">Gear</NavLink>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button className="hidden sm:flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-4 py-2">
-                  <BellIcon className="w-5 h-5" />
-                  <span className="sr-only">Notifications</span>
-                </button>
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-shadow">
-                  YU
-                </div>
-              </div>
+              <UserNav user={userNav} />
             </div>
           </div>
         </nav>
@@ -133,33 +200,67 @@ export default function CommunityPage() {
           <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-32 space-y-6">
               {/* Profile Card */}
-              <div className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
-                <div className="h-20 bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] relative">
-                  <div className="absolute -bottom-8 left-5">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                      YU
+              {user ? (
+                <div className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+                  <div className="h-20 bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] relative">
+                    <div className="absolute -bottom-8 left-5">
+                      {userProfile?.avatar_url ? (
+                        <Image
+                          src={userProfile.avatar_url}
+                          alt={displayName}
+                          width={64}
+                          height={64}
+                          className="w-16 h-16 rounded-2xl border-4 border-white object-cover shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                          {avatarInitials}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="pt-12 pb-5 px-5">
+                    <h3 className="font-semibold text-[var(--color-text-primary)]">{displayName}</h3>
+                    {displayHandle && (
+                      <p className="text-sm text-[var(--color-text-secondary)]">{displayHandle}</p>
+                    )}
+                    <div className="mt-4 flex items-center gap-6">
+                      <div className="text-center">
+                        <p className="text-xl font-bold text-[var(--color-brand-primary)]">{summitCount}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">Summits</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xl font-bold text-[var(--color-brand-primary)]">
+                          {Math.round((summitCount / 58) * 100)}%
+                        </p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">Complete</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xl font-bold text-[var(--color-brand-primary)]">
+                          {58 - summitCount}
+                        </p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">Remaining</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="pt-12 pb-5 px-5">
-                  <h3 className="font-semibold text-[var(--color-text-primary)]">Your Name</h3>
-                  <p className="text-sm text-[var(--color-text-secondary)]">@yourhandle</p>
-                  <div className="mt-4 flex items-center gap-6">
-                    <div className="text-center">
-                      <p className="text-xl font-bold text-[var(--color-brand-primary)]">12</p>
-                      <p className="text-xs text-[var(--color-text-secondary)]">Summits</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xl font-bold text-[var(--color-brand-primary)]">248</p>
-                      <p className="text-xs text-[var(--color-text-secondary)]">Following</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xl font-bold text-[var(--color-brand-primary)]">89</p>
-                      <p className="text-xs text-[var(--color-text-secondary)]">Followers</p>
-                    </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+                  <div className="h-20 bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] relative" />
+                  <div className="pt-6 pb-5 px-5 text-center">
+                    <h3 className="font-semibold text-[var(--color-text-primary)]">Join the Community</h3>
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                      Sign in to track your summits and connect with hikers.
+                    </p>
+                    <Link
+                      href="/auth/login"
+                      className="mt-4 inline-flex items-center justify-center w-full px-4 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all"
+                    >
+                      Sign In
+                    </Link>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Quick Links */}
               <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
@@ -167,7 +268,7 @@ export default function CommunityPage() {
                   Quick Links
                 </h3>
                 <nav className="space-y-1">
-                  <SidebarLink icon={<CompassIcon />} label="My Hikes" count={12} />
+                  <SidebarLink icon={<CompassIcon />} label="Peaks Watched" count={watchedPeakIds.length} />
                   <SidebarLink icon={<UsersIcon />} label="Groups" count={4} />
                   <SidebarLink icon={<CalendarIcon />} label="Events" count={2} />
                   <SidebarLink icon={<BookmarkIcon />} label="Saved" count={18} />
@@ -204,171 +305,19 @@ export default function CommunityPage() {
           </aside>
 
           {/* Main Feed */}
-          <main className="lg:col-span-6 space-y-6">
-            {/* Create Post */}
-            <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  YU
-                </div>
-                <div className="flex-1">
-                  <textarea
-                    placeholder="Share your trail story..."
-                    rows={3}
-                    className="w-full resize-none bg-[var(--color-surface-subtle)] rounded-xl px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 transition-all"
-                  />
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all">
-                        <ImageIcon className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all">
-                        <MapPinIcon className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all">
-                        <MountainIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                    <button className="bg-[var(--color-brand-primary)] text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-[var(--color-brand-accent)] transition-all hover:shadow-lg hover:shadow-[var(--color-brand-primary)]/20">
-                      Post
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Feed Posts */}
-            {feedPosts.map((post, index) => (
-              <article
-                key={post.id}
-                className={`bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden card-hover animate-fade-up`}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {/* Post Header */}
-                <div className="p-5 pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white font-semibold">
-                        {post.avatar}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-[var(--color-text-primary)]">{post.author}</span>
-                          {post.isConditionReport && (
-                            <span className="px-2 py-0.5 rounded-full bg-[var(--color-amber-glow)]/10 text-[var(--color-amber-glow)] text-xs font-medium">
-                              Conditions
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-                          <span>{post.handle}</span>
-                          <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/30" />
-                          <span>{post.timeAgo}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all">
-                      <MoreIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Content */}
-                  <p className="mt-4 text-[var(--color-text-primary)] leading-relaxed">
-                    {post.content}
-                  </p>
-
-                  {/* Peak Tag */}
-                  {post.peak && (
-                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface-subtle)] text-sm">
-                      <MountainIcon className="w-4 h-4 text-[var(--color-brand-primary)]" />
-                      <span className="font-medium text-[var(--color-text-primary)]">{post.peak}</span>
-                      <span className="text-[var(--color-text-secondary)]">•</span>
-                      <span className="font-mono text-[var(--color-brand-primary)]">{post.elevation}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Image */}
-                {post.image && (
-                  <div className="relative h-72 overflow-hidden">
-                    <Image
-                      src={post.image}
-                      alt=""
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="px-5 py-4 border-t border-[var(--color-border-app)]">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                      <button className="group flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors">
-                        <div className="p-2 rounded-lg group-hover:bg-[var(--color-surface-subtle)] transition-colors">
-                          <HeartIcon className="w-5 h-5" />
-                        </div>
-                        <span className="text-sm font-medium">{post.likes}</span>
-                      </button>
-                      <button className="group flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors">
-                        <div className="p-2 rounded-lg group-hover:bg-[var(--color-surface-subtle)] transition-colors">
-                          <CommentIcon className="w-5 h-5" />
-                        </div>
-                        <span className="text-sm font-medium">{post.comments}</span>
-                      </button>
-                    </div>
-                    <button className="group flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-amber-glow)] transition-colors">
-                      <div className="p-2 rounded-lg group-hover:bg-[var(--color-amber-glow)]/10 transition-colors">
-                        <BookmarkIcon className="w-5 h-5" />
-                      </div>
-                      <span className="text-sm font-medium">{post.saves}</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-
-            {/* Load More */}
-            <div className="text-center pt-4">
-              <button className="px-6 py-3 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all">
-                Load More Stories
-              </button>
-            </div>
-          </main>
+          <CommunityFeed
+            posts={feedPosts}
+            avatarInitials={avatarInitials}
+            isLoggedIn={!!user}
+            slugToId={slugToId}
+            initialWatchedPeakIds={watchedPeakIds}
+          />
 
           {/* Right Sidebar */}
           <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-32 space-y-6">
-              {/* Suggested Hikers */}
-              <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
-                <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
-                  Hikers to Follow
-                </h3>
-                <div className="space-y-4">
-                  {suggestedHikers.map((hiker) => (
-                    <div key={hiker.name} className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--color-stone-warm)] to-[var(--color-stone-light)] flex items-center justify-center text-[var(--color-text-primary)] font-semibold text-sm">
-                        {hiker.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
-                          {hiker.name}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-secondary)]">
-                          {hiker.summits} summits • {hiker.mutual} mutual
-                        </p>
-                      </div>
-                      <button className="px-3 py-1.5 text-xs font-semibold text-[var(--color-brand-primary)] border border-[var(--color-border-app-strong)] rounded-lg hover:bg-[var(--color-surface-subtle)] transition-all">
-                        Follow
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <button className="mt-4 w-full text-sm font-medium text-[var(--color-brand-primary)] hover:underline">
-                  See All Suggestions
-                </button>
-              </div>
+              {/* Peaks Watched */}
+              <PeaksWatchedPanel peaks={watchedPeaks} isLoggedIn={!!user} />
 
               {/* Upcoming Events */}
               <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
@@ -469,14 +418,6 @@ function MountainLogo({ className }: { className?: string }) {
   );
 }
 
-function BellIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-    </svg>
-  );
-}
-
 function CompassIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -510,52 +451,3 @@ function BookmarkIcon({ className }: { className?: string }) {
   );
 }
 
-function ImageIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-    </svg>
-  );
-}
-
-function MapPinIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-    </svg>
-  );
-}
-
-function MountainIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L2 21h20L12 3z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v8" />
-    </svg>
-  );
-}
-
-function MoreIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-    </svg>
-  );
-}
-
-function HeartIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-    </svg>
-  );
-}
-
-function CommentIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
-    </svg>
-  );
-}

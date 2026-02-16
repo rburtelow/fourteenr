@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getTopPeaks } from "@/lib/peaks";
+import { createClient } from "@/lib/supabase/server";
+import UserNav from "./components/UserNav";
 
 const stats = [
   { value: "58", label: "Fourteeners", suffix: "" },
@@ -35,6 +37,26 @@ const tripReports = [
 export default async function LandingPage() {
   const peaks = await getTopPeaks(5);
 
+  // Get auth state
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("screen_name, avatar_url")
+      .eq("id", user.id)
+      .single();
+    userNav = {
+      email: user.email || "",
+      screen_name: profile?.screen_name || null,
+      avatar_url: profile?.avatar_url || null,
+    };
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased overflow-x-hidden">
       {/* Navigation */}
@@ -58,14 +80,7 @@ export default async function LandingPage() {
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button className="hidden sm:block text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-4 py-2">
-                  Sign In
-                </button>
-                <button className="bg-[var(--color-brand-primary)] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[var(--color-brand-accent)] transition-all hover:shadow-lg hover:shadow-[var(--color-brand-primary)]/20">
-                  Get Started
-                </button>
-              </div>
+              <UserNav user={userNav} />
             </div>
           </div>
         </nav>
@@ -115,16 +130,16 @@ export default async function LandingPage() {
                 </p>
 
                 <div className="animate-fade-up delay-300 mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <button className="group relative bg-[var(--color-brand-primary)] text-white px-8 py-4 rounded-2xl font-semibold text-base overflow-hidden transition-all hover:shadow-2xl hover:shadow-[var(--color-brand-primary)]/30">
+                  <Link href="/auth/signup" className="group relative bg-[var(--color-brand-primary)] text-white px-8 py-4 rounded-2xl font-semibold text-base overflow-hidden transition-all hover:shadow-2xl hover:shadow-[var(--color-brand-primary)]/30 inline-block text-center">
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       Start Your Journey
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </span>
                     <div className="absolute inset-0 bg-[var(--color-brand-accent)] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                  </button>
-                  <button className="px-8 py-4 rounded-2xl font-semibold text-base text-[var(--color-text-secondary)] border-2 border-[var(--color-border-app-strong)] bg-white/50 backdrop-blur-sm hover:bg-white hover:border-[var(--color-brand-primary)]/20 transition-all">
+                  </Link>
+                  <Link href="/peaks" className="px-8 py-4 rounded-2xl font-semibold text-base text-[var(--color-text-secondary)] border-2 border-[var(--color-border-app-strong)] bg-white/50 backdrop-blur-sm hover:bg-white hover:border-[var(--color-brand-primary)]/20 transition-all inline-block text-center">
                     Explore Peaks
-                  </button>
+                  </Link>
                 </div>
               </div>
 
@@ -392,16 +407,16 @@ export default async function LandingPage() {
                   Join thousands of Colorado hikers already tracking their summits and sharing their stories.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button className="group relative bg-[var(--color-brand-primary)] text-white px-10 py-5 rounded-2xl font-semibold text-lg overflow-hidden transition-all hover:shadow-2xl hover:shadow-[var(--color-brand-primary)]/30">
+                  <Link href="/auth/signup" className="group relative bg-[var(--color-brand-primary)] text-white px-10 py-5 rounded-2xl font-semibold text-lg overflow-hidden transition-all hover:shadow-2xl hover:shadow-[var(--color-brand-primary)]/30 inline-block text-center">
                     <span className="relative z-10 flex items-center justify-center gap-3">
                       Create Free Account
                       <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                     </span>
                     <div className="absolute inset-0 bg-[var(--color-brand-accent)] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                  </button>
-                  <button className="px-10 py-5 rounded-2xl font-semibold text-lg text-[var(--color-text-secondary)] border-2 border-[var(--color-stone-warm)] hover:border-[var(--color-brand-primary)]/20 hover:bg-white/50 transition-all">
+                  </Link>
+                  <Link href="/peaks" className="px-10 py-5 rounded-2xl font-semibold text-lg text-[var(--color-text-secondary)] border-2 border-[var(--color-stone-warm)] hover:border-[var(--color-brand-primary)]/20 hover:bg-white/50 transition-all inline-block text-center">
                     Learn More
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

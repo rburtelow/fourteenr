@@ -5,6 +5,42 @@ export interface Database {
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
     Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          screen_name: string | null;
+          full_name: string | null;
+          avatar_url: string | null;
+          location: string | null;
+          bio: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          screen_name?: string | null;
+          full_name?: string | null;
+          avatar_url?: string | null;
+          location?: string | null;
+          bio?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          screen_name?: string | null;
+          full_name?: string | null;
+          avatar_url?: string | null;
+          location?: string | null;
+          bio?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       peaks: {
         Row: {
           id: string;
@@ -120,11 +156,109 @@ export interface Database {
           }
         ];
       };
+      peak_watchlist: {
+        Row: {
+          id: string;
+          user_id: string;
+          peak_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          peak_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          peak_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "peak_watchlist_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "peak_watchlist_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      summit_logs: {
+        Row: {
+          id: string;
+          user_id: string;
+          peak_id: string;
+          route_id: string | null;
+          summit_date: string;
+          rating: number | null;
+          weather: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          peak_id: string;
+          route_id?: string | null;
+          summit_date?: string;
+          rating?: number | null;
+          weather?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          peak_id?: string;
+          route_id?: string | null;
+          summit_date?: string;
+          rating?: number | null;
+          weather?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "summit_logs_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "summit_logs_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "summit_logs_route_id_fkey";
+            columns: ["route_id"];
+            referencedRelation: "routes";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
   };
 }
 
 // Convenience types
+export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Peak = Database["public"]["Tables"]["peaks"]["Row"];
 export type Route = Database["public"]["Tables"]["routes"]["Row"];
+export type SummitLog = Database["public"]["Tables"]["summit_logs"]["Row"];
+export type PeakWatchlistItem = Database["public"]["Tables"]["peak_watchlist"]["Row"];
 export type PeakWithRoutes = Peak & { routes: Route[] };

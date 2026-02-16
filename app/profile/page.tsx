@@ -1,123 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { getAllPeaks } from "@/lib/peaks";
+import type { Peak } from "@/lib/database.types";
+import UserNav from "../components/UserNav";
 
-// Mock data for completed peaks
-const completedPeaks = [
-  {
-    id: 1,
-    name: "Mt. Elbert",
-    elevation: "14,439'",
-    region: "Sawatch Range",
-    completedDate: "Jan 15, 2026",
-    weather: "Clear",
-    rating: 5,
-    imageSrc: "/hero.png",
-  },
-  {
-    id: 2,
-    name: "Mt. Massive",
-    elevation: "14,421'",
-    region: "Sawatch Range",
-    completedDate: "Dec 28, 2025",
-    weather: "Partly Cloudy",
-    rating: 4,
-    imageSrc: "/hero.png",
-  },
-  {
-    id: 3,
-    name: "Quandary Peak",
-    elevation: "14,265'",
-    region: "Tenmile Range",
-    completedDate: "Nov 12, 2025",
-    weather: "Clear",
-    rating: 5,
-    imageSrc: "/hero.png",
-  },
-  {
-    id: 4,
-    name: "Grays Peak",
-    elevation: "14,270'",
-    region: "Front Range",
-    completedDate: "Oct 5, 2025",
-    weather: "Windy",
-    rating: 4,
-    imageSrc: "/hero.png",
-  },
-  {
-    id: 5,
-    name: "Mt. Bierstadt",
-    elevation: "14,065'",
-    region: "Front Range",
-    completedDate: "Sep 18, 2025",
-    weather: "Clear",
-    rating: 5,
-    imageSrc: "/hero.png",
-  },
-];
-
-// Mock data for wishlist peaks
-const wishlistPeaks = [
-  {
-    id: 1,
-    name: "Longs Peak",
-    elevation: "14,255'",
-    region: "Front Range",
-    difficulty: "Class 3",
-    distance: "14.5 mi",
-    gain: "5,100'",
-    addedDate: "Feb 1, 2026",
-  },
-  {
-    id: 2,
-    name: "Capitol Peak",
-    elevation: "14,130'",
-    region: "Elk Mountains",
-    difficulty: "Class 4",
-    distance: "17 mi",
-    gain: "5,300'",
-    addedDate: "Jan 20, 2026",
-  },
-  {
-    id: 3,
-    name: "Maroon Peak",
-    elevation: "14,156'",
-    region: "Elk Mountains",
-    difficulty: "Class 3",
-    distance: "12 mi",
-    gain: "4,500'",
-    addedDate: "Jan 15, 2026",
-  },
-];
-
-// All 58 peaks for the add modal
-const allPeaks = [
-  { name: "Mt. Elbert", elevation: "14,439'", region: "Sawatch", difficulty: "Class 1" },
-  { name: "Mt. Massive", elevation: "14,421'", region: "Sawatch", difficulty: "Class 1" },
-  { name: "Mt. Harvard", elevation: "14,420'", region: "Sawatch", difficulty: "Class 1" },
-  { name: "Blanca Peak", elevation: "14,345'", region: "Sangre de Cristo", difficulty: "Class 2" },
-  { name: "La Plata Peak", elevation: "14,336'", region: "Sawatch", difficulty: "Class 2" },
-  { name: "Uncompahgre Peak", elevation: "14,309'", region: "San Juan", difficulty: "Class 1" },
-  { name: "Crestone Peak", elevation: "14,294'", region: "Sangre de Cristo", difficulty: "Class 3" },
-  { name: "Mt. Lincoln", elevation: "14,286'", region: "Mosquito", difficulty: "Class 1" },
-  { name: "Grays Peak", elevation: "14,270'", region: "Front Range", difficulty: "Class 1" },
-  { name: "Mt. Antero", elevation: "14,269'", region: "Sawatch", difficulty: "Class 2" },
-  { name: "Torreys Peak", elevation: "14,267'", region: "Front Range", difficulty: "Class 1" },
-  { name: "Quandary Peak", elevation: "14,265'", region: "Tenmile", difficulty: "Class 1" },
-  { name: "Mt. Evans", elevation: "14,264'", region: "Front Range", difficulty: "Class 1" },
-  { name: "Longs Peak", elevation: "14,255'", region: "Front Range", difficulty: "Class 3" },
-  { name: "Mt. Wilson", elevation: "14,246'", region: "San Juan", difficulty: "Class 4" },
-  { name: "Mt. Shavano", elevation: "14,229'", region: "Sawatch", difficulty: "Class 2" },
-];
-
-// User profile stats
-const profileStats = {
-  summits: 5,
-  totalElevation: "71,460",
-  totalMiles: "48.2",
-  daysOnTrail: 12,
-  peaksRemaining: 53,
-  percentComplete: 8.6,
-};
+const TOTAL_14ERS = 58; // canonical count of Colorado 14ers
 
 // Achievement badges
 const achievements = [
@@ -128,7 +16,164 @@ const achievements = [
   { name: "All 58", icon: "crown", earned: false },
 ];
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  // Get auth state
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Fetch full profile for the authenticated user
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("screen_name, avatar_url, full_name, location, bio, created_at")
+        .eq("id", user.id)
+        .single()
+        .then((res) => res)
+    : { data: null };
+
+  const userNav = user
+    ? {
+        email: user.email || "",
+        screen_name: profile?.screen_name || null,
+        avatar_url: profile?.avatar_url || null,
+      }
+    : null;
+
+  // Fetch summit logs with joined route data for the authenticated user
+  const { data: summitLogs } = user
+    ? await supabase
+        .from("summit_logs")
+        .select("id, peak_id, route_id, summit_date, rating, weather, notes")
+        .eq("user_id", user.id)
+        .order("summit_date", { ascending: false })
+    : { data: null };
+
+  // Fetch the routes used in summit logs so we can sum distance & elevation gain
+  const routeIds = (summitLogs || [])
+    .map((log) => log.route_id)
+    .filter((id): id is string => id !== null);
+
+  const { data: summitRoutes } = routeIds.length > 0
+    ? await supabase
+        .from("routes")
+        .select("id, distance, elevation_gain")
+        .in("id", routeIds)
+    : { data: null };
+
+  const routeMap = new Map(
+    (summitRoutes || []).map((r) => [r.id, r])
+  );
+
+  // Fetch watchlist with joined peak data
+  const { data: watchlistRows } = user
+    ? await supabase
+        .from("peak_watchlist")
+        .select("id, peak_id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+    : { data: null };
+
+  // Fetch all peaks (used for the "Add to Wishlist" table and to resolve peak names)
+  const allPeaks = await getAllPeaks();
+  const peakMap = new Map<string, Peak>(allPeaks.map((p) => [p.id, p]));
+
+  // Build watchlist display data
+  const watchlistPeaks = (watchlistRows || []).flatMap((row) => {
+    const peak = peakMap.get(row.peak_id);
+    if (!peak) return [];
+    return [{
+      id: row.id,
+      peakId: peak.id,
+      slug: peak.slug,
+      name: peak.name,
+      elevation: peak.elevation.toLocaleString() + "'",
+      region: peak.range || "",
+      difficulty: peak.difficulty || "",
+      addedDate: new Date(row.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    }];
+  });
+
+  // Build completed peaks display data from summit logs
+  const completedPeaks = (summitLogs || []).flatMap((log) => {
+    const peak = peakMap.get(log.peak_id);
+    if (!peak) return [];
+    return [{
+      id: log.id,
+      slug: peak.slug,
+      name: peak.name,
+      elevation: peak.elevation.toLocaleString() + "'",
+      region: peak.range || "",
+      completedDate: new Date(log.summit_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      weather: log.weather || "Unknown",
+      rating: log.rating ?? 0,
+    }];
+  });
+
+  // Sets for quick lookups in the "Add to Wishlist" table
+  const completedPeakIds = new Set((summitLogs || []).map((l) => l.peak_id));
+  const watchedPeakIds = new Set((watchlistRows || []).map((w) => w.peak_id));
+
+  // --- Compute real profile stats ---
+  const logs = summitLogs || [];
+
+  // Summits: count of unique peaks summited
+  const uniquePeakIds = new Set(logs.map((l) => l.peak_id));
+  const summitCount = uniquePeakIds.size;
+
+  // Elevation Gained: sum of elevation_gain from each log's route
+  const totalElevation = logs.reduce((sum, log) => {
+    const route = log.route_id ? routeMap.get(log.route_id) : null;
+    return sum + (route?.elevation_gain ?? 0);
+  }, 0);
+
+  // Miles Hiked: sum of distance from each log's route
+  const totalMiles = logs.reduce((sum, log) => {
+    const route = log.route_id ? routeMap.get(log.route_id) : null;
+    return sum + (route?.distance ?? 0);
+  }, 0);
+
+  // Days on Trail: count of unique summit dates
+  const uniqueDates = new Set(logs.map((l) => l.summit_date));
+  const daysOnTrail = uniqueDates.size;
+
+  // Peaks Remaining & Progress
+  const peaksRemaining = TOTAL_14ERS - summitCount;
+  const percentComplete = Math.round((summitCount / TOTAL_14ERS) * 1000) / 10;
+
+  const profileStats = {
+    summits: summitCount,
+    totalElevation: totalElevation.toLocaleString(),
+    totalMiles: totalMiles % 1 === 0 ? totalMiles.toString() : totalMiles.toFixed(1),
+    daysOnTrail,
+    peaksRemaining,
+    percentComplete,
+  };
+
+  // Derive display values from auth + profile data
+  const displayName =
+    profile?.full_name || profile?.screen_name || user?.email?.split("@")[0] || "Hiker";
+  const screenName = profile?.screen_name
+    ? `@${profile.screen_name}`
+    : user?.email || "";
+  const userLocation = profile?.location || null;
+  const joinDate = user?.created_at
+    ? new Date(user.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+  const initials = displayName.slice(0, 2).toUpperCase();
+
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased">
       {/* Navigation */}
@@ -148,21 +193,11 @@ export default function ProfilePage() {
               <div className="hidden md:flex items-center gap-1">
                 <NavLink href="/">Home</NavLink>
                 <NavLink href="/community">Community</NavLink>
-                <NavLink href="#">Peaks</NavLink>
+                <NavLink href="/peaks">Peaks</NavLink>
                 <NavLink href="/profile" active>Profile</NavLink>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button className="hidden sm:flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-4 py-2">
-                  <BellIcon className="w-5 h-5" />
-                </button>
-                <button className="hidden sm:flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-4 py-2">
-                  <SettingsIcon className="w-5 h-5" />
-                </button>
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-shadow">
-                  JD
-                </div>
-              </div>
+              <UserNav user={userNav} />
             </div>
           </div>
         </nav>
@@ -188,7 +223,7 @@ export default function ProfilePage() {
                 {/* Avatar */}
                 <div className="relative -mt-20 md:-mt-24">
                   <div className="w-28 h-28 md:w-36 md:h-36 rounded-3xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-4xl md:text-5xl font-bold shadow-2xl">
-                    JD
+                    {initials}
                   </div>
                   <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
                     <CheckIcon className="w-4 h-4 text-white" />
@@ -200,15 +235,23 @@ export default function ProfilePage() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
-                        Jane Doe
+                        {displayName}
                       </h1>
-                      <p className="text-[var(--color-text-secondary)]">@janedoe_summits</p>
+                      <p className="text-[var(--color-text-secondary)]">{screenName}</p>
                       <p className="mt-2 text-sm text-[var(--color-text-secondary)] flex items-center gap-2">
-                        <MapPinIcon className="w-4 h-4" />
-                        Denver, CO
-                        <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40" />
-                        <CalendarIcon className="w-4 h-4" />
-                        Joined Sep 2025
+                        {userLocation && (
+                          <>
+                            <MapPinIcon className="w-4 h-4" />
+                            {userLocation}
+                            <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40" />
+                          </>
+                        )}
+                        {joinDate && (
+                          <>
+                            <CalendarIcon className="w-4 h-4" />
+                            Joined {joinDate}
+                          </>
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -268,7 +311,7 @@ export default function ProfilePage() {
               </h3>
               <nav className="space-y-1">
                 <SidebarLink icon={<PlusIcon />} label="Log a Summit" primary />
-                <SidebarLink icon={<ListIcon />} label="My Wishlist" count={wishlistPeaks.length} />
+                <SidebarLink icon={<ListIcon />} label="My Wishlist" count={watchlistPeaks.length} />
                 <SidebarLink icon={<MapIcon />} label="Planned Routes" count={2} />
                 <SidebarLink icon={<PhotoIcon />} label="Photo Gallery" count={47} />
                 <SidebarLink icon={<TrophyIcon />} label="Achievements" count={2} />
@@ -340,7 +383,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="divide-y divide-[var(--color-border-app)]">
-                {wishlistPeaks.map((peak) => (
+                {watchlistPeaks.map((peak) => (
                   <div
                     key={peak.id}
                     className="p-5 hover:bg-[var(--color-surface-subtle)]/50 transition-colors group"
@@ -351,18 +394,18 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3">
-                          <h3 className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                          <Link href={`/peaks/${peak.slug}`} className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors hover:underline">
                             {peak.name}
-                          </h3>
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
-                            {peak.difficulty}
-                          </span>
+                          </Link>
+                          {peak.difficulty && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
+                              {peak.difficulty}
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-4 mt-1 text-sm text-[var(--color-text-secondary)]">
                           <span className="font-mono text-[var(--color-brand-primary)]">{peak.elevation}</span>
                           <span>{peak.region}</span>
-                          <span className="hidden sm:inline">{peak.distance}</span>
-                          <span className="hidden sm:inline">{peak.gain} gain</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -380,9 +423,9 @@ export default function ProfilePage() {
               </div>
 
               <div className="p-4 bg-[var(--color-surface-subtle)]/30 text-center">
-                <button className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
-                  Browse All 58 Peaks
-                </button>
+                <Link href="/peaks" className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
+                  Browse All {allPeaks.length} Peaks
+                </Link>
               </div>
             </section>
 
@@ -421,7 +464,7 @@ export default function ProfilePage() {
                   >
                     <div className="relative h-36 overflow-hidden">
                       <Image
-                        src={peak.imageSrc}
+                        src="/hero.png"
                         alt=""
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -501,7 +544,7 @@ export default function ProfilePage() {
                   <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-secondary)]" />
                   <input
                     type="text"
-                    placeholder="Search 58 peaks..."
+                    placeholder={`Search ${allPeaks.length} peaks...`}
                     className="w-full pl-12 pr-4 py-3 bg-[var(--color-surface-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 transition-all"
                   />
                 </div>
@@ -520,11 +563,11 @@ export default function ProfilePage() {
                     </thead>
                     <tbody>
                       {allPeaks.slice(0, 8).map((peak, i) => {
-                        const isCompleted = completedPeaks.some(p => p.name === peak.name);
-                        const isWishlisted = wishlistPeaks.some(p => p.name === peak.name);
+                        const isCompleted = completedPeakIds.has(peak.id);
+                        const isWishlisted = watchedPeakIds.has(peak.id);
                         return (
                           <tr
-                            key={peak.name}
+                            key={peak.id}
                             className="border-b border-[var(--color-border-app)] last:border-0 hover:bg-[var(--color-surface-subtle)]/50 transition-colors"
                           >
                             <td className="px-4 py-3">
@@ -532,25 +575,25 @@ export default function ProfilePage() {
                                 <span className="text-xs font-mono text-[var(--color-text-muted-green)] w-5">
                                   {String(i + 1).padStart(2, '0')}
                                 </span>
-                                <span className={`font-medium ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
+                                <Link href={`/peaks/${peak.slug}`} className={`font-medium hover:underline ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
                                   {peak.name}
-                                </span>
+                                </Link>
                                 {isCompleted && (
                                   <CheckCircleIcon className="w-4 h-4 text-[var(--color-brand-highlight)]" />
                                 )}
                               </div>
                             </td>
                             <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hidden sm:table-cell">
-                              {peak.region}
+                              {peak.range || ""}
                             </td>
                             <td className="px-4 py-3">
                               <span className="font-mono text-[var(--color-brand-primary)] text-sm">
-                                {peak.elevation}
+                                {peak.elevation.toLocaleString()}&apos;
                               </span>
                             </td>
                             <td className="px-4 py-3 hidden md:table-cell">
                               <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
-                                {peak.difficulty}
+                                {peak.difficulty || "—"}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-right">
@@ -560,12 +603,12 @@ export default function ProfilePage() {
                                 </span>
                               ) : isWishlisted ? (
                                 <span className="text-xs font-medium text-[var(--color-amber-glow)]">
-                                  In Wishlist
+                                  Watching
                                 </span>
                               ) : (
-                                <button className="px-3 py-1.5 text-xs font-semibold text-[var(--color-brand-primary)] border border-[var(--color-border-app-strong)] rounded-lg hover:bg-[var(--color-surface-subtle)] transition-all">
-                                  + Add
-                                </button>
+                                <Link href={`/peaks/${peak.slug}`} className="px-3 py-1.5 text-xs font-semibold text-[var(--color-brand-primary)] border border-[var(--color-border-app-strong)] rounded-lg hover:bg-[var(--color-surface-subtle)] transition-all">
+                                  View
+                                </Link>
                               )}
                             </td>
                           </tr>
@@ -576,9 +619,9 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mt-4 text-center">
-                  <button className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
-                    View All 58 Peaks
-                  </button>
+                  <Link href="/peaks" className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
+                    View All {allPeaks.length} Peaks
+                  </Link>
                 </div>
               </div>
             </section>

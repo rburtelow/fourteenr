@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, Fragment } from 'react';
 
 interface Hike {
   id: string;
@@ -62,9 +62,6 @@ export default function HikeTimelineHorizontal({
 
   const selectedHike = sortedHikes.find((h) => h.id === selectedId);
 
-  // Get unique years for markers
-  const years = [...new Set(sortedHikes.map((h) => getYear(h.date)))];
-
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const scrollAmount = 300;
@@ -116,41 +113,42 @@ export default function HikeTimelineHorizontal({
           className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-[var(--color-border-app-strong)] scrollbar-track-transparent"
           style={{ scrollbarWidth: 'thin' }}
         >
-          <div className="relative min-w-max px-4">
-            {/* Horizontal line */}
-            <div className="absolute left-0 right-0 top-[52px] h-0.5 bg-gradient-to-r from-transparent via-[var(--color-brand-primary)] to-transparent" />
+          <div className="relative min-w-max px-4" style={{ height: '210px' }}>
+            {/* Horizontal line at vertical center */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-px h-0.5 bg-gradient-to-r from-transparent via-[var(--color-brand-primary)] to-transparent" />
 
-            {/* Year markers */}
-            <div className="flex gap-2 mb-2">
-              {years.map((year, idx) => {
-                const firstHikeOfYear = sortedHikes.findIndex((h) => getYear(h.date) === year);
-                const position = firstHikeOfYear * 102 + 20; // 102px per card (90px + 12px gap) + offset
+            {/* Cards Row - Staggered above and below the line */}
+            <div className="flex gap-3 h-full">
+              {sortedHikes.map((hike, index) => {
+                const showYearMarker =
+                  index === 0 ||
+                  getYear(hike.date) !== getYear(sortedHikes[index - 1].date);
                 return (
-                  <div
-                    key={year}
-                    className="absolute text-[10px] font-bold text-[var(--color-brand-primary)] bg-white px-2 py-0.5 rounded-full border border-[var(--color-border-app)]"
-                    style={{
-                      left: `${position}px`,
-                      top: '44px',
-                      fontFamily: 'var(--font-display)'
-                    }}
-                  >
-                    {year}
-                  </div>
+                  <Fragment key={hike.id}>
+                    {showYearMarker && (
+                      <div
+                        className="flex items-center justify-center shrink-0"
+                        style={{ width: '44px', height: '100%' }}
+                      >
+                        <div
+                          className="text-[10px] font-bold text-[var(--color-brand-primary)] bg-white px-2 py-0.5 rounded-full border border-[var(--color-border-app)] z-10 whitespace-nowrap"
+                          style={{ fontFamily: 'var(--font-display)' }}
+                        >
+                          {getYear(hike.date)}
+                        </div>
+                      </div>
+                    )}
+                    <HorizontalTimelineCard
+                      hike={hike}
+                      isSelected={selectedId === hike.id}
+                      onSelect={() =>
+                        setSelectedId(selectedId === hike.id ? null : hike.id)
+                      }
+                      position={index % 2 === 0 ? 'above' : 'below'}
+                    />
+                  </Fragment>
                 );
               })}
-            </div>
-
-            {/* Cards Row */}
-            <div className="flex gap-3 pt-16">
-              {sortedHikes.map((hike) => (
-                <HorizontalTimelineCard
-                  key={hike.id}
-                  hike={hike}
-                  isSelected={selectedId === hike.id}
-                  onSelect={() => setSelectedId(selectedId === hike.id ? null : hike.id)}
-                />
-              ))}
             </div>
           </div>
         </div>
@@ -250,40 +248,70 @@ function HorizontalTimelineCard({
   hike,
   isSelected,
   onSelect,
+  position,
 }: {
   hike: Hike;
   isSelected: boolean;
   onSelect: () => void;
+  position: 'above' | 'below';
 }) {
   const date = formatDate(hike.date);
+  const isAbove = position === 'above';
+
+  let cardClasses =
+    'w-[90px] bg-white rounded-lg border transition-all duration-200 text-left p-2';
+  if (isSelected) {
+    cardClasses +=
+      ' border-[var(--color-brand-primary)] shadow-lg shadow-[var(--color-brand-primary)]/10';
+    cardClasses += isAbove ? ' -translate-y-1' : ' translate-y-1';
+  } else {
+    cardClasses +=
+      ' border-[var(--color-border-app)] hover:border-[var(--color-border-app-strong)] hover:shadow-md';
+    cardClasses += isAbove
+      ? ' hover:-translate-y-0.5'
+      : ' hover:translate-y-0.5';
+  }
+
+  const cardButton = (
+    <button onClick={onSelect} className={cardClasses}>
+      <h4 className="text-xs font-semibold text-[var(--color-text-primary)] truncate mb-1">
+        {hike.peakName}
+      </h4>
+      <div className="text-[10px] text-[var(--color-text-muted-green)]">
+        {date.month} {date.day}
+      </div>
+    </button>
+  );
 
   return (
-    <div className="relative flex flex-col items-center">
-      {/* Connector dot */}
+    <div
+      className="flex flex-col items-center h-full shrink-0"
+      style={{ width: '90px' }}
+    >
+      {/* Top half */}
+      <div className="flex-1 flex flex-col justify-end items-center">
+        {isAbove && cardButton}
+        {isAbove && (
+          <div className="w-px h-3 bg-[var(--color-brand-primary)] opacity-30 mt-1" />
+        )}
+      </div>
+
+      {/* Dot - centered on the horizontal line */}
       <div
-        className={`absolute -top-[22px] w-3 h-3 rounded-full border-2 transition-all duration-200 ${
+        className={`w-3 h-3 rounded-full border-2 shrink-0 transition-all duration-200 z-10 ${
           isSelected
             ? 'bg-[var(--color-brand-primary)] border-[var(--color-brand-primary)] scale-125'
             : 'bg-white border-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)]'
         }`}
       />
 
-      {/* Card */}
-      <button
-        onClick={onSelect}
-        className={`w-[90px] bg-white rounded-lg border transition-all duration-200 text-left p-2 ${
-          isSelected
-            ? 'border-[var(--color-brand-primary)] shadow-lg shadow-[var(--color-brand-primary)]/10 -translate-y-1'
-            : 'border-[var(--color-border-app)] hover:border-[var(--color-border-app-strong)] hover:shadow-md hover:-translate-y-0.5'
-        }`}
-      >
-        <h4 className="text-xs font-semibold text-[var(--color-text-primary)] truncate mb-1">
-          {hike.peakName}
-        </h4>
-        <div className="text-[10px] text-[var(--color-text-muted-green)]">
-          {date.month} {date.day}
-        </div>
-      </button>
+      {/* Bottom half */}
+      <div className="flex-1 flex flex-col justify-start items-center">
+        {!isAbove && (
+          <div className="w-px h-3 bg-[var(--color-brand-primary)] opacity-30 mb-1" />
+        )}
+        {!isAbove && cardButton}
+      </div>
     </div>
   );
 }

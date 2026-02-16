@@ -1,7 +1,8 @@
-import { supabase } from "./supabase";
+import { createClient } from "./supabase/server";
 import type { Peak, Route, PeakWithRoutes } from "./database.types";
 
 export async function getPeakBySlug(slug: string): Promise<PeakWithRoutes | null> {
+  const supabase = await createClient();
   // Fetch peak
   const { data: peak, error: peakError } = await supabase
     .from("peaks")
@@ -13,7 +14,7 @@ export async function getPeakBySlug(slug: string): Promise<PeakWithRoutes | null
     return null;
   }
 
-  // Fetch routes for this peak
+  // Fetch routes for this peak (reuse same client)
   const { data: routes, error: routesError } = await supabase
     .from("routes")
     .select("*")
@@ -32,6 +33,7 @@ export async function getPeakBySlug(slug: string): Promise<PeakWithRoutes | null
 }
 
 export async function getAllPeaks(): Promise<Peak[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("peaks")
     .select("*")
@@ -49,6 +51,7 @@ export async function getAllPeaks(): Promise<Peak[]> {
 export type PeakWithRouteCount = Peak & { routeCount: number };
 
 export async function getAllPeaksWithRouteCounts(): Promise<PeakWithRouteCount[]> {
+  const supabase = await createClient();
   // Fetch all peaks
   const { data: peaks, error: peakError } = await supabase
     .from("peaks")
@@ -85,6 +88,7 @@ export async function getAllPeaksWithRouteCounts(): Promise<PeakWithRouteCount[]
 }
 
 export async function getTopPeaks(limit: number = 5): Promise<Peak[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("peaks")
     .select("*")
@@ -101,6 +105,7 @@ export async function getTopPeaks(limit: number = 5): Promise<Peak[]> {
 }
 
 export async function getPeakSlugs(): Promise<string[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("peaks")
     .select("slug")
