@@ -1,34 +1,28 @@
 import type { BadgeDefinition } from "@/lib/database.types";
 import {
-  GiMountainRoad,
   GiMountaintop,
   GiMountainClimbing,
-  GiBootPrints,
-  GiClimbingHook,
   GiMountains,
   GiSnowflake1,
   GiCrown,
-  GiTwoCoins,
-  GiSummits,
-  GiRopeBridge,
+  GiBootPrints,
+  GiPeaks,
+  GiSun,
+  GiPieChart,
+  GiMiningHelmet,
+  GiRopeCoil,
+  GiLevelEndFlag,
 } from "react-icons/gi";
 import {
   FaHandsHelping,
   FaMountain,
   FaGraduationCap,
-  FaChartPie,
-  FaSun,
   FaTrain,
   FaBell,
+  FaChartPie,
 } from "react-icons/fa";
-import {
-  TbNumber10Small,
-  TbArrowBigUpLines,
-  TbHelmet,
-} from "react-icons/tb";
-import { LuSunrise } from "react-icons/lu";
-import { PiMountainsFill, PiBootFill } from "react-icons/pi";
-import { BsSnow2 } from "react-icons/bs";
+import { TbArrowBigUpFilled, TbNumber10Small } from "react-icons/tb";
+import { WiSunrise } from "react-icons/wi";
 
 interface BadgeIconProps {
   badge: BadgeDefinition;
@@ -102,7 +96,7 @@ function IconRenderer({
   switch (iconName) {
     // Milestone badges
     case "mountain-sunrise":
-      return <LuSunrise className={combinedClass} />;
+      return <WiSunrise className={combinedClass} />;
     case "high-five":
       return <FaHandsHelping className={combinedClass} />;
     case "double-digits":
@@ -116,11 +110,11 @@ function IconRenderer({
 
     // Range badges
     case "range-complete":
-      return <GiSummits className={combinedClass} />;
+      return <GiLevelEndFlag className={combinedClass} />;
     case "graduation-cap":
       return <FaGraduationCap className={combinedClass} />;
     case "crestone-peaks":
-      return <PiMountainsFill className={combinedClass} />;
+      return <GiPeaks className={combinedClass} />;
 
     // Difficulty badges
     case "boot-print":
@@ -128,15 +122,15 @@ function IconRenderer({
     case "hands-rock":
       return <GiMountainClimbing className={combinedClass} />;
     case "rope-carabiner":
-      return <GiClimbingHook className={combinedClass} />;
+      return <GiRopeCoil className={combinedClass} />;
     case "climbing-helmet":
-      return <TbHelmet className={combinedClass} />;
+      return <GiMiningHelmet className={combinedClass} />;
 
     // Special badges
     case "crown-elevation":
       return <GiCrown className={combinedClass} />;
     case "mountain-shadow":
-      return <GiMountainRoad className={combinedClass} />;
+      return <GiMountains className={combinedClass} />;
     case "bell-peaks":
       return <FaBell className={combinedClass} />;
     case "train-peaks":
@@ -144,13 +138,13 @@ function IconRenderer({
 
     // Seasonal & dedication badges
     case "snowflake-peak":
-      return <BsSnow2 className={combinedClass} />;
+      return <GiSnowflake1 className={combinedClass} />;
     case "sun-rising":
-      return <FaSun className={combinedClass} />;
+      return <GiSun className={combinedClass} />;
     case "upward-arrow":
-      return <TbArrowBigUpLines className={combinedClass} />;
+      return <TbArrowBigUpFilled className={combinedClass} />;
     case "century-boots":
-      return <PiBootFill className={combinedClass} />;
+      return <GiBootPrints className={combinedClass} />;
 
     default:
       return <FaMountain className={combinedClass} />;
