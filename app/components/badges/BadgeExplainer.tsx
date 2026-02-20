@@ -5,8 +5,90 @@
  * with their icons, descriptions, and unlock requirements
  */
 
+import {
+  GiMountaintop,
+  GiMountainClimbing,
+  GiMountains,
+  GiSnowflake1,
+  GiCrown,
+  GiBootPrints,
+  GiPeaks,
+  GiSun,
+  GiMiningHelmet,
+  GiRopeCoil,
+  GiLevelEndFlag,
+} from "react-icons/gi";
+import {
+  FaHandsHelping,
+  FaMountain,
+  FaGraduationCap,
+  FaTrain,
+  FaBell,
+  FaChartPie,
+} from "react-icons/fa";
+import { TbArrowBigUpFilled, TbNumber10Small } from "react-icons/tb";
+import { WiSunrise } from "react-icons/wi";
+
+// Category-based color gradients for visual distinction
+const categoryColors = {
+  milestone: {
+    gradient: "from-amber-500 to-yellow-600",
+    ring: "ring-amber-400/30",
+    label: "bg-amber-100 text-amber-800",
+  },
+  range: {
+    gradient: "from-emerald-500 to-green-600",
+    ring: "ring-emerald-400/30",
+    label: "bg-emerald-100 text-emerald-800",
+  },
+  difficulty: {
+    gradient: "from-orange-500 to-red-600",
+    ring: "ring-orange-400/30",
+    label: "bg-orange-100 text-orange-800",
+  },
+  special: {
+    gradient: "from-violet-500 to-purple-600",
+    ring: "ring-violet-400/30",
+    label: "bg-violet-100 text-violet-800",
+  },
+  seasonal: {
+    gradient: "from-cyan-500 to-blue-600",
+    ring: "ring-cyan-400/30",
+    label: "bg-cyan-100 text-cyan-800",
+  },
+  dedication: {
+    gradient: "from-rose-500 to-pink-600",
+    ring: "ring-rose-400/30",
+    label: "bg-rose-100 text-rose-800",
+  },
+};
+
 // All badge data organized by category
-const BADGE_DATA = {
+interface BadgeDefinition {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  criteria: string;
+  rangeLabel?: string;
+}
+
+interface BadgeCategory {
+  label: string;
+  description: string;
+  badges: BadgeDefinition[];
+}
+
+interface BadgeData {
+  milestone: BadgeCategory;
+  range: BadgeCategory;
+  difficulty: BadgeCategory;
+  special: BadgeCategory;
+  seasonal: BadgeCategory;
+  dedication: BadgeCategory;
+}
+
+const BADGE_DATA: BadgeData = {
   milestone: {
     label: "Milestones",
     description: "Celebrate your summit count achievements",
@@ -65,6 +147,7 @@ const BADGE_DATA = {
         description: "Complete all 15 Sawatch Range peaks",
         icon: "range-complete",
         criteria: "All 15 Sawatch peaks",
+        rangeLabel: "SAW",
       },
       {
         slug: "mosquito-master",
@@ -72,6 +155,7 @@ const BADGE_DATA = {
         description: "Complete all 5 Mosquito Range peaks",
         icon: "range-complete",
         criteria: "All 5 Mosquito peaks",
+        rangeLabel: "MOS",
       },
       {
         slug: "front-range-master",
@@ -79,6 +163,7 @@ const BADGE_DATA = {
         description: "Complete all 6 Front Range peaks",
         icon: "range-complete",
         criteria: "All 6 Front Range peaks",
+        rangeLabel: "FR",
       },
       {
         slug: "sangre-de-cristo-master",
@@ -86,6 +171,7 @@ const BADGE_DATA = {
         description: "Complete all 10 Sangre de Cristo peaks",
         icon: "range-complete",
         criteria: "All 10 Sangre de Cristo peaks",
+        rangeLabel: "SDC",
       },
       {
         slug: "elk-range-master",
@@ -93,6 +179,7 @@ const BADGE_DATA = {
         description: "Complete all 7 Elk Range peaks",
         icon: "range-complete",
         criteria: "All 7 Elk Range peaks",
+        rangeLabel: "ELK",
       },
       {
         slug: "san-juan-master",
@@ -100,6 +187,7 @@ const BADGE_DATA = {
         description: "Complete all 13 San Juan peaks",
         icon: "range-complete",
         criteria: "All 13 San Juan peaks",
+        rangeLabel: "SJ",
       },
       {
         slug: "tenmile-pioneer",
@@ -107,6 +195,7 @@ const BADGE_DATA = {
         description: "Summit Quandary Peak in the Tenmile Range",
         icon: "range-complete",
         criteria: "Summit Quandary Peak",
+        rangeLabel: "10M",
       },
       {
         slug: "collegiate-scholar",
@@ -236,169 +325,65 @@ const BADGE_DATA = {
 
 type CategoryKey = keyof typeof BADGE_DATA;
 
-// Icon rendering components
+// Icon rendering using react-icons (same as BadgeIcon component)
 function IconRenderer({ iconName, className }: { iconName: string; className?: string }) {
-  const baseClass = `${className || "w-8 h-8"} text-white`;
+  const combinedClass = `${className || "w-8 h-8"} text-white`;
 
   switch (iconName) {
+    // Milestone badges
     case "mountain-sunrise":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2M6.5 5.5l1.4 1.4M4 11h2M17.5 5.5l-1.4 1.4M20 11h-2" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8L5 21h14L12 8z" />
-        </svg>
-      );
+      return <WiSunrise className={combinedClass} />;
     case "high-five":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 11V5a2 2 0 114 0v6M7 11V8a2 2 0 114 0v3M5 11V9a2 2 0 114 0v2M3 11v1a2 2 0 104 0v-1" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17 11l-2 10H9L7 11" />
-        </svg>
-      );
+      return <FaHandsHelping className={combinedClass} />;
     case "double-digits":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="currentColor">
-          <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="bold">10</text>
-        </svg>
-      );
+      return <TbNumber10Small className={combinedClass} />;
     case "quarter-chart":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="8" />
-          <path strokeLinecap="round" d="M12 4v8l5.66 5.66" fill="currentColor" opacity="0.3" />
-        </svg>
-      );
+      return <FaChartPie className={combinedClass} />;
     case "split-mountain":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L5 21h14L12 3z" />
-          <path strokeLinecap="round" d="M12 3v18" strokeDasharray="2 2" />
-        </svg>
-      );
+      return <GiMountaintop className={combinedClass} />;
     case "crown-58":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M5 16l-3-8 5 4 5-8 5 8 5-4-3 8H5z" />
-          <text x="12" y="22" textAnchor="middle" fontSize="6" fontWeight="bold">58</text>
-        </svg>
-      );
+      return <GiCrown className={combinedClass} />;
+
+    // Range badges
     case "range-complete":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 21l4-8 4 5 4-10 4 13" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 8l3-5 3 5" />
-        </svg>
-      );
+      return <GiLevelEndFlag className={combinedClass} />;
     case "graduation-cap":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L2 9l10 6 10-6-10-6z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2 9v6c0 2.21 4.48 4 10 4s10-1.79 10-4V9" />
-          <path strokeLinecap="round" d="M22 9v8" />
-        </svg>
-      );
+      return <FaGraduationCap className={combinedClass} />;
     case "crestone-peaks":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 21l5-10 3 4 3-8 3 6 4-4v12H3z" />
-        </svg>
-      );
+      return <GiPeaks className={combinedClass} />;
+
+    // Difficulty badges
     case "boot-print":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 5v4a2 2 0 002 2h6a2 2 0 002-2V5M9 2h6v3H9V2z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 13h10v6a3 3 0 01-3 3h-4a3 3 0 01-3-3v-6z" />
-          <path strokeLinecap="round" d="M9 16h6M9 19h6" />
-        </svg>
-      );
+      return <GiBootPrints className={combinedClass} />;
     case "hands-rock":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 6v10l-3-3M15 6v10l3-3" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4l-5 6h10l-5-6z" />
-        </svg>
-      );
+      return <GiMountainClimbing className={combinedClass} />;
     case "rope-carabiner":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <rect x="7" y="4" width="10" height="16" rx="3" />
-          <path strokeLinecap="round" d="M17 8h-4M17 12h-4M17 16h-4" />
-          <circle cx="10" cy="12" r="2" fill="currentColor" />
-        </svg>
-      );
+      return <GiRopeCoil className={combinedClass} />;
     case "climbing-helmet":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 14c0-5 4-9 8-9s8 4 8 9" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 14v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-          <path strokeLinecap="round" d="M12 5v4" />
-        </svg>
-      );
+      return <GiMiningHelmet className={combinedClass} />;
+
+    // Special badges
     case "crown-elevation":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M5 16l-3-8 5 4 5-8 5 8 5-4-3 8H5z" />
-          <path d="M12 19l-3 2h6l-3-2z" strokeLinecap="round" />
-        </svg>
-      );
+      return <GiCrown className={combinedClass} />;
     case "mountain-shadow":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L5 21h14L12 3z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L19 21" opacity="0.3" fill="currentColor" />
-        </svg>
-      );
+      return <GiMountains className={combinedClass} />;
     case "bell-peaks":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 3l-5 18h10L8 3z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16 5l-5 16h10L16 5z" />
-        </svg>
-      );
+      return <FaBell className={combinedClass} />;
     case "train-peaks":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 19h16M6 15h12M8 15V9l4-5 4 5v6" />
-          <circle cx="8" cy="17" r="2" />
-          <circle cx="16" cy="17" r="2" />
-        </svg>
-      );
+      return <FaTrain className={combinedClass} />;
+
+    // Seasonal & dedication badges
     case "snowflake-peak":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v20M2 12h20" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l4 4M12 2l-4 4M12 22l4-4M12 22l-4-4" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2 12l4 4M2 12l4-4M22 12l-4 4M22 12l-4-4" />
-        </svg>
-      );
+      return <GiSnowflake1 className={combinedClass} />;
     case "sun-rising":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="4" />
-          <path strokeLinecap="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          <path strokeLinecap="round" d="M4 21h16" />
-        </svg>
-      );
+      return <GiSun className={combinedClass} />;
     case "upward-arrow":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" />
-          <path strokeLinecap="round" d="M8 19h8" />
-        </svg>
-      );
+      return <TbArrowBigUpFilled className={combinedClass} />;
     case "century-boots":
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="currentColor">
-          <text x="12" y="10" textAnchor="middle" fontSize="8" fontWeight="bold">100</text>
-          <path d="M7 14v6a1 1 0 001 1h2v-4l2 2 2-2v4h2a1 1 0 001-1v-6H7z" stroke="currentColor" strokeWidth="1" fill="none" />
-        </svg>
-      );
+      return <GiBootPrints className={combinedClass} />;
+
     default:
-      return (
-        <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L2 22h20L12 2z" />
-        </svg>
-      );
+      return <FaMountain className={combinedClass} />;
   }
 }
 
@@ -433,34 +418,44 @@ export default function BadgeExplainer({
 
             {/* Badges Grid */}
             <div className={`grid gap-4 ${compact ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
-              {category.badges.map((badge) => (
-                <div
-                  key={badge.slug}
-                  className="group relative bg-[var(--color-surface)] rounded-2xl p-5 border border-[var(--color-border-app)] hover:border-[var(--color-border-app-strong)] transition-all duration-300 hover:shadow-lg"
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Badge Icon */}
-                    <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--color-amber-glow)] to-[var(--color-amber-glow)]/70 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
-                      <IconRenderer iconName={badge.icon} className="w-7 h-7" />
-                    </div>
+              {category.badges.map((badge) => {
+                const colors = categoryColors[categoryKey];
+                return (
+                  <div
+                    key={badge.slug}
+                    className="group relative bg-[var(--color-surface)] rounded-2xl p-5 border border-[var(--color-border-app)] hover:border-[var(--color-border-app-strong)] transition-all duration-300 hover:shadow-lg"
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Badge Icon */}
+                      <div className="relative flex-shrink-0">
+                        {badge.rangeLabel && (
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 px-1.5 py-0.5 bg-white rounded text-[9px] font-bold tracking-wide text-emerald-700 shadow-sm border border-emerald-200 whitespace-nowrap">
+                            {badge.rangeLabel}
+                          </div>
+                        )}
+                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center shadow-lg ring-2 ${colors.ring} group-hover:scale-110 transition-transform duration-300`}>
+                          <IconRenderer iconName={badge.icon} className="w-7 h-7" />
+                        </div>
+                      </div>
 
-                    {/* Badge Info */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-[var(--color-text-primary)] leading-tight">
-                        {badge.name}
-                      </h4>
-                      <p className="text-sm text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-                        {badge.description}
-                      </p>
-                      <div className="mt-3 flex items-center gap-2">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-muted-green)]">
-                          {badge.criteria}
-                        </span>
+                      {/* Badge Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-[var(--color-text-primary)] leading-tight">
+                          {badge.name}
+                        </h4>
+                        <p className="text-sm text-[var(--color-text-secondary)] mt-1 leading-relaxed">
+                          {badge.description}
+                        </p>
+                        <div className="mt-3 flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${colors.label}`}>
+                            {badge.criteria}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         );
@@ -476,6 +471,8 @@ export function BadgeExplainerCompact({ category }: { category: CategoryKey }) {
   const categoryData = BADGE_DATA[category];
   if (!categoryData) return null;
 
+  const colors = categoryColors[category];
+
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-[var(--color-text-primary)]">
@@ -487,8 +484,15 @@ export function BadgeExplainerCompact({ category }: { category: CategoryKey }) {
             key={badge.slug}
             className="group relative inline-flex items-center gap-2 px-3 py-2 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border-app)] hover:border-[var(--color-border-app-strong)] transition-colors cursor-default"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-amber-glow)] to-[var(--color-amber-glow)]/70 flex items-center justify-center">
-              <IconRenderer iconName={badge.icon} className="w-4 h-4" />
+            <div className="relative">
+              {badge.rangeLabel && (
+                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 z-10 px-1 py-0 bg-white rounded text-[7px] font-bold tracking-wide text-emerald-700 shadow-sm border border-emerald-200 whitespace-nowrap leading-tight">
+                  {badge.rangeLabel}
+                </div>
+              )}
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center shadow-sm ring-1 ${colors.ring}`}>
+                <IconRenderer iconName={badge.icon} className="w-4 h-4" />
+              </div>
             </div>
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {badge.name}

@@ -1,5 +1,13 @@
 packages:
   - .
+
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+overrides:
+  ajv@<8.18.0: '>=8.18.0'
+  minimatch@<10.2.1: '>=10.2.1'
+  next@>=15.6.0-canary.0 <16.1.5: '>=16.1.5'
+  next@>=16.0.0-beta.0 <16.1.5: '>=16.1.5'
+  next@>=16.1.0-canary.0 <16.1.5: '>=16.1.5'

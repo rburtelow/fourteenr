@@ -1,4 +1,4 @@
-import type { BadgeDefinition } from "@/lib/database.types";
+import type { BadgeDefinition, BadgeCategory } from "@/lib/database.types";
 import {
   GiMountaintop,
   GiMountainClimbing,
@@ -8,7 +8,6 @@ import {
   GiBootPrints,
   GiPeaks,
   GiSun,
-  GiPieChart,
   GiMiningHelmet,
   GiRopeCoil,
   GiLevelEndFlag,
@@ -23,6 +22,45 @@ import {
 } from "react-icons/fa";
 import { TbArrowBigUpFilled, TbNumber10Small } from "react-icons/tb";
 import { WiSunrise } from "react-icons/wi";
+
+// Range labels for range mastery badges
+const rangeLabelMap: Record<string, string> = {
+  "sawatch-master": "SAW",
+  "mosquito-master": "MOS",
+  "front-range-master": "FR",
+  "sangre-de-cristo-master": "SDC",
+  "elk-range-master": "ELK",
+  "san-juan-master": "SJ",
+  "tenmile-pioneer": "10M",
+};
+
+// Category-based color gradients for visual distinction
+const categoryColors: Record<BadgeCategory, { gradient: string; ring: string }> = {
+  milestone: {
+    gradient: "from-amber-500 to-yellow-600",
+    ring: "ring-amber-400/30",
+  },
+  range: {
+    gradient: "from-emerald-500 to-green-600",
+    ring: "ring-emerald-400/30",
+  },
+  difficulty: {
+    gradient: "from-orange-500 to-red-600",
+    ring: "ring-orange-400/30",
+  },
+  special: {
+    gradient: "from-violet-500 to-purple-600",
+    ring: "ring-violet-400/30",
+  },
+  seasonal: {
+    gradient: "from-cyan-500 to-blue-600",
+    ring: "ring-cyan-400/30",
+  },
+  dedication: {
+    gradient: "from-rose-500 to-pink-600",
+    ring: "ring-rose-400/30",
+  },
+};
 
 interface BadgeIconProps {
   badge: BadgeDefinition;
@@ -51,18 +89,36 @@ export default function BadgeIcon({
     lg: "w-7 h-7",
   };
 
+  const colors = categoryColors[badge.category] || categoryColors.milestone;
+  const rangeLabel = rangeLabelMap[badge.slug];
+
+  // Size-specific label styling
+  const labelSizeClasses = {
+    sm: "text-[6px] px-0.5 -top-1",
+    md: "text-[7px] px-1 -top-1.5",
+    lg: "text-[9px] px-1.5 py-0.5 -top-2",
+  };
+
   return (
     <div className="relative group cursor-pointer">
-      <div
-        className={`${sizeClasses[size]} rounded-xl flex items-center justify-center ${
+      {rangeLabel && (
+        <div className={`absolute left-1/2 -translate-x-1/2 z-10 bg-white rounded font-bold tracking-wide shadow-sm border whitespace-nowrap leading-tight ${labelSizeClasses[size]} ${
           earned
-            ? "bg-gradient-to-br from-[var(--color-amber-glow)] to-[var(--color-amber-glow)]/70"
-            : "bg-[var(--color-surface-subtle)]"
-        } ${earned ? "" : "opacity-40"}`}
+            ? "text-emerald-700 border-emerald-200"
+            : "text-gray-400 border-gray-200 opacity-60"
+        }`}>
+          {rangeLabel}
+        </div>
+      )}
+      <div
+        className={`${sizeClasses[size]} rounded-xl flex items-center justify-center transition-all duration-300 bg-gradient-to-br ${colors.gradient} ${
+          earned
+            ? `shadow-lg ring-2 ${colors.ring} group-hover:scale-110 group-hover:shadow-xl`
+            : "opacity-30 grayscale-[50%]"
+        }`}
       >
         <IconRenderer
           iconName={badge.icon_name}
-          earned={earned}
           className={iconSizeClasses[size]}
         />
       </div>
@@ -83,15 +139,12 @@ export default function BadgeIcon({
 
 function IconRenderer({
   iconName,
-  earned,
   className,
 }: {
   iconName: string;
-  earned: boolean;
   className: string;
 }) {
-  const color = earned ? "text-white" : "text-[var(--color-text-secondary)]";
-  const combinedClass = `${className} ${color}`;
+  const combinedClass = `${className} text-white`;
 
   switch (iconName) {
     // Milestone badges
