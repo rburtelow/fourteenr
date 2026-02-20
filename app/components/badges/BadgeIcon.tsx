@@ -52,13 +52,13 @@ export default function BadgeIcon({
   };
 
   return (
-    <div className={`relative group cursor-pointer ${earned ? "" : "opacity-40"}`}>
+    <div className="relative group cursor-pointer">
       <div
         className={`${sizeClasses[size]} rounded-xl flex items-center justify-center ${
           earned
             ? "bg-gradient-to-br from-[var(--color-amber-glow)] to-[var(--color-amber-glow)]/70"
             : "bg-[var(--color-surface-subtle)]"
-        }`}
+        } ${earned ? "" : "opacity-40"}`}
       >
         <IconRenderer
           iconName={badge.icon_name}
@@ -67,7 +67,7 @@ export default function BadgeIcon({
         />
       </div>
       {showTooltip && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--color-text-primary)] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--color-text-primary)]/98 backdrop-blur-sm text-white text-xs rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
           <p className="font-semibold">{badge.name}</p>
           <p className="text-white/70 text-[10px] mt-0.5">{badge.description}</p>
           {earnedDate && (

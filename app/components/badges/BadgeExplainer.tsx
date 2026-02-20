@@ -494,7 +494,7 @@ export function BadgeExplainerCompact({ category }: { category: CategoryKey }) {
               {badge.name}
             </span>
             {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--color-text-primary)] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--color-text-primary)]/98 backdrop-blur-sm text-white text-xs rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
               <p className="font-medium">{badge.description}</p>
               <p className="text-white/70 mt-0.5">{badge.criteria}</p>
             </div>
