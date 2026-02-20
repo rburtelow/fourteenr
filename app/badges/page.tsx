@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAllBadges, getUserBadges } from "@/lib/badges";
 import UserNav from "../components/UserNav";
+import MobileNav from "../components/MobileNav";
 import Footer from "../components/Footer";
 import BadgeExplainer, { AllBadgesCount } from "../components/badges/BadgeExplainer";
 import { BadgeCategoryGrid } from "../components/badges/BadgeGrid";
@@ -63,7 +64,10 @@ export default async function BadgesPage() {
                 <NavLink href="/peaks">Peaks</NavLink>
               </div>
 
-              <UserNav user={userNav} />
+              <div className="flex items-center gap-2">
+                <UserNav user={userNav} />
+                <MobileNav user={userNav} />
+              </div>
             </div>
           </div>
         </nav>

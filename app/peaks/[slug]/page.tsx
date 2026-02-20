@@ -6,6 +6,7 @@ import { getForecastByPeakSlug } from "@/lib/forecasts";
 import { createClient } from "@/lib/supabase/server";
 import type { Route, AdjustedHour, PeakForecast } from "@/lib/database.types";
 import UserNav from "../../components/UserNav";
+import MobileNav from "../../components/MobileNav";
 import WatchButton from "./WatchButton";
 
 export default async function PeakProfilePage({
@@ -82,7 +83,10 @@ export default async function PeakProfilePage({
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
-              <UserNav user={userNav} />
+              <div className="flex items-center gap-2">
+                <UserNav user={userNav} />
+                <MobileNav user={userNav} />
+              </div>
             </div>
           </div>
         </nav>

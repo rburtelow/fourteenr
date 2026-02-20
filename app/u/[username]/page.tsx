@@ -6,6 +6,7 @@ import { getAllPeaks } from "@/lib/peaks";
 import { getAllBadges, getUserBadges } from "@/lib/badges";
 import type { Peak } from "@/lib/database.types";
 import UserNav from "../../components/UserNav";
+import MobileNav from "../../components/MobileNav";
 import Footer from "../../components/Footer";
 import BadgeGrid from "../../components/badges/BadgeGrid";
 
@@ -170,7 +171,10 @@ export default async function PublicProfilePage({
                 <NavLink href="/peaks">Peaks</NavLink>
               </div>
 
-              <UserNav user={userNav} />
+              <div className="flex items-center gap-2">
+                <UserNav user={userNav} />
+                <MobileNav user={userNav} />
+              </div>
             </div>
           </div>
         </nav>

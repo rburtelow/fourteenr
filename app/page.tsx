@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTopPeaks } from "@/lib/peaks";
 import { createClient } from "@/lib/supabase/server";
 import UserNav from "./components/UserNav";
+import MobileNav from "./components/MobileNav";
 import Footer from "./components/Footer";
 
 const stats = [
@@ -80,7 +81,10 @@ export default async function LandingPage() {
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
-              <UserNav user={userNav} />
+              <div className="flex items-center gap-2">
+                <UserNav user={userNav} />
+                <MobileNav user={userNav} />
+              </div>
             </div>
           </div>
         </nav>

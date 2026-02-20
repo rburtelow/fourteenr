@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getRecentBadges } from "@/lib/badges";
 import Footer from "../components/Footer";
 import UserNav from "../components/UserNav";
+import MobileNav from "../components/MobileNav";
 import CommunityFeed from "./CommunityFeed";
 import PeaksWatchedPanel from "./PeaksWatchedPanel";
 import BadgeIcon from "../components/badges/BadgeIcon";
@@ -177,6 +178,7 @@ export default async function CommunityPage() {
                   </span>
                 </button>
                 <UserNav user={userNav} />
+                <MobileNav user={userNav} />
               </div>
             </div>
           </div>

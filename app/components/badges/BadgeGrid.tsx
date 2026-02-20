@@ -47,10 +47,10 @@ export default function BadgeGrid({
 
   const gridColsClass = {
     3: "grid-cols-3",
-    4: "grid-cols-4",
-    5: "grid-cols-5",
-    6: "grid-cols-6",
-  }[columns] || "grid-cols-5";
+    4: "grid-cols-3 sm:grid-cols-4",
+    5: "grid-cols-3 sm:grid-cols-4 md:grid-cols-5",
+    6: "grid-cols-3 sm:grid-cols-4 md:grid-cols-6",
+  }[columns] || "grid-cols-3 sm:grid-cols-4 md:grid-cols-5";
 
   return (
     <div className={`grid ${gridColsClass} gap-2`}>
@@ -146,7 +146,7 @@ export function BadgeCategoryGrid({ allBadges, earnedBadges }: BadgeCategoryGrid
                 {earnedCount}/{categoryBadges.length}
               </span>
             </div>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
               {categoryBadges.map((badge) => {
                 const earnedBadge = earnedBadgeMap.get(badge.id);
                 const earned = !!earnedBadge;

@@ -6,6 +6,7 @@ import { useState, useMemo, useRef, useCallback } from "react";
 import type { PeakWithRouteCount } from "@/lib/peaks";
 import { createClient } from "@/lib/supabase/client";
 import UserNav from "../components/UserNav";
+import MobileNav from "../components/MobileNav";
 import Footer from "../components/Footer";
 
 const regions = ["All Regions", "Sawatch Range", "Sangre de Cristo Range", "San Juan Range", "Front Range", "Elk Range", "Mosquito Range", "Tenmile Range"];
@@ -156,7 +157,10 @@ export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = []
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
-              <UserNav user={userNav} />
+              <div className="flex items-center gap-2">
+                <UserNav user={userNav} />
+                <MobileNav user={userNav} />
+              </div>
             </div>
           </div>
         </nav>

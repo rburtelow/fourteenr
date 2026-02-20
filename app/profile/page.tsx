@@ -5,6 +5,7 @@ import { getAllPeaks } from "@/lib/peaks";
 import { getAllBadges, getUserBadges } from "@/lib/badges";
 import type { Peak } from "@/lib/database.types";
 import UserNav from "../components/UserNav";
+import MobileNav from "../components/MobileNav";
 import Footer from "../components/Footer";
 import BadgeGrid from "../components/badges/BadgeGrid";
 
@@ -174,7 +175,7 @@ export default async function ProfilePage() {
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[var(--color-page)] antialiased">
+    <div className="min-h-screen bg-[var(--color-page)] antialiased overflow-x-hidden">
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50">
         <nav className="mx-4 mt-4 md:mx-8 md:mt-6">
@@ -195,7 +196,10 @@ export default async function ProfilePage() {
                 <NavLink href="/peaks">Peaks</NavLink>
               </div>
 
-              <UserNav user={userNav} />
+              <div className="flex items-center gap-2">
+                <UserNav user={userNav} />
+                <MobileNav user={userNav} />
+              </div>
             </div>
           </div>
         </nav>
@@ -217,46 +221,49 @@ export default async function ProfilePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 -mt-16 relative z-10">
           <div className="bg-white rounded-3xl border border-[var(--color-border-app)] shadow-xl overflow-hidden">
             <div className="p-6 md:p-8">
-              <div className="flex flex-row items-center gap-4 md:gap-6">
-                {/* Avatar - inline to the left of username/details */}
-                <div className="relative flex-shrink-0">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
-                    {initials}
+              <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 md:gap-6">
+                {/* Avatar and user info row */}
+                <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 flex-1 w-full sm:w-auto min-w-0">
+                  {/* Avatar */}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
+                      {initials}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
+                      <CheckIcon className="w-3 h-3 text-white" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
-                    <CheckIcon className="w-3 h-3 text-white" />
+
+                  {/* Username and details */}
+                  <div className="flex-1 min-w-0 text-center sm:text-left">
+                    <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] truncate" style={{ fontFamily: 'var(--font-display)' }}>
+                      {screenName}
+                    </h1>
+                    <p className="mt-2 text-sm text-[var(--color-text-secondary)] flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                      {userLocation && (
+                        <>
+                          <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+                          <span>{userLocation}</span>
+                          <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40 hidden sm:block" />
+                        </>
+                      )}
+                      {joinDate && (
+                        <>
+                          <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                          <span>Joined {joinDate}</span>
+                        </>
+                      )}
+                    </p>
                   </div>
                 </div>
 
-                {/* Username and details - to the right of avatar */}
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
-                    {screenName}
-                  </h1>
-                  <p className="mt-2 text-sm text-[var(--color-text-secondary)] flex items-center gap-2">
-                    {userLocation && (
-                      <>
-                        <MapPinIcon className="w-4 h-4" />
-                        {userLocation}
-                        <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40" />
-                      </>
-                    )}
-                    {joinDate && (
-                      <>
-                        <CalendarIcon className="w-4 h-4" />
-                        Joined {joinDate}
-                      </>
-                    )}
-                  </p>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <button className="px-5 py-2.5 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all flex items-center gap-2">
+                {/* Action buttons - stack on mobile, inline on larger screens */}
+                <div className="flex items-center gap-3 w-full sm:w-auto flex-shrink-0">
+                  <button className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all flex items-center justify-center gap-2">
                     <EditIcon className="w-4 h-4" />
                     Edit Profile
                   </button>
-                  <button className="px-5 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
+                  <button className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
                     <ShareIcon className="w-4 h-4" />
                     Share
                   </button>
@@ -271,7 +278,7 @@ export default async function ProfilePage() {
                   <StatItem label="Elevation Gained" value={profileStats.totalElevation} suffix=" ft" />
                   <StatItem label="Miles Hiked" value={profileStats.totalMiles} suffix=" mi" />
                   <StatItem label="Peaks Remaining" value={profileStats.peaksRemaining.toString()} />
-                  <div className="text-center md:text-left md:col-span-2">
+                  <div className="col-span-2 text-center md:text-left">
                     <p className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-1">
                       Progress
                     </p>
@@ -294,12 +301,12 @@ export default async function ProfilePage() {
         </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 overflow-x-hidden">
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Left Sidebar */}
-          <aside className="lg:col-span-3 space-y-6">
+          <aside className="lg:col-span-3 space-y-4 lg:space-y-6">
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
+            <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-4 sm:p-5">
               <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
                 Quick Actions
               </h3>
@@ -313,7 +320,7 @@ export default async function ProfilePage() {
             </div>
 
             {/* Achievements */}
-            <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
+            <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-4 sm:p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">
                   Achievements
@@ -337,7 +344,7 @@ export default async function ProfilePage() {
             </div>
 
             {/* Settings */}
-            <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
+            <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-4 sm:p-5">
               <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
                 Settings
               </h3>
@@ -351,11 +358,11 @@ export default async function ProfilePage() {
           </aside>
 
           {/* Main Content */}
-          <main className="lg:col-span-9 space-y-8">
+          <main className="lg:col-span-9 space-y-6 lg:space-y-8">
             {/* Wishlist Section */}
             <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
-              <div className="p-6 border-b border-[var(--color-border-app)]">
-                <div className="flex items-center justify-between">
+              <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
                       Peak Wishlist
@@ -375,14 +382,14 @@ export default async function ProfilePage() {
                 {watchlistPeaks.map((peak) => (
                   <div
                     key={peak.id}
-                    className="p-5 hover:bg-[var(--color-surface-subtle)]/50 transition-colors group"
+                    className="p-4 sm:p-5 hover:bg-[var(--color-surface-subtle)]/50 transition-colors group"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--color-surface-subtle)] to-[var(--color-border-app-strong)] flex items-center justify-center">
-                        <MountainIcon className="w-6 h-6 text-[var(--color-brand-primary)]" />
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-[var(--color-surface-subtle)] to-[var(--color-border-app-strong)] flex items-center justify-center flex-shrink-0">
+                        <MountainIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--color-brand-primary)]" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Link href={`/peaks/${peak.slug}`} className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors hover:underline">
                             {peak.name}
                           </Link>
@@ -397,14 +404,14 @@ export default async function ProfilePage() {
                           <span>{peak.region}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all opacity-0 group-hover:opacity-100">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all opacity-0 group-hover:opacity-100 hidden sm:block">
                           <CalendarPlusIcon className="w-5 h-5" />
                         </button>
-                        <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100">
+                        <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 hidden sm:block">
                           <TrashIcon className="w-5 h-5" />
                         </button>
-                        <ArrowRightIcon className="w-5 h-5 text-[var(--color-text-muted-green)] group-hover:translate-x-1 transition-transform" />
+                        <ArrowRightIcon className="w-5 h-5 text-[var(--color-text-muted-green)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
                       </div>
                     </div>
                   </div>
@@ -420,8 +427,8 @@ export default async function ProfilePage() {
 
             {/* Completed Peaks Section */}
             <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
-              <div className="p-6 border-b border-[var(--color-border-app)]">
-                <div className="flex items-center justify-between">
+              <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
                       Summit History
@@ -518,7 +525,7 @@ export default async function ProfilePage() {
 
             {/* Peak Search Section */}
             <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
-              <div className="p-6 border-b border-[var(--color-border-app)]">
+              <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
                 <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
                   Add to Wishlist
                 </h2>
@@ -527,7 +534,7 @@ export default async function ProfilePage() {
                 </p>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Search Input */}
                 <div className="relative mb-6">
                   <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-secondary)]" />
@@ -543,11 +550,11 @@ export default async function ProfilePage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-[var(--color-border-app)]">
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Peak</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden sm:table-cell">Region</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Elevation</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden md:table-cell">Class</th>
-                        <th className="px-4 py-3"></th>
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Peak</th>
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden sm:table-cell">Region</th>
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Elevation</th>
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden md:table-cell">Class</th>
+                        <th className="px-3 sm:px-4 py-3"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -559,33 +566,33 @@ export default async function ProfilePage() {
                             key={peak.id}
                             className="border-b border-[var(--color-border-app)] last:border-0 hover:bg-[var(--color-surface-subtle)]/50 transition-colors"
                           >
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-3">
-                                <span className="text-xs font-mono text-[var(--color-text-muted-green)] w-5">
+                            <td className="px-3 sm:px-4 py-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <span className="text-xs font-mono text-[var(--color-text-muted-green)] w-4 sm:w-5 flex-shrink-0">
                                   {String(i + 1).padStart(2, '0')}
                                 </span>
-                                <Link href={`/peaks/${peak.slug}`} className={`font-medium hover:underline ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
+                                <Link href={`/peaks/${peak.slug}`} className={`font-medium hover:underline text-sm sm:text-base ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
                                   {peak.name}
                                 </Link>
                                 {isCompleted && (
-                                  <CheckCircleIcon className="w-4 h-4 text-[var(--color-brand-highlight)]" />
+                                  <CheckCircleIcon className="w-4 h-4 text-[var(--color-brand-highlight)] flex-shrink-0" />
                                 )}
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hidden sm:table-cell">
+                            <td className="px-3 sm:px-4 py-3 text-sm text-[var(--color-text-secondary)] hidden sm:table-cell">
                               {peak.range || ""}
                             </td>
-                            <td className="px-4 py-3">
-                              <span className="font-mono text-[var(--color-brand-primary)] text-sm">
+                            <td className="px-3 sm:px-4 py-3">
+                              <span className="font-mono text-[var(--color-brand-primary)] text-sm whitespace-nowrap">
                                 {peak.elevation.toLocaleString()}&apos;
                               </span>
                             </td>
-                            <td className="px-4 py-3 hidden md:table-cell">
+                            <td className="px-3 sm:px-4 py-3 hidden md:table-cell">
                               <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
                                 {peak.difficulty || "—"}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-3 sm:px-4 py-3 text-right">
                               {isCompleted ? (
                                 <span className="text-xs font-medium text-[var(--color-brand-highlight)]">
                                   Completed
@@ -660,14 +667,14 @@ function SidebarLink({ icon, label, count, primary }: { icon: React.ReactNode; l
         ? 'bg-[var(--color-brand-primary)] text-white hover:bg-[var(--color-brand-accent)]'
         : 'hover:bg-[var(--color-surface-subtle)]'
     }`}>
-      <span className={primary ? 'text-white' : 'text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand-primary)] transition-colors'}>
+      <span className={`flex-shrink-0 ${primary ? 'text-white' : 'text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand-primary)] transition-colors'}`}>
         {icon}
       </span>
-      <span className={`flex-1 text-sm font-medium ${primary ? 'text-white' : 'text-[var(--color-text-primary)]'}`}>
+      <span className={`flex-1 min-w-0 text-sm font-medium ${primary ? 'text-white' : 'text-[var(--color-text-primary)]'}`}>
         {label}
       </span>
       {count !== undefined && !primary && (
-        <span className="text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface-subtle)] px-2 py-0.5 rounded-full">
+        <span className="flex-shrink-0 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface-subtle)] px-2 py-0.5 rounded-full">
           {count}
         </span>
       )}
