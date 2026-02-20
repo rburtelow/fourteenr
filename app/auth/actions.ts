@@ -31,6 +31,19 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   };
 
+  // Check if email is already registered
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", data.email)
+    .single();
+
+  if (existing) {
+    redirect(
+      `/auth/signup?error=${encodeURIComponent("An account with this email already exists. Please sign in instead.")}`
+    );
+  }
+
   const { error } = await supabase.auth.signUp(data);
 
   if (error) {

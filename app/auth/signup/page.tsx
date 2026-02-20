@@ -25,8 +25,10 @@ export default async function SignupPage({
                 </span>
               </Link>
               <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/peaks">Peaks</NavLink>
+                <NavLink href="/">Home</NavLink>
                 <NavLink href="/community">Community</NavLink>
+                <NavLink href="/peaks">Peaks</NavLink>
+                <NavLink href="/profile">Profile</NavLink>
               </div>
               <Link
                 href="/auth/login"

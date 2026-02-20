@@ -2,19 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAllPeaks } from "@/lib/peaks";
+import { getAllBadges, getUserBadges } from "@/lib/badges";
 import type { Peak } from "@/lib/database.types";
 import UserNav from "../components/UserNav";
+import Footer from "../components/Footer";
+import BadgeGrid from "../components/badges/BadgeGrid";
 
 const TOTAL_14ERS = 58; // canonical count of Colorado 14ers
-
-// Achievement badges
-const achievements = [
-  { name: "First Summit", icon: "peak", earned: true, date: "Sep 2025" },
-  { name: "5 Peaks", icon: "badge5", earned: true, date: "Jan 2026" },
-  { name: "Sawatch Master", icon: "region", earned: false },
-  { name: "10 Peaks", icon: "badge10", earned: false },
-  { name: "All 58", icon: "crown", earned: false },
-];
 
 export default async function ProfilePage() {
   // Get auth state
@@ -78,6 +72,11 @@ export default async function ProfilePage() {
   // Fetch all peaks (used for the "Add to Wishlist" table and to resolve peak names)
   const allPeaks = await getAllPeaks();
   const peakMap = new Map<string, Peak>(allPeaks.map((p) => [p.id, p]));
+
+  // Fetch badge data
+  const [allBadges, userBadges] = user
+    ? await Promise.all([getAllBadges(), getUserBadges(user.id)])
+    : [await getAllBadges(), []];
 
   // Build watchlist display data
   const watchlistPeaks = (watchlistRows || []).flatMap((row) => {
@@ -194,7 +193,6 @@ export default async function ProfilePage() {
                 <NavLink href="/">Home</NavLink>
                 <NavLink href="/community">Community</NavLink>
                 <NavLink href="/peaks">Peaks</NavLink>
-                <NavLink href="/profile" active>Profile</NavLink>
               </div>
 
               <UserNav user={userNav} />
@@ -219,64 +217,61 @@ export default async function ProfilePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 -mt-16 relative z-10">
           <div className="bg-white rounded-3xl border border-[var(--color-border-app)] shadow-xl overflow-hidden">
             <div className="p-6 md:p-8">
-              <div className="flex flex-col md:flex-row md:items-end gap-6">
-                {/* Avatar */}
-                <div className="relative -mt-20 md:-mt-24">
-                  <div className="w-28 h-28 md:w-36 md:h-36 rounded-3xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-4xl md:text-5xl font-bold shadow-2xl">
+              <div className="flex flex-row items-center gap-4 md:gap-6">
+                {/* Avatar - inline to the left of username/details */}
+                <div className="relative flex-shrink-0">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
                     {initials}
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
-                    <CheckIcon className="w-4 h-4 text-white" />
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
+                    <CheckIcon className="w-3 h-3 text-white" />
                   </div>
                 </div>
 
-                {/* Info */}
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
-                        {displayName}
-                      </h1>
-                      <p className="text-[var(--color-text-secondary)]">{screenName}</p>
-                      <p className="mt-2 text-sm text-[var(--color-text-secondary)] flex items-center gap-2">
-                        {userLocation && (
-                          <>
-                            <MapPinIcon className="w-4 h-4" />
-                            {userLocation}
-                            <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40" />
-                          </>
-                        )}
-                        {joinDate && (
-                          <>
-                            <CalendarIcon className="w-4 h-4" />
-                            Joined {joinDate}
-                          </>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button className="px-5 py-2.5 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all flex items-center gap-2">
-                        <EditIcon className="w-4 h-4" />
-                        Edit Profile
-                      </button>
-                      <button className="px-5 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
-                        <ShareIcon className="w-4 h-4" />
-                        Share
-                      </button>
-                    </div>
-                  </div>
+                {/* Username and details - to the right of avatar */}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
+                    {screenName}
+                  </h1>
+                  <p className="mt-2 text-sm text-[var(--color-text-secondary)] flex items-center gap-2">
+                    {userLocation && (
+                      <>
+                        <MapPinIcon className="w-4 h-4" />
+                        {userLocation}
+                        <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40" />
+                      </>
+                    )}
+                    {joinDate && (
+                      <>
+                        <CalendarIcon className="w-4 h-4" />
+                        Joined {joinDate}
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <button className="px-5 py-2.5 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all flex items-center gap-2">
+                    <EditIcon className="w-4 h-4" />
+                    Edit Profile
+                  </button>
+                  <button className="px-5 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
+                    <ShareIcon className="w-4 h-4" />
+                    Share
+                  </button>
                 </div>
               </div>
+            </div>
 
-              {/* Stats Bar */}
-              <div className="mt-8 pt-6 border-t border-[var(--color-border-app)]">
+            {/* Stats Bar */}
+            <div className="mt-4 pt-4 px-6 md:px-8 pb-6 md:pb-8 border-t border-[var(--color-border-app)]">
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
                   <StatItem label="Summits" value={profileStats.summits.toString()} suffix="/58" />
                   <StatItem label="Elevation Gained" value={profileStats.totalElevation} suffix=" ft" />
                   <StatItem label="Miles Hiked" value={profileStats.totalMiles} suffix=" mi" />
-                  <StatItem label="Days on Trail" value={profileStats.daysOnTrail.toString()} />
                   <StatItem label="Peaks Remaining" value={profileStats.peaksRemaining.toString()} />
-                  <div className="text-center md:text-left">
+                  <div className="text-center md:text-left md:col-span-2">
                     <p className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-1">
                       Progress
                     </p>
@@ -297,7 +292,6 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
@@ -320,31 +314,26 @@ export default async function ProfilePage() {
 
             {/* Achievements */}
             <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
-              <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
-                Achievements
-              </h3>
-              <div className="grid grid-cols-5 gap-2">
-                {achievements.map((badge) => (
-                  <div
-                    key={badge.name}
-                    className={`relative group cursor-pointer ${
-                      badge.earned ? '' : 'opacity-30'
-                    }`}
-                  >
-                    <div className={`w-full aspect-square rounded-xl flex items-center justify-center ${
-                      badge.earned
-                        ? 'bg-gradient-to-br from-[var(--color-amber-glow)] to-[var(--color-amber-glow)]/70'
-                        : 'bg-[var(--color-surface-subtle)]'
-                    }`}>
-                      <BadgeIconMap type={badge.icon} earned={badge.earned} />
-                    </div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[var(--color-text-primary)] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                      {badge.name}
-                      {badge.date && <span className="text-white/60"> • {badge.date}</span>}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">
+                  Achievements
+                </h3>
+                <span className="text-xs text-[var(--color-text-secondary)]">
+                  {userBadges.length}/{allBadges.length}
+                </span>
               </div>
+              <BadgeGrid
+                allBadges={allBadges}
+                earnedBadges={userBadges}
+                size="sm"
+                columns={5}
+                maxDisplay={10}
+              />
+              {allBadges.length > 10 && (
+                <Link href="/badges" className="mt-3 block w-full text-center text-xs font-medium text-[var(--color-brand-primary)] hover:underline">
+                  View All Badges
+                </Link>
+              )}
             </div>
 
             {/* Settings */}
@@ -628,6 +617,8 @@ export default async function ProfilePage() {
           </main>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
@@ -684,23 +675,6 @@ function SidebarLink({ icon, label, count, primary }: { icon: React.ReactNode; l
   );
 }
 
-function BadgeIconMap({ type, earned }: { type: string; earned: boolean }) {
-  const color = earned ? 'text-white' : 'text-[var(--color-text-secondary)]';
-  switch (type) {
-    case 'peak':
-      return <MountainIcon className={`w-5 h-5 ${color}`} />;
-    case 'badge5':
-      return <span className={`text-sm font-bold ${color}`}>5</span>;
-    case 'badge10':
-      return <span className={`text-sm font-bold ${color}`}>10</span>;
-    case 'region':
-      return <MapIcon className={`w-5 h-5 ${color}`} />;
-    case 'crown':
-      return <CrownIcon className={`w-5 h-5 ${color}`} />;
-    default:
-      return <StarIcon className={`w-5 h-5 ${color}`} filled={earned} />;
-  }
-}
 
 // Icons
 function MountainLogo({ className }: { className?: string }) {

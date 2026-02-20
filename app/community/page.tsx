@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getRecentBadges } from "@/lib/badges";
+import Footer from "../components/Footer";
 import UserNav from "../components/UserNav";
 import CommunityFeed from "./CommunityFeed";
 import PeaksWatchedPanel from "./PeaksWatchedPanel";
+import BadgeIcon from "../components/badges/BadgeIcon";
 
 const feedPosts = [
   {
@@ -127,6 +130,9 @@ export default async function CommunityPage() {
     }));
   }
 
+  // Fetch recent badges for the community sidebar
+  const recentBadges = await getRecentBadges(5);
+
   // Derive display values for profile card
   const displayName = userProfile?.full_name || userProfile?.screen_name || user?.email?.split("@")[0] || "Hiker";
   const displayHandle = userProfile?.screen_name ? `@${userProfile.screen_name}` : user?.email ? `@${user.email.split("@")[0]}` : null;
@@ -155,12 +161,23 @@ export default async function CommunityPage() {
 
               <div className="hidden md:flex items-center gap-1">
                 <NavLink href="/">Home</NavLink>
-                <NavLink href="/community" active>Community</NavLink>
-                <NavLink href="#">Peaks</NavLink>
-                <NavLink href="#">Gear</NavLink>
+                <NavLink href="/peaks">Peaks</NavLink>
+                <NavLink href="/profile">Profile</NavLink>
               </div>
 
-              <UserNav user={userNav} />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Notifications (3 unread)"
+                  className="relative p-2 rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-colors"
+                >
+                  <BellIcon className="w-5 h-5" />
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-amber-400 text-amber-950 text-xs font-bold px-1">
+                    3
+                  </span>
+                </button>
+                <UserNav user={userNav} />
+              </div>
             </div>
           </div>
         </nav>
@@ -319,6 +336,52 @@ export default async function CommunityPage() {
               {/* Peaks Watched */}
               <PeaksWatchedPanel peaks={watchedPeaks} isLoggedIn={!!user} />
 
+              {/* Recent Badges */}
+              {recentBadges.length > 0 && (
+                <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
+                  <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
+                    Recent Achievements
+                  </h3>
+                  <div className="space-y-3">
+                    {recentBadges.map((badge) => {
+                      const displayName =
+                        badge.profiles?.screen_name || "Anonymous";
+                      const earnedDate = new Date(badge.earned_at).toLocaleDateString(
+                        "en-US",
+                        { month: "short", day: "numeric" }
+                      );
+                      return (
+                        <div
+                          key={badge.id}
+                          className="flex items-center gap-3 group"
+                        >
+                          <BadgeIcon
+                            badge={badge.badge_definitions}
+                            earned={true}
+                            size="sm"
+                            showTooltip={false}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                              {badge.badge_definitions.name}
+                            </p>
+                            <p className="text-xs text-[var(--color-text-secondary)]">
+                              <Link
+                                href={`/u/${badge.profiles?.screen_name}`}
+                                className="hover:text-[var(--color-brand-primary)] hover:underline"
+                              >
+                                @{displayName}
+                              </Link>
+                              {" "}• {earnedDate}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Upcoming Events */}
               <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
                 <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
@@ -374,6 +437,7 @@ export default async function CommunityPage() {
           </aside>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
@@ -447,6 +511,14 @@ function BookmarkIcon({ className }: { className?: string }) {
   return (
     <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+    </svg>
+  );
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
     </svg>
   );
 }

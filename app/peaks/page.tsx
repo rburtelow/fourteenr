@@ -1,11 +1,15 @@
 import { getAllPeaksWithRouteCounts } from "@/lib/peaks";
+import { getAllForecastSummaries } from "@/lib/forecasts";
 import { createClient } from "@/lib/supabase/server";
 import PeaksClient from "./PeaksClient";
 
 export const revalidate = 3600; // Revalidate every hour
 
 export default async function PeaksPage() {
-  const peaks = await getAllPeaksWithRouteCounts();
+  const [peaks, forecastSummaries] = await Promise.all([
+    getAllPeaksWithRouteCounts(),
+    getAllForecastSummaries(),
+  ]);
 
   // Get auth state
   const supabase = await createClient();
@@ -36,5 +40,11 @@ export default async function PeaksPage() {
     watchedPeakIds = watchlist?.map((w) => w.peak_id) || [];
   }
 
-  return <PeaksClient peaks={peaks} userNav={userNav} initialWatchedPeakIds={watchedPeakIds} />;
+  // Build a map of peak_id -> forecast summary for the client
+  const forecastMap: Record<string, { risk_level: string | null; current_temp: number | null }> = {};
+  for (const f of forecastSummaries) {
+    forecastMap[f.peak_id] = { risk_level: f.risk_level, current_temp: f.current_temp };
+  }
+
+  return <PeaksClient peaks={peaks} userNav={userNav} initialWatchedPeakIds={watchedPeakIds} forecasts={forecastMap} />;
 }

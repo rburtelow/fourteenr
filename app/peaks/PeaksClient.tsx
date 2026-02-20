@@ -6,6 +6,7 @@ import { useState, useMemo, useRef, useCallback } from "react";
 import type { PeakWithRouteCount } from "@/lib/peaks";
 import { createClient } from "@/lib/supabase/client";
 import UserNav from "../components/UserNav";
+import Footer from "../components/Footer";
 
 const regions = ["All Regions", "Sawatch Range", "Sangre de Cristo Range", "San Juan Range", "Front Range", "Elk Range", "Mosquito Range", "Tenmile Range"];
 const difficulties = ["All Classes", "Class 1", "Class 2", "Class 3", "Class 4"];
@@ -17,13 +18,19 @@ const sortOptions = [
   { value: "summits", label: "Most Summited" },
 ];
 
+interface ForecastBadge {
+  risk_level: string | null;
+  current_temp: number | null;
+}
+
 interface PeaksClientProps {
   peaks: PeakWithRouteCount[];
   userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null;
   initialWatchedPeakIds?: string[];
+  forecasts?: Record<string, ForecastBadge>;
 }
 
-export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = [] }: PeaksClientProps) {
+export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = [], forecasts = {} }: PeaksClientProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedRegion, setSelectedRegion] = useState("All Regions");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All Classes");
@@ -144,9 +151,8 @@ export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = []
               </Link>
 
               <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/peaks" active>Peaks</NavLink>
+                <NavLink href="/">Home</NavLink>
                 <NavLink href="/community">Community</NavLink>
-                <NavLink href="#">Gear</NavLink>
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
@@ -298,7 +304,7 @@ export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = []
             {viewMode === "grid" ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {filteredAndSortedPeaks.map((peak, index) => (
-                  <PeakCard key={peak.id} peak={peak} index={index} watched={watchedPeaks.has(peak.id)} onToggleWatch={toggleWatchPeak} />
+                  <PeakCard key={peak.id} peak={peak} index={index} watched={watchedPeaks.has(peak.id)} onToggleWatch={toggleWatchPeak} forecast={forecasts[peak.id]} />
                 ))}
               </div>
             ) : (
@@ -325,12 +331,15 @@ export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = []
                         <th className="text-left px-6 py-5 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden lg:table-cell">
                           Summits
                         </th>
+                        <th className="text-left px-6 py-5 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden lg:table-cell">
+                          Weather
+                        </th>
                         <th className="px-6 py-5"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredAndSortedPeaks.map((peak) => (
-                        <PeakRow key={peak.id} peak={peak} watched={watchedPeaks.has(peak.id)} onToggleWatch={toggleWatchPeak} />
+                        <PeakRow key={peak.id} peak={peak} watched={watchedPeaks.has(peak.id)} onToggleWatch={toggleWatchPeak} forecast={forecasts[peak.id]} />
                       ))}
                     </tbody>
                   </table>
@@ -440,20 +449,7 @@ export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = []
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--color-border-app)] bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center">
-                <MountainLogo className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">My14er</span>
-            </Link>
-            <p className="text-sm text-[var(--color-text-secondary)]/60">© 2026 My14er. Hike responsibly.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
@@ -523,7 +519,7 @@ function FilterSelect({
   );
 }
 
-function PeakCard({ peak, index, watched, onToggleWatch }: { peak: PeakWithRouteCount; index: number; watched: boolean; onToggleWatch: (id: string) => void }) {
+function PeakCard({ peak, index, watched, onToggleWatch, forecast }: { peak: PeakWithRouteCount; index: number; watched: boolean; onToggleWatch: (id: string) => void; forecast?: ForecastBadge }) {
   const difficultyColors = {
     "Class 1": "bg-emerald-100 text-emerald-700 border-emerald-200",
     "Class 2": "bg-sky-100 text-sky-700 border-sky-200",
@@ -586,6 +582,12 @@ function PeakCard({ peak, index, watched, onToggleWatch }: { peak: PeakWithRoute
             </p>
           </div>
           <div className="text-right">
+            {forecast?.current_temp !== null && forecast?.current_temp !== undefined ? (
+              <div className="flex items-center justify-end gap-2 mb-0.5">
+                <RiskDot level={forecast.risk_level} />
+                <span className="text-sm font-semibold text-[var(--color-text-primary)]">{forecast.current_temp}°F</span>
+              </div>
+            ) : null}
             <p className="text-xs text-[var(--color-text-secondary)]">{(peak.completions || 0).toLocaleString()} summits</p>
             <p className="text-xs text-[var(--color-text-muted-green)]">{peak.routeCount} routes</p>
           </div>
@@ -595,7 +597,7 @@ function PeakCard({ peak, index, watched, onToggleWatch }: { peak: PeakWithRoute
   );
 }
 
-function PeakRow({ peak, watched, onToggleWatch }: { peak: PeakWithRouteCount; watched: boolean; onToggleWatch: (id: string) => void }) {
+function PeakRow({ peak, watched, onToggleWatch, forecast }: { peak: PeakWithRouteCount; watched: boolean; onToggleWatch: (id: string) => void; forecast?: ForecastBadge }) {
   const difficultyColors = {
     "Class 1": "bg-emerald-100 text-emerald-700",
     "Class 2": "bg-sky-100 text-sky-700",
@@ -626,6 +628,16 @@ function PeakRow({ peak, watched, onToggleWatch }: { peak: PeakWithRouteCount; w
       </td>
       <td className="px-6 py-5 hidden lg:table-cell">
         <span className="text-sm text-[var(--color-text-secondary)]">{(peak.completions || 0).toLocaleString()}</span>
+      </td>
+      <td className="px-6 py-5 hidden lg:table-cell">
+        {forecast?.current_temp !== null && forecast?.current_temp !== undefined ? (
+          <div className="flex items-center gap-2">
+            <RiskDot level={forecast.risk_level} />
+            <span className="text-sm font-medium text-[var(--color-text-primary)]">{forecast.current_temp}°F</span>
+          </div>
+        ) : (
+          <span className="text-sm text-[var(--color-text-muted-green)]">--</span>
+        )}
       </td>
       <td className="px-6 py-5 text-right">
         <button
@@ -667,6 +679,21 @@ function RegionCard({ name, count, highest, description, onSelect }: { name: str
         </span>
       </div>
     </button>
+  );
+}
+
+function RiskDot({ level }: { level: string | null | undefined }) {
+  const colors: Record<string, string> = {
+    LOW: "bg-emerald-500",
+    MODERATE: "bg-amber-500",
+    HIGH: "bg-orange-500",
+    EXTREME: "bg-rose-500",
+  };
+  return (
+    <span
+      className={`w-2.5 h-2.5 rounded-full ${colors[level ?? ""] ?? "bg-gray-300"}`}
+      title={level ? `${level} risk` : "No data"}
+    />
   );
 }
 

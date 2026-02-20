@@ -60,6 +60,7 @@ export interface Database {
           recent_trip_reports: number | null;
           cell_reception: string | null;
           description: string | null;
+          forecast_elevation_ft: number | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -81,6 +82,7 @@ export interface Database {
           recent_trip_reports?: number | null;
           cell_reception?: string | null;
           description?: string | null;
+          forecast_elevation_ft?: number | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -102,6 +104,7 @@ export interface Database {
           recent_trip_reports?: number | null;
           cell_reception?: string | null;
           description?: string | null;
+          forecast_elevation_ft?: number | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -193,6 +196,55 @@ export interface Database {
           }
         ];
       };
+      peak_forecasts: {
+        Row: {
+          id: string;
+          peak_id: string;
+          raw_forecast: RawForecastJson | null;
+          adjusted_forecast: AdjustedHour[] | null;
+          hourly_risk: HourlyRisk[] | null;
+          summit_window: SummitWindow | null;
+          risk_score: number | null;
+          risk_level: string | null;
+          condition_flags: ConditionFlags | null;
+          storm_eta: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          peak_id: string;
+          raw_forecast?: RawForecastJson | null;
+          adjusted_forecast?: AdjustedHour[] | null;
+          hourly_risk?: HourlyRisk[] | null;
+          summit_window?: SummitWindow | null;
+          risk_score?: number | null;
+          risk_level?: string | null;
+          condition_flags?: ConditionFlags | null;
+          storm_eta?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          peak_id?: string;
+          raw_forecast?: RawForecastJson | null;
+          adjusted_forecast?: AdjustedHour[] | null;
+          hourly_risk?: HourlyRisk[] | null;
+          summit_window?: SummitWindow | null;
+          risk_score?: number | null;
+          risk_level?: string | null;
+          condition_flags?: ConditionFlags | null;
+          storm_eta?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "peak_forecasts_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       summit_logs: {
         Row: {
           id: string;
@@ -255,10 +307,106 @@ export interface Database {
   };
 }
 
+// Weather forecast types used in the database schema
+export interface AdjustedHour {
+  dt: number;
+  temp: number;
+  feels_like: number;
+  wind_speed: number;
+  wind_gust: number;
+  wind_deg: number;
+  humidity: number;
+  pop: number;
+  precip_type: string | null;
+  weather_id: number;
+  weather_main: string;
+  weather_description: string;
+  wind_chill: number;
+  clouds: number;
+  visibility: number;
+  uvi: number;
+}
+
+export interface HourlyRisk {
+  dt: number;
+  risk_score: number;
+  risk_level: string;
+}
+
+export interface SummitWindow {
+  best_hour: number | null;
+  best_score: number | null;
+  morning_average: number | null;
+  storm_eta: number | null;
+  unsafe_after: number | null;
+}
+
+export interface ConditionFlags {
+  windRisk: boolean;
+  thunderstormRisk: boolean;
+  snowRisk: boolean;
+  whiteoutRisk: boolean;
+  extremeColdRisk: boolean;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type RawForecastJson = any;
+
+// Badge unlock criteria types
+export type BadgeUnlockCriteria =
+  | { type: "peak_count"; count: number }
+  | { type: "range_complete"; range: string }
+  | { type: "peak_list"; peaks: string[] }
+  | { type: "peak_list_any"; peaks: string[] }
+  | { type: "difficulty_complete"; difficulty: string }
+  | { type: "difficulty_any"; difficulty: string }
+  | { type: "specific_peak"; peak_slug: string }
+  | { type: "seasonal_summit"; months: number[] }
+  | { type: "weather_count"; weather: string; count: number }
+  | { type: "total_elevation"; feet: number }
+  | { type: "total_miles"; miles: number };
+
+export type BadgeCategory =
+  | "milestone"
+  | "range"
+  | "difficulty"
+  | "special"
+  | "seasonal"
+  | "dedication";
+
+// Badge definition type
+export interface BadgeDefinition {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  category: BadgeCategory;
+  icon_name: string;
+  sort_order: number;
+  is_active: boolean;
+  unlock_criteria: BadgeUnlockCriteria;
+  created_at: string;
+}
+
+// User badge (earned badge) type
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  earned_at: string;
+  trigger_peak_id: string | null;
+}
+
+// User badge with joined badge definition
+export interface UserBadgeWithDefinition extends UserBadge {
+  badge_definitions: BadgeDefinition;
+}
+
 // Convenience types
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Peak = Database["public"]["Tables"]["peaks"]["Row"];
 export type Route = Database["public"]["Tables"]["routes"]["Row"];
 export type SummitLog = Database["public"]["Tables"]["summit_logs"]["Row"];
 export type PeakWatchlistItem = Database["public"]["Tables"]["peak_watchlist"]["Row"];
+export type PeakForecast = Database["public"]["Tables"]["peak_forecasts"]["Row"];
 export type PeakWithRoutes = Peak & { routes: Route[] };

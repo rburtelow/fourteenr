@@ -2,30 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPeakBySlug } from "@/lib/peaks";
+import { getForecastByPeakSlug } from "@/lib/forecasts";
 import { createClient } from "@/lib/supabase/server";
-import type { PeakWithRoutes, Route } from "@/lib/database.types";
+import type { Route, AdjustedHour, PeakForecast } from "@/lib/database.types";
 import UserNav from "../../components/UserNav";
 import WatchButton from "./WatchButton";
-
-// Mock weather data (will be replaced with real weather API)
-const mockWeather = {
-  current: {
-    temp: 28,
-    condition: "Partly Cloudy",
-    wind: 15,
-    humidity: 45,
-    visibility: 10,
-  },
-  forecast: [
-    { day: "Mon", high: 32, low: 18, condition: "sunny" },
-    { day: "Tue", high: 35, low: 20, condition: "partly-cloudy" },
-    { day: "Wed", high: 30, low: 15, condition: "cloudy" },
-    { day: "Thu", high: 25, low: 12, condition: "snow" },
-    { day: "Fri", high: 28, low: 14, condition: "partly-cloudy" },
-    { day: "Sat", high: 33, low: 19, condition: "sunny" },
-    { day: "Sun", high: 36, low: 22, condition: "sunny" },
-  ],
-};
 
 export default async function PeakProfilePage({
   params,
@@ -76,8 +57,8 @@ export default async function PeakProfilePage({
     notFound();
   }
 
-  // Use mock weather for now (will integrate weather API later)
-  const weather = mockWeather;
+  // Fetch real forecast data
+  const forecast = await getForecastByPeakSlug(slug);
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased">
@@ -96,11 +77,8 @@ export default async function PeakProfilePage({
               </Link>
 
               <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/peaks" active>
-                  Peaks
-                </NavLink>
+                <NavLink href="/">Home</NavLink>
                 <NavLink href="/community">Community</NavLink>
-                <NavLink href="#">Gear</NavLink>
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
@@ -276,78 +254,7 @@ export default async function PeakProfilePage({
                 </div>
 
                 {/* Weather Section */}
-                <div className="animate-fade-up delay-100 bg-white rounded-3xl shadow-xl border border-[var(--color-border-app)] p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2
-                      className="text-2xl font-bold text-[var(--color-brand-primary)]"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      Summit Weather
-                    </h2>
-                    <span className="text-xs text-[var(--color-text-muted-green)] font-medium">
-                      Updated 30 min ago
-                    </span>
-                  </div>
-
-                  {/* Current Weather */}
-                  <div className="bg-gradient-to-br from-[var(--color-surface-subtle)] to-[var(--color-border-app)]/30 rounded-2xl p-6 mb-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg">
-                          <SunCloudIcon className="w-12 h-12 text-[var(--color-amber-glow)]" />
-                        </div>
-                        <div>
-                          <p className="text-5xl font-bold text-[var(--color-brand-primary)]">
-                            {weather.current.temp}°
-                            <span className="text-2xl text-[var(--color-text-secondary)]">
-                              F
-                            </span>
-                          </p>
-                          <p className="text-[var(--color-text-secondary)] font-medium">
-                            {weather.current.condition}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="hidden sm:grid grid-cols-3 gap-6">
-                        <WeatherDetail
-                          icon={<WindIcon className="w-5 h-5" />}
-                          label="Wind"
-                          value={`${weather.current.wind} mph`}
-                        />
-                        <WeatherDetail
-                          icon={<DropletIcon className="w-5 h-5" />}
-                          label="Humidity"
-                          value={`${weather.current.humidity}%`}
-                        />
-                        <WeatherDetail
-                          icon={<EyeIcon className="w-5 h-5" />}
-                          label="Visibility"
-                          value={`${weather.current.visibility} mi`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 7-Day Forecast */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4 tracking-wider uppercase">
-                      7-Day Forecast
-                    </h3>
-                    <div className="grid grid-cols-7 gap-2">
-                      {weather.forecast.map((day, i) => (
-                        <ForecastDay
-                          key={day.day}
-                          day={day.day}
-                          high={day.high}
-                          low={day.low}
-                          condition={day.condition}
-                          isToday={i === 0}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <WeatherSection forecast={forecast} />
 
                 {/* Routes Section */}
                 <div className="animate-fade-up delay-200 bg-white rounded-3xl shadow-xl border border-[var(--color-border-app)] p-8">
@@ -584,6 +491,287 @@ export default async function PeakProfilePage({
       </footer>
     </div>
   );
+}
+
+// Weather Section Component
+function WeatherSection({ forecast }: { forecast: PeakForecast | null }) {
+  if (!forecast) {
+    return (
+      <div className="animate-fade-up delay-100 bg-white rounded-3xl shadow-xl border border-[var(--color-border-app)] p-8">
+        <h2
+          className="text-2xl font-bold text-[var(--color-brand-primary)] mb-4"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Summit Weather
+        </h2>
+        <div className="bg-[var(--color-surface-subtle)] rounded-2xl p-8 text-center">
+          <CloudIcon className="w-12 h-12 text-[var(--color-text-muted-green)] mx-auto mb-3" />
+          <p className="text-[var(--color-text-secondary)] font-medium">
+            Weather data loading...
+          </p>
+          <p className="text-sm text-[var(--color-text-muted-green)] mt-1">
+            Forecast will be available shortly
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const adjustedHours = (forecast.adjusted_forecast ?? []) as AdjustedHour[];
+  const currentHour = adjustedHours[0];
+  const riskLevel = forecast.risk_level ?? "UNKNOWN";
+  const riskScore = forecast.risk_score ?? 0;
+  const summitWindow = forecast.summit_window;
+  const conditionFlags = forecast.condition_flags;
+
+  // Build 7-day forecast from raw data
+  const rawForecast = forecast.raw_forecast as { daily?: { dt: number; temp: { max: number; min: number }; weather: { id: number; main: string; description: string }[] }[] } | null;
+  const dailyForecast = rawForecast?.daily?.slice(0, 7) ?? [];
+
+  // Calculate time ago
+  const updatedAt = forecast.updated_at ? new Date(forecast.updated_at) : null;
+  const timeAgo = updatedAt ? getTimeAgo(updatedAt) : "Unknown";
+
+  const riskColors: Record<string, string> = {
+    LOW: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    MODERATE: "bg-amber-100 text-amber-700 border-amber-200",
+    HIGH: "bg-orange-100 text-orange-700 border-orange-200",
+    EXTREME: "bg-rose-100 text-rose-700 border-rose-200",
+  };
+
+  const riskBgColors: Record<string, string> = {
+    LOW: "bg-emerald-500",
+    MODERATE: "bg-amber-500",
+    HIGH: "bg-orange-500",
+    EXTREME: "bg-rose-500",
+  };
+
+  return (
+    <div className="animate-fade-up delay-100 bg-white rounded-3xl shadow-xl border border-[var(--color-border-app)] p-8">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <h2
+            className="text-2xl font-bold text-[var(--color-brand-primary)]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Summit Weather
+          </h2>
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${riskColors[riskLevel] ?? "bg-gray-100 text-gray-700 border-gray-200"}`}
+          >
+            <span className={`w-2 h-2 rounded-full ${riskBgColors[riskLevel] ?? "bg-gray-500"}`} />
+            {riskLevel} RISK
+          </span>
+        </div>
+        <span className="text-xs text-[var(--color-text-muted-green)] font-medium">
+          Updated {timeAgo}
+        </span>
+      </div>
+
+      {/* Current Weather */}
+      {currentHour && (
+        <div className="bg-gradient-to-br from-[var(--color-surface-subtle)] to-[var(--color-border-app)]/30 rounded-2xl p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg">
+                <WeatherIconForId weatherId={currentHour.weather_id} className="w-12 h-12 text-[var(--color-amber-glow)]" />
+              </div>
+              <div>
+                <p className="text-5xl font-bold text-[var(--color-brand-primary)]">
+                  {Math.round(currentHour.temp)}°
+                  <span className="text-2xl text-[var(--color-text-secondary)]">
+                    F
+                  </span>
+                </p>
+                <p className="text-[var(--color-text-secondary)] font-medium capitalize">
+                  {currentHour.weather_description}
+                </p>
+                {currentHour.wind_chill < currentHour.temp - 5 && (
+                  <p className="text-xs text-[var(--color-text-muted-green)] mt-1">
+                    Feels like {Math.round(currentHour.wind_chill)}°F
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="hidden sm:grid grid-cols-3 gap-6">
+              <WeatherDetail
+                icon={<WindIcon className="w-5 h-5" />}
+                label="Wind"
+                value={`${Math.round(currentHour.wind_speed)} mph`}
+              />
+              <WeatherDetail
+                icon={<DropletIcon className="w-5 h-5" />}
+                label="Humidity"
+                value={`${currentHour.humidity}%`}
+              />
+              <WeatherDetail
+                icon={<EyeIcon className="w-5 h-5" />}
+                label="Gusts"
+                value={`${Math.round(currentHour.wind_gust)} mph`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Summit Window & Risk Info */}
+      <div className="grid sm:grid-cols-2 gap-4 mb-6">
+        {/* Summit Window */}
+        <div className="bg-[var(--color-surface-subtle)] rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <ClockIcon className="w-5 h-5 text-[var(--color-brand-primary)]" />
+            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] tracking-wider uppercase">
+              Summit Window
+            </h3>
+          </div>
+          {summitWindow?.best_hour ? (
+            <div>
+              <p className="text-2xl font-bold text-[var(--color-brand-primary)]">
+                {formatTime(summitWindow.best_hour)}
+              </p>
+              <p className="text-xs text-[var(--color-text-muted-green)] mt-1">
+                Best summit time (score: {summitWindow.best_score}/100)
+              </p>
+              {summitWindow.morning_average !== null && (
+                <p className="text-xs text-[var(--color-text-secondary)] mt-1">
+                  Morning avg: {summitWindow.morning_average}/100
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              No summit window data available
+            </p>
+          )}
+        </div>
+
+        {/* Risk Score */}
+        <div className="bg-[var(--color-surface-subtle)] rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldIcon className="w-5 h-5 text-[var(--color-brand-primary)]" />
+            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] tracking-wider uppercase">
+              Risk Assessment
+            </h3>
+          </div>
+          <p className="text-2xl font-bold text-[var(--color-brand-primary)]">
+            {riskScore}/100
+          </p>
+          <div className="w-full bg-[var(--color-border-app)] rounded-full h-2 mt-2">
+            <div
+              className={`h-2 rounded-full ${riskBgColors[riskLevel] ?? "bg-gray-500"}`}
+              style={{ width: `${riskScore}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Condition Flags */}
+      {conditionFlags && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {conditionFlags.windRisk && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">
+              <WindIcon className="w-3.5 h-3.5" /> Wind Risk
+            </span>
+          )}
+          {conditionFlags.thunderstormRisk && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+              <BoltIcon className="w-3.5 h-3.5" /> Thunderstorm Risk
+            </span>
+          )}
+          {conditionFlags.snowRisk && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+              <SnowIcon className="w-3.5 h-3.5" /> Snow Risk
+            </span>
+          )}
+          {conditionFlags.whiteoutRisk && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
+              <CloudIcon className="w-3.5 h-3.5" /> Whiteout Risk
+            </span>
+          )}
+          {conditionFlags.extremeColdRisk && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700 border border-cyan-200">
+              <ThermometerIcon className="w-3.5 h-3.5" /> Extreme Cold
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* 7-Day Forecast */}
+      {dailyForecast.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4 tracking-wider uppercase">
+            7-Day Forecast
+          </h3>
+          <div className="grid grid-cols-7 gap-2">
+            {dailyForecast.map((day, i) => {
+              const date = new Date(day.dt * 1000);
+              const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+              const weatherId = day.weather?.[0]?.id ?? 800;
+              const condition = weatherIdToCondition(weatherId);
+              // Elevation-adjust daily temps using the same lapse rate
+              const elevDiff = (adjustedHours[0]?.temp ?? day.temp.max) - day.temp.max;
+              const adjustedHigh = Math.round(day.temp.max + elevDiff);
+              const adjustedLow = Math.round(day.temp.min + elevDiff);
+              return (
+                <ForecastDay
+                  key={day.dt}
+                  day={dayName}
+                  high={adjustedHigh}
+                  low={adjustedLow}
+                  condition={condition}
+                  isToday={i === 0}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getTimeAgo(date: Date): string {
+  const diffMs = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHrs = Math.floor(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  return `${Math.floor(diffHrs / 24)}d ago`;
+}
+
+function formatTime(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/Denver",
+  });
+}
+
+function weatherIdToCondition(id: number): string {
+  if (id >= 200 && id < 300) return "snow"; // thunderstorm - show as severe
+  if (id >= 300 && id < 400) return "cloudy"; // drizzle
+  if (id >= 500 && id < 600) return "cloudy"; // rain
+  if (id >= 600 && id < 700) return "snow";
+  if (id >= 700 && id < 800) return "cloudy"; // atmosphere
+  if (id === 800) return "sunny";
+  if (id === 801 || id === 802) return "partly-cloudy";
+  return "cloudy";
+}
+
+function WeatherIconForId({ weatherId, className }: { weatherId: number; className?: string }) {
+  const condition = weatherIdToCondition(weatherId);
+  const icons: Record<string, React.FC<{ className?: string }>> = {
+    sunny: SunIcon,
+    "partly-cloudy": SunCloudIcon,
+    cloudy: CloudIcon,
+    snow: SnowIcon,
+  };
+  const Icon = icons[condition] || SunCloudIcon;
+  return <Icon className={className} />;
 }
 
 // Components
@@ -1067,24 +1255,6 @@ function CheckCircleIcon({ className }: { className?: string }) {
   );
 }
 
-function BookmarkIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-      />
-    </svg>
-  );
-}
-
 function ShareIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -1169,6 +1339,30 @@ function ClockIcon({ className }: { className?: string }) {
     >
       <circle cx="12" cy="12" r="10" />
       <path strokeLinecap="round" d="M12 6v6l4 2" />
+    </svg>
+  );
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+function BoltIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  );
+}
+
+function ThermometerIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" />
     </svg>
   );
 }
