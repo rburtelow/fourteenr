@@ -182,6 +182,97 @@ async function likePost(page: Page, postSnippet: string) {
   console.log(`    → Liked: "${postSnippet.slice(0, 40)}..."`);
 }
 
+// Peaks each user will add to their watchlist (slugs + display names)
+const WATCHLIST = {
+  rburtelow: [
+    { slug: "mount-harvard", name: "Mount Harvard" },
+    { slug: "mount-antero", name: "Mount Antero" },
+    { slug: "mount-princeton", name: "Mount Princeton" },
+  ],
+  blah: [
+    { slug: "la-plata-peak", name: "La Plata Peak" },
+    { slug: "mount-yale", name: "Mount Yale" },
+    { slug: "mount-shavano", name: "Mount Shavano" },
+  ],
+};
+
+// Event rburtelow will create
+const EVENT = {
+  title: "Grays & Torreys Traverse — Group Hike",
+  description:
+    "Join me for a classic double-summit day on Grays and Torreys! We'll meet at the Bakerville trailhead at 5am. Bring microspikes just in case.",
+  date: "2026-08-15T05:00",
+  location: "Bakerville Trailhead, I-70 Exit 221",
+  peakSearch: "Grays",
+  peakName: "Grays Peak",
+  maxAttendees: "10",
+};
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+async function addPeakToWatchlist(page: Page, slug: string, name: string) {
+  await page.goto(`/peaks/${slug}`);
+  // Wait for the page to load and the watch button to appear
+  const watchBtn = page.getByRole("button", { name: /save to list/i });
+  await expect(watchBtn).toBeVisible({ timeout: 10_000 });
+  await watchBtn.click();
+  // Confirm button transitions to "Watching"
+  await expect(
+    page.getByRole("button", { name: /watching/i })
+  ).toBeVisible({ timeout: 5_000 });
+  console.log(`    → Watchlisted: ${name}`);
+}
+
+async function createEvent(page: Page, event: typeof EVENT) {
+  await page.goto("/events");
+  await page.getByRole("button", { name: "Create Event" }).first().click();
+
+  // Fill required fields
+  await page.fill("#event-title", event.title);
+  await page.fill("#event-description", event.description);
+  await page.fill("#event-date", event.date);
+  await page.fill("#event-location", event.location);
+
+  // Link a peak (optional)
+  await page.getByRole("button", { name: /select a peak/i }).click();
+  await page.waitForSelector('input[placeholder="Search peaks..."]');
+  await page.fill('input[placeholder="Search peaks..."]', event.peakSearch);
+  await page.waitForTimeout(200);
+  const peakDropdown = page
+    .locator('input[placeholder="Search peaks..."]')
+    .locator("../..");
+  await peakDropdown
+    .locator("button")
+    .filter({ hasText: event.peakName })
+    .first()
+    .click();
+
+  // Set max attendees
+  await page.fill("#event-max-attendees", event.maxAttendees);
+
+  // Submit
+  await page.getByRole("button", { name: "Create Event" }).last().click();
+
+  // Confirm the event card appears in the feed
+  await expect(
+    page.locator("article, [data-testid='event-card'], .event-card, h2, h3").filter({ hasText: event.title }).first()
+  ).toBeVisible({ timeout: 10_000 });
+
+  console.log(`    → Created event: "${event.title}"`);
+}
+
+async function rsvpToEvent(page: Page, eventTitle: string) {
+  await page.goto("/events");
+  const card = page.locator("article, [class*='card']").filter({ hasText: eventTitle }).first();
+  await expect(card).toBeVisible({ timeout: 10_000 });
+  await card.getByRole("button", { name: /rsvp/i }).click();
+  // Confirm the button switches to "Cancel RSVP"
+  await expect(card.getByRole("button", { name: /cancel rsvp/i })).toBeVisible({
+    timeout: 5_000,
+  });
+  console.log(`    → RSVP'd to: "${eventTitle}"`);
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 test("rburtelow creates posts", async ({ page }) => {
@@ -277,4 +368,32 @@ test("back-and-forth comment exchange on Elbert post", async ({ page }) => {
     longsSnippet,
     "Totally dry and clear! Plan for an alpine start though — the boulder field gets crowded."
   );
+});
+
+test("rburtelow adds 3 peaks to watchlist", async ({ page }) => {
+  console.log("\n→ rburtelow: adding peaks to watchlist");
+  await login(page, USERS.rburtelow.email, USERS.rburtelow.password);
+  for (const peak of WATCHLIST.rburtelow) {
+    await addPeakToWatchlist(page, peak.slug, peak.name);
+  }
+});
+
+test("blah adds 3 peaks to watchlist", async ({ page }) => {
+  console.log("\n→ blah: adding peaks to watchlist");
+  await login(page, USERS.blah.email, USERS.blah.password);
+  for (const peak of WATCHLIST.blah) {
+    await addPeakToWatchlist(page, peak.slug, peak.name);
+  }
+});
+
+test("rburtelow creates a group hike event", async ({ page }) => {
+  console.log("\n→ rburtelow: creating event");
+  await login(page, USERS.rburtelow.email, USERS.rburtelow.password);
+  await createEvent(page, EVENT);
+});
+
+test("blah RSVPs to rburtelow's event", async ({ page }) => {
+  console.log("\n→ blah: RSVP to rburtelow's event");
+  await login(page, USERS.blah.email, USERS.blah.password);
+  await rsvpToEvent(page, EVENT.title);
 });

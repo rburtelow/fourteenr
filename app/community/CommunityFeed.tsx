@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   useState,
   useCallback,
@@ -32,6 +33,9 @@ const FEED_POST_SELECT = `
     name,
     slug,
     elevation
+  ),
+  community_events (
+    id
   )
 `;
 
@@ -210,6 +214,7 @@ export default function CommunityFeed({
 
       const snapshot = await fetchEngagementSnapshot(postId);
 
+      const rawEvents = data.community_events as { id: string }[] | null;
       return {
         ...(data as Omit<
           CommunityPost,
@@ -218,9 +223,11 @@ export default function CommunityFeed({
           | "save_count"
           | "user_has_liked"
           | "user_has_saved"
+          | "linked_event_id"
         >),
         profiles: data.profiles as CommunityPost["profiles"],
         peaks: data.peaks as CommunityPost["peaks"],
+        linked_event_id: rawEvents?.[0]?.id ?? null,
         like_count: snapshot.like_count,
         comment_count: snapshot.comment_count,
         save_count: snapshot.save_count,
@@ -959,9 +966,13 @@ export default function CommunityFeed({
               </div>
 
               {/* Content */}
-              <p className="mt-4 text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
-                {post.content}
-              </p>
+              {post.content.startsWith("\u{1F4C5}") || post.content.startsWith("\u{274C}") ? (
+                <EventPostContent content={post.content} eventId={post.linked_event_id} />
+              ) : (
+                <p className="mt-4 text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
+                  {post.content}
+                </p>
+              )}
 
               {/* Peak Tag */}
               {post.peaks && (
@@ -1126,6 +1137,52 @@ export default function CommunityFeed({
       )}
     </main>
   );
+}
+
+// Event post renderer
+function EventPostContent({ content, eventId }: { content: string; eventId: string | null }) {
+  const lines = content.split("\n");
+  // Line 0: "📅 {title}" or "❌ [CANCELLED] {title}"
+  const rawTitle = lines[0].replace(/^\S+\s*/, ""); // strip leading emoji
+  const dateLocation = lines[1] || null;
+  const description = lines.slice(2).join("\n").trim() || null;
+  const isCancelled = content.startsWith("\u{274C}");
+
+  const inner = (
+    <div className={`rounded-xl border overflow-hidden ${eventId && !isCancelled ? "hover:border-[var(--color-brand-primary)]/40 hover:shadow-sm transition-all cursor-pointer" : ""} ${isCancelled ? "border-red-200" : "border-[var(--color-border-app)]"}`}>
+      <div className={`px-4 py-3 ${isCancelled ? "bg-red-50" : "bg-[var(--color-surface-subtle)]"}`}>
+        <p className={`font-semibold text-base leading-snug ${isCancelled ? "text-red-700 line-through" : "text-[var(--color-text-primary)]"}`}>
+          {isCancelled ? "\u274C\u00A0" : "\u{1F4C5}\u00A0"}
+          {rawTitle}
+        </p>
+        {dateLocation && (
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+            {dateLocation}
+          </p>
+        )}
+      </div>
+      {description && (
+        <p className="px-4 py-3 text-sm text-[var(--color-text-primary)] leading-relaxed">
+          {description}
+        </p>
+      )}
+      {eventId && !isCancelled && (
+        <div className="px-4 py-2 border-t border-[var(--color-border-app)] bg-white">
+          <span className="text-xs font-medium text-[var(--color-brand-primary)]">View event details →</span>
+        </div>
+      )}
+    </div>
+  );
+
+  if (eventId && !isCancelled) {
+    return (
+      <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+        <Link href={`/events/${eventId}`}>{inner}</Link>
+      </div>
+    );
+  }
+
+  return <div className="mt-4">{inner}</div>;
 }
 
 // Icons

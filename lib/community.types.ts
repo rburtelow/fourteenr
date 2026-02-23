@@ -19,6 +19,7 @@ export interface CommunityPost {
     slug: string;
     elevation: number;
   } | null;
+  linked_event_id: string | null;
   like_count: number;
   comment_count: number;
   save_count: number;

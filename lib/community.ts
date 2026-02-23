@@ -38,6 +38,9 @@ export async function getPosts(options?: {
         name,
         slug,
         elevation
+      ),
+      community_events (
+        id
       )
     `
     )
@@ -131,16 +134,20 @@ export async function getPosts(options?: {
     ]);
 
   // Map posts with engagement data
-  return posts.map((post) => ({
-    ...post,
-    profiles: post.profiles as CommunityPost["profiles"],
-    peaks: post.peaks as CommunityPost["peaks"],
-    like_count: likeCounts[post.id] || 0,
-    comment_count: commentCounts[post.id] || 0,
-    save_count: saveCounts[post.id] || 0,
-    user_has_liked: userLikes.has(post.id),
-    user_has_saved: userSaves.has(post.id),
-  }));
+  return posts.map((post) => {
+    const rawEvents = post.community_events as { id: string }[] | null;
+    return {
+      ...post,
+      profiles: post.profiles as CommunityPost["profiles"],
+      peaks: post.peaks as CommunityPost["peaks"],
+      linked_event_id: rawEvents?.[0]?.id ?? null,
+      like_count: likeCounts[post.id] || 0,
+      comment_count: commentCounts[post.id] || 0,
+      save_count: saveCounts[post.id] || 0,
+      user_has_liked: userLikes.has(post.id),
+      user_has_saved: userSaves.has(post.id),
+    };
+  });
 }
 
 export async function getUpcomingEvents(options?: {
