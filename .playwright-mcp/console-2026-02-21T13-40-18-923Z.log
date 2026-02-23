@@ -1,0 +1,4 @@
+[   17225ms] [WARNING] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297
+[   37121ms] [WARNING] Image with src "/hero.webp" is using quality "70" which is not configured in images.qualities [75]. Please update your config to [70, 75].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297
+[   37163ms] [WARNING] Image with src "/hero.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3000/_next/static/chunks/38e83_next_dist_fcd535bf._.js:2297

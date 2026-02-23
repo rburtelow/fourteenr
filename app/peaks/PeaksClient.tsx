@@ -85,6 +85,12 @@ export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = []
     filtersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const handleDifficultySelect = (difficultyFilter: string) => {
+    setSelectedDifficulty((prev) => (prev === difficultyFilter ? "All Classes" : difficultyFilter));
+    // Keep the filter controls in view after selecting from hero stats.
+    filtersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const filteredAndSortedPeaks = useMemo(() => {
     let result = [...peaks];
 
@@ -213,10 +219,38 @@ export default function PeaksClient({ peaks, userNav, initialWatchedPeakIds = []
 
               {/* Stats Cards */}
               <div className="animate-fade-up delay-300 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <StatCard value={stats.class1} label="Class 1" color="green" description="Hiking" />
-                <StatCard value={stats.class2} label="Class 2" color="blue" description="Scrambling" />
-                <StatCard value={stats.class3} label="Class 3" color="amber" description="Climbing" />
-                <StatCard value={stats.class4} label="Class 4" color="red" description="Technical" />
+                <StatCard
+                  value={stats.class1}
+                  label="Class 1"
+                  color="green"
+                  description="Hiking"
+                  active={selectedDifficulty === "Class 1"}
+                  onClick={() => handleDifficultySelect("Class 1")}
+                />
+                <StatCard
+                  value={stats.class2}
+                  label="Class 2"
+                  color="blue"
+                  description="Scrambling"
+                  active={selectedDifficulty === "Class 2"}
+                  onClick={() => handleDifficultySelect("Class 2")}
+                />
+                <StatCard
+                  value={stats.class3}
+                  label="Class 3"
+                  color="amber"
+                  description="Climbing"
+                  active={selectedDifficulty === "Class 3"}
+                  onClick={() => handleDifficultySelect("Class 3")}
+                />
+                <StatCard
+                  value={stats.class4}
+                  label="Class 4"
+                  color="red"
+                  description="Technical"
+                  active={selectedDifficulty === "Class 4"}
+                  onClick={() => handleDifficultySelect("Class 4")}
+                />
               </div>
             </div>
 
@@ -474,7 +508,21 @@ function NavLink({ href, children, active }: { href: string; children: React.Rea
   );
 }
 
-function StatCard({ value, label, color, description }: { value: number; label: string; color: string; description: string }) {
+function StatCard({
+  value,
+  label,
+  color,
+  description,
+  active = false,
+  onClick,
+}: {
+  value: number;
+  label: string;
+  color: string;
+  description: string;
+  active?: boolean;
+  onClick?: () => void;
+}) {
   const colorClasses = {
     green: "bg-emerald-50 border-emerald-200 text-emerald-700",
     blue: "bg-sky-50 border-sky-200 text-sky-700",
@@ -483,11 +531,18 @@ function StatCard({ value, label, color, description }: { value: number; label: 
   };
 
   return (
-    <div className={`rounded-2xl border p-4 ${colorClasses[color as keyof typeof colorClasses]}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/25 ${
+        colorClasses[color as keyof typeof colorClasses]
+      } ${active ? "ring-2 ring-[var(--color-brand-primary)]/35 shadow-md" : ""}`}
+      aria-pressed={active}
+    >
       <p className="text-3xl font-bold">{value}</p>
       <p className="text-sm font-semibold">{label}</p>
       <p className="text-xs opacity-70">{description}</p>
-    </div>
+    </button>
   );
 }
 

@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Next.js build
+.next
+
+# Git
+.git
+.gitignore
+
+# IDE / editor
+.vscode
+.cursor
+.claude
+
+# Testing
+test-results
+tests
+playwright.config.ts
+.playwright-mcp
+
+# Documentation
+documentation
+design
+*.md
+
+# Supabase local dev
+supabase/.branches
+supabase/.temp
+supabase/snippets
+
+# Environment files
+.env*
+!.env.docker.example
+
+# Misc
+*.png
+dev.sh

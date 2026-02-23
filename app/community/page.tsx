@@ -2,67 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getRecentBadges } from "@/lib/badges";
+import { getPosts, getUpcomingEvents } from "@/lib/community";
+import { getUnreadNotificationCount } from "@/lib/notifications";
 import Footer from "../components/Footer";
 import UserNav from "../components/UserNav";
 import MobileNav from "../components/MobileNav";
 import CommunityFeed from "./CommunityFeed";
 import PeaksWatchedPanel from "./PeaksWatchedPanel";
 import BadgeIcon from "../components/badges/BadgeIcon";
-
-const feedPosts = [
-  {
-    id: 1,
-    author: "Sarah Chen",
-    handle: "@sarahsummits",
-    avatar: "SC",
-    timeAgo: "2h",
-    content: "Just summited Mount Bierstadt this morning. The sunrise painted the entire Front Range in shades of gold and pink. Already planning my next 14er adventure.",
-    image: "/hero.png",
-    peak: "Mt. Bierstadt",
-    peakSlug: "mt-bierstadt",
-    elevation: "14,065'",
-    likes: 124,
-    comments: 18,
-    saves: 7,
-  },
-  {
-    id: 2,
-    author: "Marcus Reid",
-    handle: "@highaltitude_marcus",
-    avatar: "MR",
-    timeAgo: "5h",
-    content: "Looking for hiking partners for Quandary Peak this Saturday. Planning an alpine start around 4am to catch sunrise from the summit. Intermediate pace, all skill levels welcome.",
-    likes: 42,
-    comments: 23,
-    saves: 2,
-  },
-  {
-    id: 3,
-    author: "Elena Voss",
-    handle: "@trail_elena",
-    avatar: "EV",
-    timeAgo: "1d",
-    content: "Trail conditions update for Grays & Torreys: Main trail is clear to the saddle. Still some snow patches near the Torreys summit—microspikes recommended. Winds were brutal above treeline yesterday.",
-    image: "/hero.png",
-    peak: "Grays Peak",
-    peakSlug: "grays-peak",
-    elevation: "14,270'",
-    likes: 89,
-    comments: 31,
-    saves: 15,
-    isConditionReport: true,
-  },
-];
+import NotificationBell from "./NotificationBell";
 
 const trendingPeaks = [
   { name: "Quandary Peak", reports: 23, trend: "+12%" },
   { name: "Mt. Bierstadt", reports: 18, trend: "+8%" },
   { name: "Grays Peak", reports: 15, trend: "+5%" },
-];
-
-const upcomingEvents = [
-  { title: "14er Sunrise Hike", date: "Feb 15", location: "Mt. Evans", attendees: 24 },
-  { title: "Trail Maintenance Day", date: "Feb 22", location: "Quandary", attendees: 12 },
 ];
 
 
@@ -103,17 +56,10 @@ export default async function CommunityPage() {
     summitCount = count ?? 0;
   }
 
-  // Resolve peak slugs from mock data to peak IDs, and fetch user's watchlist
-  const postSlugs = feedPosts.map((p) => p.peakSlug).filter(Boolean) as string[];
-  const { data: peakRows } = await supabase
-    .from("peaks")
-    .select("id, slug")
-    .in("slug", postSlugs);
-  const slugToId: Record<string, string> = {};
-  for (const row of peakRows || []) {
-    slugToId[row.slug] = row.id;
-  }
+  // Fetch community posts from the database
+  const feedPosts = await getPosts({ limit: 20 });
 
+  // Fetch user's peak watchlist
   let watchedPeakIds: string[] = [];
   let watchedPeaks: { peak_id: string; name: string; elevation: number; slug: string }[] = [];
   if (user) {
@@ -131,8 +77,45 @@ export default async function CommunityPage() {
     }));
   }
 
+  // Get all peaks for the post composer dropdown
+  const { data: allPeaks } = await supabase
+    .from("peaks")
+    .select("id, name, slug, elevation")
+    .order("name");
+
+  // Fetch saved post count for current user
+  let savedPostCount = 0;
+  if (user) {
+    const { count } = await supabase
+      .from("post_saves")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    savedPostCount = count ?? 0;
+  }
+
   // Fetch recent badges for the community sidebar
   const recentBadges = await getRecentBadges(5);
+
+  // Fetch upcoming events for sidebar
+  const upcomingEvents = await getUpcomingEvents({ limit: 3 });
+
+  // Fetch unread notification count
+  let unreadNotificationCount = 0;
+  if (user) {
+    unreadNotificationCount = await getUnreadNotificationCount(user.id);
+  }
+
+  // Get count of events the user is attending
+  let userEventCount = 0;
+  if (user) {
+    const { count } = await supabase
+      .from("event_attendees")
+      .select("*, community_events!inner(status, event_date)", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("community_events.status", "active")
+      .gte("community_events.event_date", new Date().toISOString());
+    userEventCount = count ?? 0;
+  }
 
   // Derive display values for profile card
   const displayName = userProfile?.full_name || userProfile?.screen_name || user?.email?.split("@")[0] || "Hiker";
@@ -163,20 +146,14 @@ export default async function CommunityPage() {
               <div className="hidden md:flex items-center gap-1">
                 <NavLink href="/">Home</NavLink>
                 <NavLink href="/peaks">Peaks</NavLink>
+                <NavLink href="/events">Events</NavLink>
                 <NavLink href="/profile">Profile</NavLink>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Notifications (3 unread)"
-                  className="relative p-2 rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-colors"
-                >
-                  <BellIcon className="w-5 h-5" />
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-amber-400 text-amber-950 text-xs font-bold px-1">
-                    3
-                  </span>
-                </button>
+                {user && (
+                  <NotificationBell initialCount={unreadNotificationCount} userId={user.id} />
+                )}
                 <UserNav user={userNav} />
                 <MobileNav user={userNav} />
               </div>
@@ -289,8 +266,8 @@ export default async function CommunityPage() {
                 <nav className="space-y-1">
                   <SidebarLink icon={<CompassIcon />} label="Peaks Watched" count={watchedPeakIds.length} />
                   <SidebarLink icon={<UsersIcon />} label="Groups" count={4} />
-                  <SidebarLink icon={<CalendarIcon />} label="Events" count={2} />
-                  <SidebarLink icon={<BookmarkIcon />} label="Saved" count={18} />
+                  <SidebarLink icon={<CalendarIcon />} label="Events" count={userEventCount} href="/events" />
+                  <SidebarLink icon={<BookmarkIcon />} label="Saved" count={savedPostCount} />
                 </nav>
               </div>
 
@@ -328,8 +305,9 @@ export default async function CommunityPage() {
             posts={feedPosts}
             avatarInitials={avatarInitials}
             isLoggedIn={!!user}
-            slugToId={slugToId}
+            currentUserId={user?.id}
             initialWatchedPeakIds={watchedPeakIds}
+            allPeaks={allPeaks || []}
           />
 
           {/* Right Sidebar */}
@@ -389,33 +367,47 @@ export default async function CommunityPage() {
                 <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
                   Upcoming Events
                 </h3>
-                <div className="space-y-4">
-                  {upcomingEvents.map((event) => (
-                    <div key={event.title} className="group cursor-pointer">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-[var(--color-brand-primary)]/10 flex flex-col items-center justify-center">
-                          <span className="text-xs font-bold text-[var(--color-brand-primary)]">
-                            {event.date.split(' ')[0]}
-                          </span>
-                          <span className="text-sm font-bold text-[var(--color-brand-primary)]">
-                            {event.date.split(' ')[1]}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                            {event.title}
-                          </p>
-                          <p className="text-xs text-[var(--color-text-secondary)]">
-                            {event.location} • {event.attendees} going
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button className="mt-4 w-full text-sm font-medium text-[var(--color-brand-primary)] hover:underline">
+                {upcomingEvents.length > 0 ? (
+                  <div className="space-y-4">
+                    {upcomingEvents.map((event) => {
+                      const eventDate = new Date(event.event_date);
+                      const month = eventDate.toLocaleDateString("en-US", { month: "short" });
+                      const day = String(eventDate.getDate());
+                      return (
+                        <Link key={event.id} href={`/events/${event.id}`} className="group block">
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-[var(--color-brand-primary)]/10 flex flex-col items-center justify-center">
+                              <span className="text-xs font-bold text-[var(--color-brand-primary)]">
+                                {month}
+                              </span>
+                              <span className="text-sm font-bold text-[var(--color-brand-primary)]">
+                                {day}
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                                {event.title}
+                              </p>
+                              <p className="text-xs text-[var(--color-text-secondary)]">
+                                {event.location} • {event.attendee_count} going
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    No upcoming events yet.
+                  </p>
+                )}
+                <Link
+                  href="/events"
+                  className="mt-4 block w-full text-center text-sm font-medium text-[var(--color-brand-primary)] hover:underline"
+                >
                   View All Events
-                </button>
+                </Link>
               </div>
 
               {/* Weather Widget */}
@@ -459,9 +451,9 @@ function NavLink({ href, children, active }: { href: string; children: React.Rea
   );
 }
 
-function SidebarLink({ icon, label, count }: { icon: React.ReactNode; label: string; count?: number }) {
-  return (
-    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[var(--color-surface-subtle)] transition-all group">
+function SidebarLink({ icon, label, count, href }: { icon: React.ReactNode; label: string; count?: number; href?: string }) {
+  const content = (
+    <>
       <span className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
         {icon}
       </span>
@@ -471,6 +463,20 @@ function SidebarLink({ icon, label, count }: { icon: React.ReactNode; label: str
           {count}
         </span>
       )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[var(--color-surface-subtle)] transition-all group">
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[var(--color-surface-subtle)] transition-all group">
+      {content}
     </button>
   );
 }
@@ -517,11 +523,4 @@ function BookmarkIcon({ className }: { className?: string }) {
   );
 }
 
-function BellIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-    </svg>
-  );
-}
 

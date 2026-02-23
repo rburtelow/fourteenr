@@ -225,31 +225,31 @@ All tables should follow the project's existing patterns:
 
 ---
 
-### Phase 2 — Engagement (Likes, Comments, Saves)
+### Phase 2 — Engagement (Likes, Comments, Saves) ✅ COMPLETE
 
 **Goal:** Make like/comment/save buttons functional.
 
 **Migration:**
-- Create `post_likes`, `post_comments`, `post_saves` tables with RLS
+- ✅ Create `post_likes`, `post_comments`, `post_saves` tables with RLS (included in Phase 1 migration)
 
 **Server Actions:**
-- `toggleLike(postId)` — upsert/delete in `post_likes`
-- `addComment(postId, content)` — insert into `post_comments`
-- `deleteComment(commentId)` — delete own comment
-- `toggleSave(postId)` — upsert/delete in `post_saves`
+- ✅ `toggleLike(postId)` — upsert/delete in `post_likes`
+- ✅ `addComment(postId, content)` — insert into `post_comments`
+- ✅ `deleteComment(commentId)` — delete own comment
+- ✅ `toggleSave(postId)` — upsert/delete in `post_saves`
 
 **Data Fetching:**
-- Add aggregated counts to the posts query: like count, comment count, save count
-- Include whether the current user has liked/saved each post (for active state)
-- Use Supabase's `.select()` with count aggregation or a database view
+- ✅ Add aggregated counts to the posts query: like count, comment count, save count
+- ✅ Include whether the current user has liked/saved each post (for active state)
+- ✅ Use Supabase's `.select()` with count aggregation or a database view
 
 **Component Updates:**
-- Add optimistic toggle for likes (same pattern as peak watchlist)
-- Add optimistic toggle for saves
-- Build a comment thread UI (expandable below each post)
-- Show filled heart icon when user has liked
-- Show filled bookmark icon when user has saved
-- Update Quick Links "Saved" count to query `post_saves` for the current user
+- ✅ Add optimistic toggle for likes (same pattern as peak watchlist)
+- ✅ Add optimistic toggle for saves
+- ✅ Build a comment thread UI (expandable below each post) — `CommentThread.tsx`
+- ✅ Show filled heart icon when user has liked
+- ✅ Show filled bookmark icon when user has saved
+- ✅ Update Quick Links "Saved" count to query `post_saves` for the current user
 
 ---
 

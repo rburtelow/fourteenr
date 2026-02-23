@@ -191,66 +191,69 @@ export default async function PublicProfilePage({
         <div className="max-w-5xl mx-auto px-4 sm:px-8 -mt-16 relative z-10">
           <div className="bg-white rounded-3xl border border-[var(--color-border-app)] shadow-xl overflow-hidden">
             <div className="p-6 md:p-8">
-              <div className="flex flex-row items-center gap-4 md:gap-6">
-                {/* Avatar */}
-                <div className="relative flex-shrink-0">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
-                    {initials}
-                  </div>
-                  {summitCount >= 5 && (
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
-                      <CheckIcon className="w-3 h-3 text-white" />
+              <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 md:gap-6">
+                {/* Avatar and user info row */}
+                <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 flex-1 w-full sm:w-auto min-w-0">
+                  {/* Avatar */}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
+                      {initials}
                     </div>
-                  )}
-                </div>
+                    {summitCount >= 5 && (
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
+                        <CheckIcon className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
 
-                {/* Username and details */}
-                <div className="flex-1 min-w-0">
-                  <h1
-                    className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    {displayName}
-                  </h1>
-                  <p className="text-sm text-[var(--color-text-secondary)]">
-                    {screenName}
-                  </p>
-                  <p className="mt-2 text-sm text-[var(--color-text-secondary)] flex flex-wrap items-center gap-2">
-                    {userLocation && (
-                      <>
-                        <span className="flex items-center gap-1">
-                          <MapPinIcon className="w-4 h-4" />
-                          {userLocation}
-                        </span>
-                        <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40" />
-                      </>
-                    )}
-                    {joinDate && (
-                      <span className="flex items-center gap-1">
-                        <CalendarIcon className="w-4 h-4" />
-                        Joined {joinDate}
-                      </span>
-                    )}
-                  </p>
-                  {profile.bio && (
-                    <p className="mt-3 text-sm text-[var(--color-text-primary)] max-w-xl">
-                      {profile.bio}
+                  {/* Username and details */}
+                  <div className="flex-1 min-w-0 text-center sm:text-left">
+                    <h1
+                      className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] truncate"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      {displayName}
+                    </h1>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      {screenName}
                     </p>
-                  )}
+                    <p className="mt-2 text-sm text-[var(--color-text-secondary)] flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                      {userLocation && (
+                        <>
+                          <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+                          <span>{userLocation}</span>
+                          {joinDate && (
+                            <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/40 hidden sm:block" />
+                          )}
+                        </>
+                      )}
+                      {joinDate && (
+                        <>
+                          <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                          <span>Joined {joinDate}</span>
+                        </>
+                      )}
+                    </p>
+                    {profile.bio && (
+                      <p className="mt-3 text-sm text-[var(--color-text-primary)] max-w-xl">
+                        {profile.bio}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                {/* Action buttons - stack on mobile, inline on larger screens */}
+                <div className="flex items-center gap-3 w-full sm:w-auto flex-shrink-0">
                   {isOwnProfile ? (
                     <Link
                       href="/profile"
-                      className="px-5 py-2.5 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all flex items-center gap-2"
+                      className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all flex items-center justify-center gap-2"
                     >
                       <EditIcon className="w-4 h-4" />
                       Edit Profile
                     </Link>
                   ) : (
-                    <button className="px-5 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
+                    <button className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
                       <UserPlusIcon className="w-4 h-4" />
                       Follow
                     </button>
@@ -260,7 +263,7 @@ export default async function PublicProfilePage({
             </div>
 
             {/* Stats Bar */}
-            <div className="pt-4 px-6 md:px-8 pb-6 md:pb-8 border-t border-[var(--color-border-app)]">
+            <div className="mt-4 pt-4 px-6 md:px-8 pb-6 md:pb-8 border-t border-[var(--color-border-app)]">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 <StatItem
                   label="Summits"
@@ -281,7 +284,7 @@ export default async function PublicProfilePage({
                   label="Days on Trail"
                   value={profileStats.daysOnTrail.toString()}
                 />
-                <div className="text-center md:text-left">
+                <div className="col-span-2 md:col-span-1 text-center md:text-left">
                   <p className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-1">
                     Progress
                   </p>

@@ -5,6 +5,331 @@ export interface Database {
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
     Tables: {
+      community_posts: {
+        Row: {
+          id: string;
+          user_id: string;
+          content: string;
+          peak_id: string | null;
+          is_condition_report: boolean;
+          image_urls: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          content: string;
+          peak_id?: string | null;
+          is_condition_report?: boolean;
+          image_urls?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          content?: string;
+          peak_id?: string | null;
+          is_condition_report?: boolean;
+          image_urls?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "community_posts_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      post_likes: {
+        Row: {
+          id: string;
+          user_id: string;
+          post_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          post_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          post_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_likes_post_id_fkey";
+            columns: ["post_id"];
+            referencedRelation: "community_posts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      post_comments: {
+        Row: {
+          id: string;
+          post_id: string;
+          user_id: string;
+          content: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          user_id?: string;
+          content: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          user_id?: string;
+          content?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey";
+            columns: ["post_id"];
+            referencedRelation: "community_posts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      community_events: {
+        Row: {
+          id: string;
+          created_by: string;
+          title: string;
+          description: string | null;
+          event_date: string;
+          end_date: string | null;
+          location: string;
+          peak_id: string | null;
+          max_attendees: number | null;
+          status: string;
+          community_post_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          created_by?: string;
+          title: string;
+          description?: string | null;
+          event_date: string;
+          end_date?: string | null;
+          location: string;
+          peak_id?: string | null;
+          max_attendees?: number | null;
+          status?: string;
+          community_post_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          created_by?: string;
+          title?: string;
+          description?: string | null;
+          event_date?: string;
+          end_date?: string | null;
+          location?: string;
+          peak_id?: string | null;
+          max_attendees?: number | null;
+          status?: string;
+          community_post_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "community_events_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "community_events_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "community_events_community_post_id_fkey";
+            columns: ["community_post_id"];
+            referencedRelation: "community_posts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      event_attendees: {
+        Row: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey";
+            columns: ["event_id"];
+            referencedRelation: "community_events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_attendees_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          actor_id: string | null;
+          type: string;
+          post_id: string | null;
+          comment_id: string | null;
+          badge_id: string | null;
+          message: string;
+          is_read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          actor_id?: string | null;
+          type: string;
+          post_id?: string | null;
+          comment_id?: string | null;
+          badge_id?: string | null;
+          message: string;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          actor_id?: string | null;
+          type?: string;
+          post_id?: string | null;
+          comment_id?: string | null;
+          badge_id?: string | null;
+          message?: string;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_post_id_fkey";
+            columns: ["post_id"];
+            referencedRelation: "community_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_comment_id_fkey";
+            columns: ["comment_id"];
+            referencedRelation: "post_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_badge_id_fkey";
+            columns: ["badge_id"];
+            referencedRelation: "badge_definitions";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      post_saves: {
+        Row: {
+          id: string;
+          user_id: string;
+          post_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          post_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          post_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_saves_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_saves_post_id_fkey";
+            columns: ["post_id"];
+            referencedRelation: "community_posts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       profiles: {
         Row: {
           id: string;
@@ -410,3 +735,9 @@ export type SummitLog = Database["public"]["Tables"]["summit_logs"]["Row"];
 export type PeakWatchlistItem = Database["public"]["Tables"]["peak_watchlist"]["Row"];
 export type PeakForecast = Database["public"]["Tables"]["peak_forecasts"]["Row"];
 export type PeakWithRoutes = Peak & { routes: Route[] };
+export type CommunityPostRow = Database["public"]["Tables"]["community_posts"]["Row"];
+export type PostLike = Database["public"]["Tables"]["post_likes"]["Row"];
+export type PostComment = Database["public"]["Tables"]["post_comments"]["Row"];
+export type PostSave = Database["public"]["Tables"]["post_saves"]["Row"];
+export type CommunityEventRow = Database["public"]["Tables"]["community_events"]["Row"];
+export type EventAttendeeRow = Database["public"]["Tables"]["event_attendees"]["Row"];
