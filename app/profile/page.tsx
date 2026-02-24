@@ -4,10 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getAllPeaks } from "@/lib/peaks";
 import { getAllBadges, getUserBadges } from "@/lib/badges";
 import type { Peak } from "@/lib/database.types";
+import { getFollowerCount, getFollowingCount, getUniqueFriendsCount } from "@/lib/follows";
 import UserNav from "../components/UserNav";
 import MobileNav from "../components/MobileNav";
 import Footer from "../components/Footer";
 import BadgeGrid from "../components/badges/BadgeGrid";
+import LogSummitButton from "../components/LogSummitButton";
+import TripReportsList from "./TripReportsList";
+import type { TripReportData } from "./TripReportsList";
 
 const TOTAL_14ERS = 58; // canonical count of Colorado 14ers
 
@@ -45,21 +49,65 @@ export default async function ProfilePage() {
         .order("summit_date", { ascending: false })
     : { data: null };
 
-  // Fetch the routes used in summit logs so we can sum distance & elevation gain
-  const routeIds = (summitLogs || [])
-    .map((log) => log.route_id)
-    .filter((id): id is string => id !== null);
+  // Fetch the user's trip reports
+  const { data: tripReports } = user
+    ? await supabase
+        .from("trip_reports")
+        .select("id, peak_id, route_id, hike_date, start_time, end_time, total_time_minutes, summary, narrative, difficulty_rating, condition_severity_score, objective_risk_score, trailhead_access_rating, avalanche_risk_level, overall_recommendation, snow_present, sections_json, created_at")
+        .eq("user_id", user.id)
+        .order("hike_date", { ascending: false })
+    : { data: null };
+
+  // Collect route IDs from both summit logs and trip reports
+  const routeIdSet = new Set<string>();
+  for (const log of summitLogs || []) {
+    if (log.route_id) routeIdSet.add(log.route_id);
+  }
+  for (const report of tripReports || []) {
+    if (report.route_id) routeIdSet.add(report.route_id);
+  }
+  const routeIds = Array.from(routeIdSet);
 
   const { data: summitRoutes } = routeIds.length > 0
     ? await supabase
         .from("routes")
-        .select("id, distance, elevation_gain")
+        .select("id, peak_id, distance, elevation_gain")
         .in("id", routeIds)
     : { data: null };
 
   const routeMap = new Map(
     (summitRoutes || []).map((r) => [r.id, r])
   );
+
+  // Build a peak→route lookup from trip reports for summit logs missing a route_id
+  const tripReportRouteByPeak = new Map<string, string>();
+  for (const report of tripReports || []) {
+    if (report.route_id && !tripReportRouteByPeak.has(report.peak_id)) {
+      tripReportRouteByPeak.set(report.peak_id, report.route_id);
+    }
+  }
+
+  // For peaks with no route selected anywhere, fetch their first route as fallback
+  const peaksNeedingFallbackRoute = new Set<string>();
+  for (const log of summitLogs || []) {
+    if (!log.route_id && !tripReportRouteByPeak.has(log.peak_id)) {
+      peaksNeedingFallbackRoute.add(log.peak_id);
+    }
+  }
+  const fallbackPeakIds = Array.from(peaksNeedingFallbackRoute);
+  const { data: fallbackRoutes } = fallbackPeakIds.length > 0
+    ? await supabase
+        .from("routes")
+        .select("id, peak_id, distance, elevation_gain")
+        .in("peak_id", fallbackPeakIds)
+    : { data: null };
+
+  const peakFallbackRouteMap = new Map<string, { distance: number | null; elevation_gain: number | null }>();
+  for (const r of fallbackRoutes || []) {
+    if (!peakFallbackRouteMap.has(r.peak_id)) {
+      peakFallbackRouteMap.set(r.peak_id, r);
+    }
+  }
 
   // Fetch watchlist with joined peak data
   const { data: watchlistRows } = user
@@ -177,6 +225,37 @@ export default async function ProfilePage() {
     }];
   });
 
+  // Build trip report display data
+  const tripReportDisplay: TripReportData[] = (tripReports || []).flatMap((report) => {
+    const peak = peakMap.get(report.peak_id);
+    if (!peak) return [];
+    return [{
+      id: report.id,
+      peakSlug: peak.slug,
+      peakName: peak.name,
+      peakElevation: peak.elevation.toLocaleString() + "'",
+      hikeDate: new Date(report.hike_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      hikeDateRaw: report.hike_date,
+      startTime: report.start_time,
+      endTime: report.end_time,
+      totalTimeMinutes: report.total_time_minutes,
+      summary: report.summary,
+      narrative: report.narrative,
+      difficultyRating: report.difficulty_rating,
+      conditionSeverity: report.condition_severity_score,
+      objectiveRisk: report.objective_risk_score,
+      trailheadAccess: report.trailhead_access_rating,
+      avalancheRisk: report.avalanche_risk_level,
+      recommended: report.overall_recommendation,
+      snowPresent: report.snow_present,
+      sections: report.sections_json,
+    }];
+  });
+
   // Split events into upcoming and past
   const now = new Date();
   const upcomingUserEvents = userEvents.filter(
@@ -197,15 +276,23 @@ export default async function ProfilePage() {
   const uniquePeakIds = new Set(logs.map((l) => l.peak_id));
   const summitCount = uniquePeakIds.size;
 
+  // Resolve route for a summit log: direct route_id → trip report route → peak's first route
+  const resolveRoute = (log: { route_id: string | null; peak_id: string }) => {
+    if (log.route_id) return routeMap.get(log.route_id) ?? null;
+    const tripRouteId = tripReportRouteByPeak.get(log.peak_id);
+    if (tripRouteId) return routeMap.get(tripRouteId) ?? null;
+    return peakFallbackRouteMap.get(log.peak_id) ?? null;
+  };
+
   // Elevation Gained: sum of elevation_gain from each log's route
   const totalElevation = logs.reduce((sum, log) => {
-    const route = log.route_id ? routeMap.get(log.route_id) : null;
+    const route = resolveRoute(log);
     return sum + (route?.elevation_gain ?? 0);
   }, 0);
 
   // Miles Hiked: sum of distance from each log's route
   const totalMiles = logs.reduce((sum, log) => {
-    const route = log.route_id ? routeMap.get(log.route_id) : null;
+    const route = resolveRoute(log);
     return sum + (route?.distance ?? 0);
   }, 0);
 
@@ -217,6 +304,13 @@ export default async function ProfilePage() {
   const peaksRemaining = TOTAL_14ERS - summitCount;
   const percentComplete = Math.round((summitCount / TOTAL_14ERS) * 1000) / 10;
 
+  const tripReportCount = (tripReports || []).length;
+
+  // Fetch follower/following counts
+  const [followerCount, followingCount, friendsCount] = user
+    ? await Promise.all([getFollowerCount(user.id), getFollowingCount(user.id), getUniqueFriendsCount(user.id)])
+    : [0, 0, 0];
+
   const profileStats = {
     summits: summitCount,
     totalElevation: totalElevation.toLocaleString(),
@@ -224,6 +318,9 @@ export default async function ProfilePage() {
     daysOnTrail,
     peaksRemaining,
     percentComplete,
+    tripReports: tripReportCount,
+    followers: followerCount,
+    following: followingCount,
   };
 
   // Derive display values from auth + profile data
@@ -265,13 +362,14 @@ export default async function ProfilePage() {
 
               <div className="flex items-center gap-2">
                 {user && (
-                  <Link
-                    href="/log"
+                  <LogSummitButton
+                    peaks={allPeaks.map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
+                    isLoggedIn
                     className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-full hover:bg-[var(--color-brand-accent)] transition-all shadow-md shadow-[var(--color-brand-primary)]/20"
                   >
                     <PlusIcon className="w-4 h-4" />
                     Log a Summit
-                  </Link>
+                  </LogSummitButton>
                 )}
                 <UserNav user={userNav} />
                 <MobileNav user={userNav} />
@@ -349,11 +447,13 @@ export default async function ProfilePage() {
 
             {/* Stats Bar */}
             <div className="mt-4 pt-4 px-6 md:px-8 pb-6 md:pb-8 border-t border-[var(--color-border-app)]">
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-8 gap-6">
                   <StatItem label="Summits" value={profileStats.summits.toString()} suffix="/58" />
                   <StatItem label="Elevation Gained" value={profileStats.totalElevation} suffix=" ft" />
                   <StatItem label="Miles Hiked" value={profileStats.totalMiles} suffix=" mi" />
-                  <StatItem label="Peaks Remaining" value={profileStats.peaksRemaining.toString()} />
+                  <StatItem label="Trip Reports" value={profileStats.tripReports.toString()} />
+                  <StatItem label="Followers" value={profileStats.followers.toString()} />
+                  <StatItem label="Following" value={profileStats.following.toString()} />
                   <div className="col-span-2 text-center md:text-left">
                     <p className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-1">
                       Progress
@@ -378,18 +478,27 @@ export default async function ProfilePage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 overflow-x-hidden">
-        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Left Sidebar */}
-          <aside className="lg:col-span-3 space-y-4 lg:space-y-6">
+          <aside className="lg:col-span-3 space-y-4 lg:space-y-6 min-w-0">
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-4 sm:p-5">
               <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
                 Quick Actions
               </h3>
               <nav className="space-y-1">
-                <SidebarLink icon={<PlusIcon />} label="Log a Summit" primary />
+                <LogSummitButton
+                  peaks={allPeaks.map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
+                  isLoggedIn={!!user}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group bg-[var(--color-brand-primary)] text-white hover:bg-[var(--color-brand-accent)]"
+                >
+                  <span className="flex-shrink-0 text-white"><PlusIcon /></span>
+                  <span className="flex-1 min-w-0 text-sm font-medium text-white">Log a Summit</span>
+                </LogSummitButton>
                 <SidebarLink icon={<ListIcon />} label="My Wishlist" count={watchlistPeaks.length} />
+                <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} />
                 <SidebarLink icon={<CalendarIcon className="w-5 h-5" />} label="My Events" count={userEvents.length} href="#my-events" />
+                <SidebarLink icon={<DocumentIcon />} label="Trip Reports" count={tripReportCount} href="#trip-reports" />
                 <SidebarLink icon={<PhotoIcon />} label="Photo Gallery" count={47} />
                 <SidebarLink icon={<TrophyIcon />} label="Achievements" count={2} />
               </nav>
@@ -434,7 +543,7 @@ export default async function ProfilePage() {
           </aside>
 
           {/* Main Content */}
-          <main className="lg:col-span-9 space-y-6 lg:space-y-8">
+          <main className="lg:col-span-9 space-y-6 lg:space-y-8 min-w-0">
             {/* Wishlist Section */}
             <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
               <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
@@ -599,6 +708,27 @@ export default async function ProfilePage() {
               </div>
             </section>
 
+            {/* Trip Reports Section */}
+            <section id="trip-reports" className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
+                      My Trip Reports
+                    </h2>
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                      Detailed reports from your hikes
+                    </p>
+                  </div>
+                  <span className="px-3 py-1.5 text-xs font-semibold text-[var(--color-brand-primary)] bg-[var(--color-surface-subtle)] rounded-lg">
+                    {tripReportDisplay.length} reports
+                  </span>
+                </div>
+              </div>
+
+              <TripReportsList reports={tripReportDisplay} />
+            </section>
+
             {/* My Events Section */}
             <section id="my-events" className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
               <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
@@ -686,7 +816,7 @@ export default async function ProfilePage() {
 
                 {/* Quick Add Grid */}
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full table-fixed">
                     <thead>
                       <tr className="border-b border-[var(--color-border-app)]">
                         <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Peak</th>
@@ -710,12 +840,12 @@ export default async function ProfilePage() {
                                 <span className="text-xs font-mono text-[var(--color-text-muted-green)] w-4 sm:w-5 flex-shrink-0">
                                   {String(i + 1).padStart(2, '0')}
                                 </span>
-                                <Link href={`/peaks/${peak.slug}`} className={`font-medium hover:underline text-sm sm:text-base ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
-                                  {peak.name}
-                                </Link>
                                 {isCompleted && (
                                   <CheckCircleIcon className="w-4 h-4 text-[var(--color-brand-highlight)] flex-shrink-0" />
                                 )}
+                                <Link href={`/peaks/${peak.slug}`} className={`font-medium hover:underline text-sm sm:text-base ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
+                                  {peak.name}
+                                </Link>
                               </div>
                             </td>
                             <td className="px-3 sm:px-4 py-3 text-sm text-[var(--color-text-secondary)] hidden sm:table-cell">
@@ -1012,6 +1142,14 @@ function UserIcon({ className }: { className?: string }) {
   );
 }
 
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+    </svg>
+  );
+}
+
 function LockIcon({ className }: { className?: string }) {
   return (
     <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -1024,6 +1162,14 @@ function DownloadIcon({ className }: { className?: string }) {
   return (
     <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+    </svg>
+  );
+}
+
+function DocumentIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   );
 }

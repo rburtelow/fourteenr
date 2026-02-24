@@ -14,6 +14,8 @@ import { createClient } from "@/lib/supabase/client";
 import { createPost, deletePost, toggleLike, toggleSave } from "./actions";
 import type { CommunityPost, PostComment } from "@/lib/community.types";
 import CommentThread from "./CommentThread";
+import FollowButton from "../components/FollowButton";
+import type { FollowStatus } from "@/lib/follows";
 
 const FEED_POST_SELECT = `
   id,
@@ -88,6 +90,7 @@ interface CommunityFeedProps {
   currentUserId?: string;
   initialWatchedPeakIds: string[];
   allPeaks: Peak[];
+  followStatuses?: Record<string, FollowStatus>;
 }
 
 export default function CommunityFeed({
@@ -97,9 +100,31 @@ export default function CommunityFeed({
   currentUserId,
   initialWatchedPeakIds,
   allPeaks,
+  followStatuses: initialFollowStatuses,
 }: CommunityFeedProps) {
   const supabase = useMemo(() => createClient(), []);
   const [posts, setPosts] = useState(initialPosts);
+
+  // Scroll to a specific post if URL contains a hash like #post-{id}
+  const scrolledRef = useRef(false);
+  useEffect(() => {
+    if (scrolledRef.current) return;
+    const hash = window.location.hash;
+    if (hash && hash.startsWith("#post-")) {
+      scrolledRef.current = true;
+      // Small delay to ensure the post is rendered
+      requestAnimationFrame(() => {
+        const el = document.getElementById(hash.slice(1));
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-2", "ring-[var(--color-brand-primary)]");
+          setTimeout(() => {
+            el.classList.remove("ring-2", "ring-[var(--color-brand-primary)]");
+          }, 2000);
+        }
+      });
+    }
+  }, []);
   const [watchedPeaks, setWatchedPeaks] = useState<Set<string>>(
     () => new Set(initialWatchedPeakIds)
   );
@@ -908,6 +933,7 @@ export default function CommunityFeed({
         return (
           <article
             key={post.id}
+            id={`post-${post.id}`}
             className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden card-hover animate-fade-up"
             style={{ animationDelay: `${index * 100}ms` }}
           >
@@ -933,6 +959,12 @@ export default function CommunityFeed({
                       <span className="font-semibold text-[var(--color-text-primary)]">
                         {authorName}
                       </span>
+                      {!isOwnPost && isLoggedIn && initialFollowStatuses && initialFollowStatuses[post.user_id] && (
+                        <FollowButton
+                          targetUserId={post.user_id}
+                          initialStatus={initialFollowStatuses[post.user_id]}
+                        />
+                      )}
                       {post.is_condition_report && (
                         <span className="px-2 py-0.5 rounded-full bg-[var(--color-amber-glow)]/10 text-[var(--color-amber-glow)] text-xs font-medium">
                           Conditions

@@ -63,6 +63,11 @@
   --spacing-24: 6rem;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--color-page);
   color: var(--color-text-primary);

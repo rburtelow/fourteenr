@@ -235,6 +235,7 @@ export interface Database {
           post_id: string | null;
           comment_id: string | null;
           badge_id: string | null;
+          follow_id: string | null;
           message: string;
           is_read: boolean;
           created_at: string;
@@ -247,6 +248,7 @@ export interface Database {
           post_id?: string | null;
           comment_id?: string | null;
           badge_id?: string | null;
+          follow_id?: string | null;
           message: string;
           is_read?: boolean;
           created_at?: string;
@@ -259,6 +261,7 @@ export interface Database {
           post_id?: string | null;
           comment_id?: string | null;
           badge_id?: string | null;
+          follow_id?: string | null;
           message?: string;
           is_read?: boolean;
           created_at?: string;
@@ -292,6 +295,12 @@ export interface Database {
             foreignKeyName: "notifications_badge_id_fkey";
             columns: ["badge_id"];
             referencedRelation: "badge_definitions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_follow_id_fkey";
+            columns: ["follow_id"];
+            referencedRelation: "follows";
             referencedColumns: ["id"];
           }
         ];
@@ -570,6 +579,134 @@ export interface Database {
           }
         ];
       };
+      trip_reports: {
+        Row: {
+          id: string;
+          user_id: string;
+          peak_id: string;
+          route_id: string | null;
+          hike_date: string;
+          start_time: string | null;
+          end_time: string | null;
+          total_time_minutes: number | null;
+          difficulty_rating: number;
+          condition_severity_score: number;
+          objective_risk_score: number;
+          trailhead_access_rating: string | null;
+          snow_present: boolean;
+          avalanche_risk_level: string | null;
+          overall_recommendation: boolean;
+          summary: string;
+          narrative: string | null;
+          sections_json: TripReportSections | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          peak_id: string;
+          route_id?: string | null;
+          hike_date: string;
+          start_time?: string | null;
+          end_time?: string | null;
+          total_time_minutes?: number | null;
+          difficulty_rating: number;
+          condition_severity_score: number;
+          objective_risk_score: number;
+          trailhead_access_rating?: string | null;
+          snow_present?: boolean;
+          avalanche_risk_level?: string | null;
+          overall_recommendation?: boolean;
+          summary: string;
+          narrative?: string | null;
+          sections_json?: TripReportSections | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          peak_id?: string;
+          route_id?: string | null;
+          hike_date?: string;
+          start_time?: string | null;
+          end_time?: string | null;
+          total_time_minutes?: number | null;
+          difficulty_rating?: number;
+          condition_severity_score?: number;
+          objective_risk_score?: number;
+          trailhead_access_rating?: string | null;
+          snow_present?: boolean;
+          avalanche_risk_level?: string | null;
+          overall_recommendation?: boolean;
+          summary?: string;
+          narrative?: string | null;
+          sections_json?: TripReportSections | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trip_reports_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trip_reports_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trip_reports_route_id_fkey";
+            columns: ["route_id"];
+            referencedRelation: "routes";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      follows: {
+        Row: {
+          id: string;
+          follower_id: string;
+          following_id: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          follower_id?: string;
+          following_id: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          follower_id?: string;
+          following_id?: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       summit_logs: {
         Row: {
           id: string;
@@ -630,6 +767,68 @@ export interface Database {
       };
     };
   };
+}
+
+// Trip report section types
+export interface TripReportSection<T = Record<string, unknown>> {
+  enabled: boolean;
+  data: T;
+  notes?: string;
+}
+
+export interface TripReportSections {
+  trailhead_conditions?: TripReportSection<{
+    parking_availability?: string;
+    road_condition?: string;
+    restrooms_available?: boolean;
+  }>;
+  weather?: TripReportSection<{
+    summit_temp_f?: number;
+    wind_mph?: number;
+    precipitation?: string;
+    visibility?: string;
+  }>;
+  route_conditions?: TripReportSection<{
+    trail_status?: string;
+    exposure_level?: string;
+    scrambling_required?: boolean;
+  }>;
+  gear?: TripReportSection<{
+    essential_items?: string[];
+    recommended_items?: string[];
+  }>;
+  water_crossings?: TripReportSection<{
+    crossing_count?: number;
+    difficulty?: string;
+    footwear_recommended?: string;
+  }>;
+  wildlife?: TripReportSection<{
+    animals_seen?: string[];
+  }>;
+  camping?: TripReportSection<{
+    campsite_location?: string;
+    permit_required?: boolean;
+    water_source_nearby?: boolean;
+  }>;
+  navigation_notes?: TripReportSection;
+  snow_conditions?: TripReportSection<{
+    snow_depth_inches?: number;
+    traction_used?: string;
+    posthole_risk?: boolean;
+  }>;
+  avalanche_notes?: TripReportSection<{
+    slope_aspect?: string;
+    recent_slides_observed?: boolean;
+  }>;
+  lessons_learned?: TripReportSection;
+  mistakes_made?: TripReportSection;
+  time_breakdown?: TripReportSection<{
+    approach_minutes?: number;
+    ascent_minutes?: number;
+    summit_minutes?: number;
+    descent_minutes?: number;
+  }>;
+  training_prep?: TripReportSection;
 }
 
 // Weather forecast types used in the database schema
@@ -741,3 +940,8 @@ export type PostComment = Database["public"]["Tables"]["post_comments"]["Row"];
 export type PostSave = Database["public"]["Tables"]["post_saves"]["Row"];
 export type CommunityEventRow = Database["public"]["Tables"]["community_events"]["Row"];
 export type EventAttendeeRow = Database["public"]["Tables"]["event_attendees"]["Row"];
+export type TripReportRow = Database["public"]["Tables"]["trip_reports"]["Row"];
+export type TripReportInsert = Database["public"]["Tables"]["trip_reports"]["Insert"];
+export type FollowRow = Database["public"]["Tables"]["follows"]["Row"];
+export type FollowInsert = Database["public"]["Tables"]["follows"]["Insert"];
+export type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];

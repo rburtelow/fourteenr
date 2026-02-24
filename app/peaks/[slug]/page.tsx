@@ -8,6 +8,8 @@ import type { Route, AdjustedHour, PeakForecast } from "@/lib/database.types";
 import UserNav from "../../components/UserNav";
 import MobileNav from "../../components/MobileNav";
 import WatchButton from "./WatchButton";
+import TripReportButton from "./TripReportButton";
+import LogSummitButton from "../../components/LogSummitButton";
 
 export default async function PeakProfilePage({
   params,
@@ -353,14 +355,21 @@ export default async function PeakProfilePage({
                     Quick Actions
                   </h3>
                   <div className="space-y-3">
-                    <button className="w-full group relative bg-[var(--color-brand-primary)] text-white px-6 py-4 rounded-2xl font-semibold text-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-[var(--color-brand-primary)]/20">
+                    <LogSummitButton
+                      peakId={peak.id}
+                      peakName={peak.name}
+                      routes={peak.routes}
+                      isLoggedIn={!!user}
+                      className="w-full group relative bg-[var(--color-brand-primary)] text-white px-6 py-4 rounded-2xl font-semibold text-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-[var(--color-brand-primary)]/20"
+                    >
                       <span className="relative z-10 flex items-center justify-center gap-2">
                         <CheckCircleIcon className="w-5 h-5" />
                         Log Summit
                       </span>
                       <div className="absolute inset-0 bg-[var(--color-brand-accent)] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                    </button>
+                    </LogSummitButton>
                     <WatchButton peakId={peak.id} initialWatched={isWatched} isLoggedIn={!!user} />
+                    <TripReportButton peakId={peak.id} peakName={peak.name} routes={peak.routes} isLoggedIn={!!user} />
                     <button className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-sm text-[var(--color-text-secondary)] border-2 border-[var(--color-border-app-strong)] bg-white hover:bg-[var(--color-surface-subtle)] transition-all">
                       <ShareIcon className="w-5 h-5" />
                       Share Peak

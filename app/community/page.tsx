@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getRecentBadges } from "@/lib/badges";
 import { getPosts, getUpcomingEvents } from "@/lib/community";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { getBulkFollowStatuses, getFollowerCount, getFollowingCount } from "@/lib/follows";
+import type { FollowStatus } from "@/lib/follows";
 import Footer from "../components/Footer";
 import UserNav from "../components/UserNav";
 import MobileNav from "../components/MobileNav";
@@ -11,6 +13,7 @@ import CommunityFeed from "./CommunityFeed";
 import PeaksWatchedPanel from "./PeaksWatchedPanel";
 import BadgeIcon from "../components/badges/BadgeIcon";
 import NotificationBell from "./NotificationBell";
+import LogSummitButton from "../components/LogSummitButton";
 
 const trendingPeaks = [
   { name: "Quandary Peak", reports: 23, trend: "+12%" },
@@ -59,6 +62,14 @@ export default async function CommunityPage() {
   // Fetch community posts from the database
   const feedPosts = await getPosts({ limit: 20 });
 
+  // Fetch follow statuses for all post authors
+  let followStatuses: Record<string, FollowStatus> = {};
+  if (user) {
+    const authorIds = [...new Set(feedPosts.map((p) => p.user_id))];
+    const statusMap = await getBulkFollowStatuses(user.id, authorIds);
+    followStatuses = Object.fromEntries(statusMap);
+  }
+
   // Fetch user's peak watchlist
   let watchedPeakIds: string[] = [];
   let watchedPeaks: { peak_id: string; name: string; elevation: number; slug: string }[] = [];
@@ -99,10 +110,17 @@ export default async function CommunityPage() {
   // Fetch upcoming events for sidebar
   const upcomingEvents = await getUpcomingEvents({ limit: 3 });
 
-  // Fetch unread notification count
+  // Fetch unread notification count and friends count
   let unreadNotificationCount = 0;
+  let friendsCount = 0;
   if (user) {
-    unreadNotificationCount = await getUnreadNotificationCount(user.id);
+    const [notifCount, followers, following] = await Promise.all([
+      getUnreadNotificationCount(user.id),
+      getFollowerCount(user.id),
+      getFollowingCount(user.id),
+    ]);
+    unreadNotificationCount = notifCount;
+    friendsCount = followers + following;
   }
 
   // Get count of events the user is attending
@@ -265,7 +283,7 @@ export default async function CommunityPage() {
                 </h3>
                 <nav className="space-y-1">
                   <SidebarLink icon={<CompassIcon />} label="Peaks Watched" count={watchedPeakIds.length} />
-                  <SidebarLink icon={<UsersIcon />} label="Groups" count={4} />
+                  <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} href="/friends" />
                   <SidebarLink icon={<CalendarIcon />} label="Events" count={userEventCount} href="/events" />
                   <SidebarLink icon={<BookmarkIcon />} label="Saved" count={savedPostCount} />
                 </nav>
@@ -308,6 +326,7 @@ export default async function CommunityPage() {
             currentUserId={user?.id}
             initialWatchedPeakIds={watchedPeakIds}
             allPeaks={allPeaks || []}
+            followStatuses={followStatuses}
           />
 
           {/* Right Sidebar */}
@@ -315,13 +334,14 @@ export default async function CommunityPage() {
             <div className="sticky top-32 space-y-6">
               {/* Log a Summit CTA */}
               {user && (
-                <Link
-                  href="/log"
+                <LogSummitButton
+                  peaks={(allPeaks || []).map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
+                  isLoggedIn
                   className="flex items-center justify-center gap-2 w-full px-5 py-3 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-2xl hover:bg-[var(--color-brand-accent)] transition-all shadow-md shadow-[var(--color-brand-primary)]/20"
                 >
                   <PlusIcon className="w-4 h-4" />
                   Log a Summit
-                </Link>
+                </LogSummitButton>
               )}
 
               {/* Peaks Watched */}

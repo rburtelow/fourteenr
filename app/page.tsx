@@ -12,29 +12,16 @@ const stats = [
   { value: "12K", label: "Active Hikers", suffix: "+" },
 ];
 
-const tripReports = [
-  {
-    title: "First Light on Longs",
-    author: "Sarah Chen",
-    timeAgo: "3h",
-    elevation: "14,255'",
-    imageSrc: "/hero.png",
-  },
-  {
-    title: "Winter Traverse",
-    author: "Marcus Reid",
-    timeAgo: "8h",
-    elevation: "14,067'",
-    imageSrc: "/hero.png",
-  },
-  {
-    title: "Cloud Inversion",
-    author: "Elena Voss",
-    timeAgo: "1d",
-    elevation: "14,270'",
-    imageSrc: "/hero.png",
-  },
-];
+function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 60) return `${diffMins}m`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d`;
+}
 
 export default async function LandingPage() {
   const peaks = await getTopPeaks(5);
@@ -58,6 +45,32 @@ export default async function LandingPage() {
       avatar_url: profile?.avatar_url || null,
     };
   }
+
+  // Fetch up to 3 random trip reports from the last 7 days
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const { data: recentReports } = await supabase
+    .from("trip_reports")
+    .select("summary, created_at, peaks(name, elevation), profiles(screen_name)")
+    .gte("created_at", oneWeekAgo.toISOString())
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  // Pick up to 3 random reports from the results
+  const shuffled = (recentReports || []).sort(() => Math.random() - 0.5);
+  const tripReports = shuffled.slice(0, 3).map((r: Record<string, unknown>) => {
+    const peak = r.peaks as { name: string; elevation: number } | null;
+    const profile = r.profiles as { screen_name: string | null } | null;
+    return {
+      title: (r.summary as string).length > 40
+        ? (r.summary as string).slice(0, 40) + "..."
+        : (r.summary as string),
+      author: profile?.screen_name || "Anonymous",
+      timeAgo: formatTimeAgo(new Date(r.created_at as string)),
+      elevation: peak ? `${peak.elevation.toLocaleString()}'` : "",
+      imageSrc: "/hero.png",
+    };
+  });
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased overflow-x-hidden">
@@ -298,7 +311,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Trip Reports Section */}
-        <section className="py-24 lg:py-32 bg-[var(--color-brand-primary)] relative overflow-hidden grain-overlay">
+        {tripReports.length > 0 && <section className="py-24 lg:py-32 bg-[var(--color-brand-primary)] relative overflow-hidden grain-overlay">
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-[var(--color-amber-glow)]/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2" />
@@ -357,7 +370,7 @@ export default async function LandingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </section>}
 
         {/* Features Section */}
         <section className="py-24 lg:py-32">
