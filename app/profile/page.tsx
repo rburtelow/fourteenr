@@ -79,6 +79,64 @@ export default async function ProfilePage() {
     ? await Promise.all([getAllBadges(), getUserBadges(user.id)])
     : [await getAllBadges(), []];
 
+  // Fetch user's events: ones they created + ones they RSVPd to
+  type UserEvent = {
+    id: string;
+    title: string;
+    event_date: string;
+    location: string;
+    status: string;
+    peak_name: string | null;
+    role: "hosting" | "going";
+  };
+  let userEvents: UserEvent[] = [];
+  if (user) {
+    const [{ data: createdEvents }, { data: rsvpdRows }] = await Promise.all([
+      supabase
+        .from("community_events")
+        .select("id, title, event_date, location, status, peaks:peak_id(name)")
+        .eq("created_by", user.id)
+        .order("event_date", { ascending: false }),
+      supabase
+        .from("event_attendees")
+        .select("event_id")
+        .eq("user_id", user.id),
+    ]);
+
+    const createdIds = new Set((createdEvents || []).map((e) => e.id));
+    const nonCreatedIds = (rsvpdRows || [])
+      .map((r) => r.event_id)
+      .filter((id) => !createdIds.has(id));
+
+    const { data: rsvpdEvents } =
+      nonCreatedIds.length > 0
+        ? await supabase
+            .from("community_events")
+            .select("id, title, event_date, location, status, peaks:peak_id(name)")
+            .in("id", nonCreatedIds)
+            .order("event_date", { ascending: false })
+        : { data: [] };
+
+    type RawEvent = { id: string; title: string; event_date: string; location: string; status: string; peaks: { name: string } | null };
+    const mapEvent = (e: RawEvent, role: "hosting" | "going"): UserEvent => ({
+      id: e.id,
+      title: e.title,
+      event_date: e.event_date,
+      location: e.location,
+      status: e.status,
+      peak_name: e.peaks?.name ?? null,
+      role,
+    });
+
+    userEvents = [
+      ...(createdEvents || []).map((e) => mapEvent(e as RawEvent, "hosting")),
+      ...(rsvpdEvents || []).map((e) => mapEvent(e as RawEvent, "going")),
+    ].sort(
+      (a, b) =>
+        new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+    );
+  }
+
   // Build watchlist display data
   const watchlistPeaks = (watchlistRows || []).flatMap((row) => {
     const peak = peakMap.get(row.peak_id);
@@ -118,6 +176,15 @@ export default async function ProfilePage() {
       rating: log.rating ?? 0,
     }];
   });
+
+  // Split events into upcoming and past
+  const now = new Date();
+  const upcomingUserEvents = userEvents.filter(
+    (e) => new Date(e.event_date) >= now && e.status !== "cancelled"
+  );
+  const pastUserEvents = userEvents.filter(
+    (e) => new Date(e.event_date) < now || e.status === "cancelled"
+  );
 
   // Sets for quick lookups in the "Add to Wishlist" table
   const completedPeakIds = new Set((summitLogs || []).map((l) => l.peak_id));
@@ -197,6 +264,15 @@ export default async function ProfilePage() {
               </div>
 
               <div className="flex items-center gap-2">
+                {user && (
+                  <Link
+                    href="/log"
+                    className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-full hover:bg-[var(--color-brand-accent)] transition-all shadow-md shadow-[var(--color-brand-primary)]/20"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    Log a Summit
+                  </Link>
+                )}
                 <UserNav user={userNav} />
                 <MobileNav user={userNav} />
               </div>
@@ -313,7 +389,7 @@ export default async function ProfilePage() {
               <nav className="space-y-1">
                 <SidebarLink icon={<PlusIcon />} label="Log a Summit" primary />
                 <SidebarLink icon={<ListIcon />} label="My Wishlist" count={watchlistPeaks.length} />
-                <SidebarLink icon={<MapIcon />} label="Planned Routes" count={2} />
+                <SidebarLink icon={<CalendarIcon className="w-5 h-5" />} label="My Events" count={userEvents.length} href="#my-events" />
                 <SidebarLink icon={<PhotoIcon />} label="Photo Gallery" count={47} />
                 <SidebarLink icon={<TrophyIcon />} label="Achievements" count={2} />
               </nav>
@@ -523,6 +599,69 @@ export default async function ProfilePage() {
               </div>
             </section>
 
+            {/* My Events Section */}
+            <section id="my-events" className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: "var(--font-display)" }}>
+                      My Events
+                    </h2>
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                      Events you&apos;re hosting or attending
+                    </p>
+                  </div>
+                  <Link
+                    href="/events"
+                    className="px-4 py-2 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20"
+                  >
+                    <CalendarIcon className="w-4 h-4" />
+                    Browse Events
+                  </Link>
+                </div>
+              </div>
+
+              {userEvents.length === 0 ? (
+                <div className="p-8 text-center">
+                  <CalendarIcon className="w-10 h-10 mx-auto text-[var(--color-text-secondary)] opacity-40 mb-3" />
+                  <p className="text-sm font-medium text-[var(--color-text-primary)]">No events yet</p>
+                  <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                    Create or RSVP to an event to see it here.
+                  </p>
+                  <Link href="/events" className="mt-4 inline-block text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
+                    Explore upcoming events →
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y divide-[var(--color-border-app)]">
+                  {upcomingUserEvents.length > 0 && (
+                    <>
+                      <div className="px-4 sm:px-6 py-2.5 bg-[var(--color-surface-subtle)]/60">
+                        <span className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">
+                          Upcoming · {upcomingUserEvents.length}
+                        </span>
+                      </div>
+                      {upcomingUserEvents.map((event) => (
+                        <EventRow key={event.id} event={event} />
+                      ))}
+                    </>
+                  )}
+                  {pastUserEvents.length > 0 && (
+                    <>
+                      <div className="px-4 sm:px-6 py-2.5 bg-[var(--color-surface-subtle)]/60">
+                        <span className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">
+                          Past · {pastUserEvents.length}
+                        </span>
+                      </div>
+                      {pastUserEvents.map((event) => (
+                        <EventRow key={event.id} event={event} />
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </section>
+
             {/* Peak Search Section */}
             <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
               <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
@@ -660,13 +799,14 @@ function StatItem({ label, value, suffix }: { label: string; value: string; suff
   );
 }
 
-function SidebarLink({ icon, label, count, primary }: { icon: React.ReactNode; label: string; count?: number; primary?: boolean }) {
-  return (
-    <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group ${
-      primary
-        ? 'bg-[var(--color-brand-primary)] text-white hover:bg-[var(--color-brand-accent)]'
-        : 'hover:bg-[var(--color-surface-subtle)]'
-    }`}>
+function SidebarLink({ icon, label, count, primary, href }: { icon: React.ReactNode; label: string; count?: number; primary?: boolean; href?: string }) {
+  const className = `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group ${
+    primary
+      ? 'bg-[var(--color-brand-primary)] text-white hover:bg-[var(--color-brand-accent)]'
+      : 'hover:bg-[var(--color-surface-subtle)]'
+  }`;
+  const inner = (
+    <>
       <span className={`flex-shrink-0 ${primary ? 'text-white' : 'text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand-primary)] transition-colors'}`}>
         {icon}
       </span>
@@ -678,10 +818,75 @@ function SidebarLink({ icon, label, count, primary }: { icon: React.ReactNode; l
           {count}
         </span>
       )}
-    </button>
+    </>
   );
+  if (href) {
+    return <a href={href} className={className}>{inner}</a>;
+  }
+  return <button className={className}>{inner}</button>;
 }
 
+
+function EventRow({
+  event,
+}: {
+  event: {
+    id: string;
+    title: string;
+    event_date: string;
+    location: string;
+    status: string;
+    peak_name: string | null;
+    role: "hosting" | "going";
+  };
+}) {
+  const date = new Date(event.event_date);
+  const month = date.toLocaleDateString("en-US", { month: "short" });
+  const day = String(date.getDate());
+  const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const isCancelled = event.status === "cancelled";
+  const isPast = date < new Date() && !isCancelled;
+
+  return (
+    <Link
+      href={`/events/${event.id}`}
+      className="flex items-center gap-4 p-4 sm:p-5 hover:bg-[var(--color-surface-subtle)]/50 transition-colors group"
+    >
+      <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center flex-shrink-0 ${isCancelled ? "bg-red-50" : isPast ? "bg-[var(--color-surface-subtle)]" : "bg-[var(--color-brand-primary)]/10"}`}>
+        <span className={`text-xs font-bold ${isCancelled ? "text-red-500" : isPast ? "text-[var(--color-text-secondary)]" : "text-[var(--color-brand-primary)]"}`}>
+          {month}
+        </span>
+        <span className={`text-sm font-bold ${isCancelled ? "text-red-500" : isPast ? "text-[var(--color-text-secondary)]" : "text-[var(--color-brand-primary)]"}`}>
+          {day}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className={`font-semibold text-sm group-hover:text-[var(--color-brand-primary)] transition-colors truncate ${isCancelled ? "line-through text-[var(--color-text-secondary)]" : "text-[var(--color-text-primary)]"}`}>
+            {event.title}
+          </p>
+          <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${
+            event.role === "hosting"
+              ? "bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)]"
+              : "bg-[var(--color-brand-highlight)]/10 text-[var(--color-brand-highlight)]"
+          }`}>
+            {event.role === "hosting" ? "Hosting" : "Going"}
+          </span>
+          {isCancelled && (
+            <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
+              Cancelled
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 truncate">
+          {time} · {event.location}
+          {event.peak_name && <span> · {event.peak_name}</span>}
+        </p>
+      </div>
+      <ArrowRightIcon className="w-4 h-4 text-[var(--color-text-muted-green)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+    </Link>
+  );
+}
 
 // Icons
 function MountainLogo({ className }: { className?: string }) {

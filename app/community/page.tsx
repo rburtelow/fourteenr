@@ -313,6 +313,17 @@ export default async function CommunityPage() {
           {/* Right Sidebar */}
           <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-32 space-y-6">
+              {/* Log a Summit CTA */}
+              {user && (
+                <Link
+                  href="/log"
+                  className="flex items-center justify-center gap-2 w-full px-5 py-3 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-2xl hover:bg-[var(--color-brand-accent)] transition-all shadow-md shadow-[var(--color-brand-primary)]/20"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  Log a Summit
+                </Link>
+              )}
+
               {/* Peaks Watched */}
               <PeaksWatchedPanel peaks={watchedPeaks} isLoggedIn={!!user} />
 
@@ -511,6 +522,14 @@ function CalendarIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
     </svg>
   );
 }
