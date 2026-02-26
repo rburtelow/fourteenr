@@ -15,6 +15,8 @@ export interface Database {
           image_urls: string[];
           created_at: string;
           updated_at: string;
+          activity_type: string | null;
+          activity_metadata: Record<string, unknown> | null;
         };
         Insert: {
           id?: string;
@@ -25,6 +27,8 @@ export interface Database {
           image_urls?: string[];
           created_at?: string;
           updated_at?: string;
+          activity_type?: string | null;
+          activity_metadata?: Record<string, unknown> | null;
         };
         Update: {
           id?: string;
@@ -35,6 +39,8 @@ export interface Database {
           image_urls?: string[];
           created_at?: string;
           updated_at?: string;
+          activity_type?: string | null;
+          activity_metadata?: Record<string, unknown> | null;
         };
         Relationships: [
           {
@@ -594,7 +600,6 @@ export interface Database {
           objective_risk_score: number;
           trailhead_access_rating: string | null;
           snow_present: boolean;
-          avalanche_risk_level: string | null;
           overall_recommendation: boolean;
           summary: string;
           narrative: string | null;
@@ -616,7 +621,6 @@ export interface Database {
           objective_risk_score: number;
           trailhead_access_rating?: string | null;
           snow_present?: boolean;
-          avalanche_risk_level?: string | null;
           overall_recommendation?: boolean;
           summary: string;
           narrative?: string | null;
@@ -638,7 +642,6 @@ export interface Database {
           objective_risk_score?: number;
           trailhead_access_rating?: string | null;
           snow_present?: boolean;
-          avalanche_risk_level?: string | null;
           overall_recommendation?: boolean;
           summary?: string;
           narrative?: string | null;
@@ -765,6 +768,43 @@ export interface Database {
           }
         ];
       };
+      trending_peaks_cache: {
+        Row: {
+          id: number;
+          peak_id: string;
+          rank: number;
+          report_count: number;
+          prev_report_count: number;
+          trend_pct: number;
+          calculated_at: string;
+        };
+        Insert: {
+          id?: number;
+          peak_id: string;
+          rank: number;
+          report_count?: number;
+          prev_report_count?: number;
+          trend_pct?: number;
+          calculated_at?: string;
+        };
+        Update: {
+          id?: number;
+          peak_id?: string;
+          rank?: number;
+          report_count?: number;
+          prev_report_count?: number;
+          trend_pct?: number;
+          calculated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trending_peaks_cache_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
   };
 }
@@ -815,10 +855,6 @@ export interface TripReportSections {
     snow_depth_inches?: number;
     traction_used?: string;
     posthole_risk?: boolean;
-  }>;
-  avalanche_notes?: TripReportSection<{
-    slope_aspect?: string;
-    recent_slides_observed?: boolean;
   }>;
   lessons_learned?: TripReportSection;
   mistakes_made?: TripReportSection;

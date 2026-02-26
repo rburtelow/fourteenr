@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAllBadges, getUserBadges } from "@/lib/badges";
-import UserNav from "../components/UserNav";
-import MobileNav from "../components/MobileNav";
+import { getUnreadNotificationCount } from "@/lib/notifications";
+import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BadgeExplainer, { AllBadgesCount } from "../components/badges/BadgeExplainer";
 import { BadgeCategoryGrid } from "../components/badges/BadgeGrid";
@@ -34,6 +33,14 @@ export default async function BadgesPage() {
       }
     : null;
 
+  const [navPeaksResult, unreadNotificationCount] = user
+    ? await Promise.all([
+        supabase.from("peaks").select("id, name, slug, elevation").order("name"),
+        getUnreadNotificationCount(user.id),
+      ])
+    : [{ data: [] }, 0];
+  const navPeaks = (navPeaksResult as { data: { id: string; name: string; slug: string; elevation: number }[] | null }).data || [];
+
   // Fetch badge data
   const [allBadges, userBadges] = user
     ? await Promise.all([getAllBadges(), getUserBadges(user.id)])
@@ -44,34 +51,12 @@ export default async function BadgesPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <nav className="mx-4 mt-4 md:mx-8 md:mt-6">
-          <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)]">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6">
-                  <MountainLogo className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">
-                  My14er
-                </span>
-              </Link>
-
-              <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/community">Community</NavLink>
-                <NavLink href="/peaks">Peaks</NavLink>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <UserNav user={userNav} />
-                <MobileNav user={userNav} />
-              </div>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <Navbar
+        user={userNav}
+        userId={user?.id}
+        unreadNotificationCount={unreadNotificationCount as number}
+        peaks={navPeaks}
+      />
 
       {/* Hero Section */}
       <div className="pt-32 pb-12 px-4 sm:px-8">
@@ -138,37 +123,6 @@ export default async function BadgesPage() {
 
       <Footer />
     </div>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-  active,
-}: {
-  href: string;
-  children: React.ReactNode;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
-        active
-          ? "text-[var(--color-brand-primary)] bg-[var(--color-surface-subtle)]"
-          : "text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)]"
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
-
-function MountainLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L2 22h20L12 2zm0 5.5L17.5 19h-11L12 7.5z" />
-    </svg>
   );
 }
 

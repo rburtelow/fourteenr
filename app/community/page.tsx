@@ -2,25 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getRecentBadges } from "@/lib/badges";
-import { getPosts, getUpcomingEvents } from "@/lib/community";
+import { getPosts, getUpcomingEvents, getTrendingPeaks } from "@/lib/community";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import { getBulkFollowStatuses, getFollowerCount, getFollowingCount } from "@/lib/follows";
 import type { FollowStatus } from "@/lib/follows";
 import Footer from "../components/Footer";
-import UserNav from "../components/UserNav";
-import MobileNav from "../components/MobileNav";
+import Navbar from "../components/Navbar";
 import CommunityFeed from "./CommunityFeed";
 import PeaksWatchedPanel from "./PeaksWatchedPanel";
+import SavedQuickLink from "./SavedQuickLink";
 import BadgeIcon from "../components/badges/BadgeIcon";
-import NotificationBell from "./NotificationBell";
-import LogSummitButton from "../components/LogSummitButton";
-
-const trendingPeaks = [
-  { name: "Quandary Peak", reports: 23, trend: "+12%" },
-  { name: "Mt. Bierstadt", reports: 18, trend: "+8%" },
-  { name: "Grays Peak", reports: 15, trend: "+5%" },
-];
-
 
 export default async function CommunityPage() {
   // Get auth state
@@ -110,6 +101,9 @@ export default async function CommunityPage() {
   // Fetch upcoming events for sidebar
   const upcomingEvents = await getUpcomingEvents({ limit: 3 });
 
+  // Fetch trending peaks from cache
+  const trendingPeaks = await getTrendingPeaks(5);
+
   // Fetch unread notification count and friends count
   let unreadNotificationCount = 0;
   let friendsCount = 0;
@@ -147,38 +141,12 @@ export default async function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased">
-      {/* Navigation - matching landing page */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <nav className="mx-4 mt-4 md:mx-8 md:mt-6">
-          <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)]">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6">
-                  <MountainLogo className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">
-                  My14er
-                </span>
-              </Link>
-
-              <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/peaks">Peaks</NavLink>
-                <NavLink href="/events">Events</NavLink>
-                <NavLink href="/profile">Profile</NavLink>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {user && (
-                  <NotificationBell initialCount={unreadNotificationCount} userId={user.id} />
-                )}
-                <UserNav user={userNav} />
-                <MobileNav user={userNav} />
-              </div>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <Navbar
+        user={userNav}
+        userId={user?.id}
+        unreadNotificationCount={unreadNotificationCount}
+        peaks={(allPeaks || []).map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
+      />
 
       {/* Page Header */}
       <div className="pt-28 pb-8 border-b border-[var(--color-border-app)] bg-white/50">
@@ -285,7 +253,11 @@ export default async function CommunityPage() {
                   <SidebarLink icon={<CompassIcon />} label="Peaks Watched" count={watchedPeakIds.length} />
                   <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} href="/friends" />
                   <SidebarLink icon={<CalendarIcon />} label="Events" count={userEventCount} href="/events" />
-                  <SidebarLink icon={<BookmarkIcon />} label="Saved" count={savedPostCount} />
+                  {user ? (
+                    <SavedQuickLink initialCount={savedPostCount} userId={user.id} />
+                  ) : (
+                    <SidebarLink icon={<BookmarkIcon />} label="Saved" count={savedPostCount} href="/community/saved" />
+                  )}
                 </nav>
               </div>
 
@@ -294,26 +266,41 @@ export default async function CommunityPage() {
                 <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-4">
                   Trending This Week
                 </h3>
-                <div className="space-y-3">
-                  {trendingPeaks.map((peak, i) => (
-                    <div key={peak.name} className="flex items-center gap-3 group cursor-pointer">
-                      <span className="text-sm font-mono text-[var(--color-text-muted-green)] w-5">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                          {peak.name}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-secondary)]">
-                          {peak.reports} reports
-                        </p>
-                      </div>
-                      <span className="text-xs font-medium text-[var(--color-brand-highlight)]">
-                        {peak.trend}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                {trendingPeaks.length > 0 ? (
+                  <div className="space-y-3">
+                    {trendingPeaks.map((peak) => {
+                      const trendLabel = peak.trend_pct >= 0
+                        ? `+${peak.trend_pct}%`
+                        : `${peak.trend_pct}%`;
+                      return (
+                        <Link
+                          key={peak.peak_id}
+                          href={`/peaks/${peak.slug}`}
+                          className="flex items-center gap-3 group"
+                        >
+                          <span className="text-sm font-mono text-[var(--color-text-muted-green)] w-5">
+                            {String(peak.rank).padStart(2, "0")}
+                          </span>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                              {peak.name}
+                            </p>
+                            <p className="text-xs text-[var(--color-text-secondary)]">
+                              {peak.report_count} {peak.report_count === 1 ? "report" : "reports"}
+                            </p>
+                          </div>
+                          <span className={`text-xs font-medium ${peak.trend_pct >= 0 ? "text-[var(--color-brand-highlight)]" : "text-[var(--color-text-secondary)]"}`}>
+                            {trendLabel}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    No trip reports yet this week.
+                  </p>
+                )}
               </div>
             </div>
           </aside>
@@ -332,18 +319,6 @@ export default async function CommunityPage() {
           {/* Right Sidebar */}
           <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-32 space-y-6">
-              {/* Log a Summit CTA */}
-              {user && (
-                <LogSummitButton
-                  peaks={(allPeaks || []).map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
-                  isLoggedIn
-                  className="flex items-center justify-center gap-2 w-full px-5 py-3 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-2xl hover:bg-[var(--color-brand-accent)] transition-all shadow-md shadow-[var(--color-brand-primary)]/20"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  Log a Summit
-                </LogSummitButton>
-              )}
-
               {/* Peaks Watched */}
               <PeaksWatchedPanel peaks={watchedPeaks} isLoggedIn={!!user} />
 
@@ -467,20 +442,6 @@ export default async function CommunityPage() {
   );
 }
 
-function NavLink({ href, children, active }: { href: string; children: React.ReactNode; active?: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
-        active
-          ? 'text-[var(--color-brand-primary)] bg-[var(--color-surface-subtle)]'
-          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)]'
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
 
 function SidebarLink({ icon, label, count, href }: { icon: React.ReactNode; label: string; count?: number; href?: string }) {
   const content = (
@@ -512,15 +473,6 @@ function SidebarLink({ icon, label, count, href }: { icon: React.ReactNode; labe
   );
 }
 
-// Icons
-function MountainLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L2 22h20L12 2zm0 5.5L17.5 19h-11L12 7.5z" />
-    </svg>
-  );
-}
-
 function CompassIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -542,14 +494,6 @@ function CalendarIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-    </svg>
-  );
-}
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
     </svg>
   );
 }

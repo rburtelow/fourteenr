@@ -26,9 +26,6 @@ export async function createTripReport(formData: FormData) {
   const objectiveRiskScore = parseInt(formData.get("objectiveRiskScore") as string, 10);
   const trailheadAccessRating = (formData.get("trailheadAccessRating") as string) || null;
   const snowPresent = formData.get("snowPresent") === "true";
-  const avalancheRiskLevel = snowPresent
-    ? (formData.get("avalancheRiskLevel") as string) || null
-    : null;
   const overallRecommendation = formData.get("overallRecommendation") === "true";
   const summary = formData.get("summary") as string;
   const narrative = (formData.get("narrative") as string) || null;
@@ -68,7 +65,6 @@ export async function createTripReport(formData: FormData) {
     objective_risk_score: objectiveRiskScore,
     trailhead_access_rating: trailheadAccessRating,
     snow_present: snowPresent,
-    avalanche_risk_level: avalancheRiskLevel,
     overall_recommendation: overallRecommendation,
     summary,
     narrative,
@@ -101,6 +97,45 @@ export async function createTripReport(formData: FormData) {
 
   if (summitError) {
     console.error("Failed to create summit log:", summitError.message);
+  }
+
+  // Auto-create community feed post for summit
+  const { data: peakData } = await supabase
+    .from("peaks")
+    .select("name, elevation")
+    .eq("id", peakId)
+    .single();
+
+  const peakName = peakData?.name ?? "a 14er";
+  const elevation = peakData?.elevation ?? 14000;
+
+  let routeName: string | null = null;
+  if (routeId) {
+    const { data: routeData } = await supabase
+      .from("routes")
+      .select("name")
+      .eq("id", routeId)
+      .single();
+    routeName = routeData?.name ?? null;
+  }
+
+  const routeSnippet = routeName ? ` via ${routeName}` : "";
+  const postContent = `Summited ${peakName} (${elevation.toLocaleString()}')${routeSnippet}!`;
+
+  const { error: postError } = await supabase.from("community_posts").insert({
+    user_id: user.id,
+    content: postContent,
+    peak_id: peakId,
+    is_condition_report: false,
+    activity_type: "summit_log",
+    activity_metadata: {
+      summit_date: hikeDate,
+      route_name: routeName,
+    },
+  });
+
+  if (postError) {
+    console.error("Failed to create summit activity post:", postError.message);
   }
 
   return { success: true };

@@ -16,6 +16,8 @@ import type { CommunityPost, PostComment } from "@/lib/community.types";
 import CommentThread from "./CommentThread";
 import FollowButton from "../components/FollowButton";
 import type { FollowStatus } from "@/lib/follows";
+import BadgeIcon from "../components/badges/BadgeIcon";
+import type { BadgeDefinition, BadgeCategory } from "@/lib/database.types";
 
 const FEED_POST_SELECT = `
   id,
@@ -26,6 +28,8 @@ const FEED_POST_SELECT = `
   image_urls,
   created_at,
   updated_at,
+  activity_type,
+  activity_metadata,
   profiles:user_id (
     screen_name,
     full_name,
@@ -258,6 +262,8 @@ export default function CommunityFeed({
         save_count: snapshot.save_count,
         user_has_liked: snapshot.user_has_liked,
         user_has_saved: snapshot.user_has_saved,
+        activity_type: (data.activity_type ?? null) as CommunityPost["activity_type"],
+        activity_metadata: (data.activity_metadata ?? null) as CommunityPost["activity_metadata"],
       };
     },
     [fetchEngagementSnapshot, supabase]
@@ -928,7 +934,6 @@ export default function CommunityFeed({
         const timeAgo = formatTimeAgo(post.created_at);
         const isOwnPost = currentUserId === post.user_id;
         const peakId = post.peak_id;
-        const isWatched = peakId ? watchedPeaks.has(peakId) : false;
 
         return (
           <article
@@ -998,7 +1003,16 @@ export default function CommunityFeed({
               </div>
 
               {/* Content */}
-              {post.content.startsWith("\u{1F4C5}") || post.content.startsWith("\u{274C}") ? (
+              {post.activity_type === 'summit_log' ? (
+                <SummitLogPostContent
+                  peak={post.peaks}
+                  metadata={post.activity_metadata}
+                />
+              ) : post.activity_type === 'badge_earned' ? (
+                <BadgeEarnedPostContent
+                  metadata={post.activity_metadata}
+                />
+              ) : post.content.startsWith("\u{1F4C5}") || post.content.startsWith("\u{274C}") ? (
                 <EventPostContent content={post.content} eventId={post.linked_event_id} />
               ) : (
                 <p className="mt-4 text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
@@ -1084,30 +1098,7 @@ export default function CommunityFeed({
                     </span>
                   </button>
                 </div>
-                {peakId ? (
-                  <button
-                    onClick={() => toggleWatchPeak(peakId)}
-                    className={`group flex items-center gap-2 transition-colors ${
-                      isWatched
-                        ? "text-[var(--color-amber-glow)]"
-                        : "text-[var(--color-text-secondary)] hover:text-[var(--color-amber-glow)]"
-                    }`}
-                  >
-                    <div
-                      className={`p-2 rounded-lg transition-colors ${
-                        isWatched
-                          ? "bg-[var(--color-amber-glow)]/10"
-                          : "group-hover:bg-[var(--color-amber-glow)]/10"
-                      }`}
-                    >
-                      <BookmarkIcon className="w-5 h-5" filled={isWatched} />
-                    </div>
-                    <span className="text-sm font-medium">
-                      {post.save_count}
-                    </span>
-                  </button>
-                ) : (
-                  <button
+                <button
                     onClick={() => handleToggleSave(post.id)}
                     className={`group flex items-center gap-2 transition-colors ${
                       post.user_has_saved
@@ -1127,11 +1118,7 @@ export default function CommunityFeed({
                         filled={post.user_has_saved}
                       />
                     </div>
-                    <span className="text-sm font-medium">
-                      {post.save_count}
-                    </span>
                   </button>
-                )}
               </div>
             </div>
 
@@ -1168,6 +1155,90 @@ export default function CommunityFeed({
         </div>
       )}
     </main>
+  );
+}
+
+// Summit log post renderer
+function SummitLogPostContent({
+  peak,
+  metadata,
+}: {
+  peak: CommunityPost["peaks"];
+  metadata: CommunityPost["activity_metadata"];
+}) {
+  const routeName = metadata?.route_name;
+  const summitDate = metadata?.summit_date
+    ? new Date(metadata.summit_date + "T00:00:00").toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+
+  return (
+    <div className="mt-4">
+      <div className="rounded-xl border border-[var(--color-border-app)] overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
+        <div className="px-4 py-3 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[var(--color-brand-primary)]/10 flex items-center justify-center">
+            <MountainIcon className="w-5 h-5 text-[var(--color-brand-primary)]" />
+          </div>
+          <div>
+            <p className="font-semibold text-[var(--color-text-primary)]">Summit Logged</p>
+            {summitDate && (
+              <p className="text-xs text-[var(--color-text-secondary)]">{summitDate}</p>
+            )}
+          </div>
+        </div>
+        {peak && (
+          <Link
+            href={`/peaks/${peak.slug}`}
+            className="block px-4 py-3 border-t border-[var(--color-border-app)] hover:bg-[var(--color-surface-subtle)] transition-colors"
+          >
+            <p className="font-bold text-lg text-[var(--color-brand-primary)]">{peak.name}</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              {peak.elevation.toLocaleString()}' {routeName ? `via ${routeName}` : ""}
+            </p>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Badge earned post renderer
+function BadgeEarnedPostContent({
+  metadata,
+}: {
+  metadata: CommunityPost["activity_metadata"];
+}) {
+  const badgeName = metadata?.badge_name ?? "Badge";
+  const badgeDescription = metadata?.badge_description ?? "";
+
+  const fakeBadge = {
+    icon_name: metadata?.badge_icon_name ?? "mountain-sunrise",
+    name: badgeName,
+    category: (metadata?.badge_category ?? "milestone") as BadgeCategory,
+    slug: metadata?.badge_slug ?? "",
+    description: badgeDescription,
+  } as BadgeDefinition;
+
+  return (
+    <div className="mt-4">
+      <div className="rounded-xl border border-[var(--color-border-app)] overflow-hidden bg-gradient-to-br from-amber-50 to-white">
+        <div className="px-4 py-4 flex items-center gap-4">
+          <div className="flex-shrink-0">
+            <BadgeIcon badge={fakeBadge} earned={true} size="lg" showTooltip={false} />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-[var(--color-amber-glow)] uppercase tracking-wider">
+              Badge Earned
+            </p>
+            <p className="font-bold text-lg text-[var(--color-text-primary)]">{badgeName}</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">{badgeDescription}</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

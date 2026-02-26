@@ -207,6 +207,40 @@ Deno.serve(async (req) => {
       }
 
       console.log(`Awarded ${newBadges.length} new badges`);
+
+      // Create community feed posts for each new badge
+      const badgeById = new Map(
+        (badges as BadgeDefinition[]).map((b: BadgeDefinition) => [b.id, b])
+      );
+
+      const activityPosts = newBadges.map((nb) => {
+        const badge = badgeById.get(nb.badge_id);
+        const badgeName = badge?.name ?? "a badge";
+        return {
+          user_id: nb.user_id,
+          content: `Earned the "${badgeName}" badge! ${badge?.description ?? ""}`.trim(),
+          peak_id: nb.trigger_peak_id,
+          is_condition_report: false,
+          activity_type: "badge_earned",
+          activity_metadata: {
+            badge_id: nb.badge_id,
+            badge_slug: badge?.slug ?? null,
+            badge_name: badge?.name ?? null,
+            badge_icon_name: badge?.icon_name ?? null,
+            badge_description: badge?.description ?? null,
+            badge_category: badge?.category ?? null,
+          },
+        };
+      });
+
+      const { error: postError } = await supabase
+        .from("community_posts")
+        .insert(activityPosts);
+
+      if (postError) {
+        console.error("Failed to create badge activity posts:", postError);
+        // Non-fatal: badges were already awarded
+      }
     }
 
     const summary = {

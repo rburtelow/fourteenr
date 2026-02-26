@@ -34,7 +34,7 @@ log_warn() {
 cleanup() {
   echo ""
   log_warn "Shutting down..."
-  kill "$BADGE_PID" "$WEATHER_PID" 2>/dev/null || true
+  kill "$BADGE_PID" "$WEATHER_PID" "$TREND_PID" 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -65,6 +65,11 @@ log_step "Starting weather-worker..."
 supabase functions serve weather-worker &
 WEATHER_PID=$!
 log_success "weather-worker running (pid: $WEATHER_PID)"
+
+log_step "Starting trend-worker..."
+supabase functions serve trend-worker &
+TREND_PID=$!
+log_success "trend-worker running (pid: $TREND_PID)"
 
 # 3. Start dev server
 echo ""

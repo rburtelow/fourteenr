@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signup, signInWithGoogle } from "../actions";
+import Navbar from "@/app/components/Navbar";
 
 export default async function SignupPage({
   searchParams,
@@ -11,35 +12,7 @@ export default async function SignupPage({
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased flex flex-col">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <nav className="mx-4 mt-4 md:mx-8 md:mt-6">
-          <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)]">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6">
-                  <MountainLogo className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">
-                  My14er
-                </span>
-              </Link>
-              <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/community">Community</NavLink>
-                <NavLink href="/peaks">Peaks</NavLink>
-                <NavLink href="/profile">Profile</NavLink>
-              </div>
-              <Link
-                href="/auth/login"
-                className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-4 py-2"
-              >
-                Sign In
-              </Link>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <Navbar user={null} />
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center pt-28 pb-16 px-4">
@@ -160,23 +133,6 @@ export default async function SignupPage({
         </div>
       </main>
     </div>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] rounded-full hover:bg-[var(--color-surface-subtle)] transition-all"
-    >
-      {children}
-    </Link>
   );
 }
 

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { setupScreenName } from "../actions";
+import Navbar from "@/app/components/Navbar";
 
 export default async function SetupProfilePage({
   searchParams,
@@ -33,29 +33,10 @@ export default async function SetupProfilePage({
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased flex flex-col">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <nav className="mx-4 mt-4 md:mx-8 md:mt-6">
-          <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)]">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6">
-                  <MountainLogo className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">
-                  My14er
-                </span>
-              </Link>
-              <div className="text-sm text-[var(--color-text-secondary)]">
-                Signed in as{" "}
-                <span className="font-medium text-[var(--color-text-primary)]">
-                  {user.email}
-                </span>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <Navbar
+        user={{ email: user.email || "", screen_name: null, avatar_url: null }}
+        userId={user.id}
+      />
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center pt-28 pb-16 px-4">
@@ -152,14 +133,6 @@ export default async function SetupProfilePage({
         </div>
       </main>
     </div>
-  );
-}
-
-function MountainLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L2 22h20L12 2zm0 5.5L17.5 19h-11L12 7.5z" />
-    </svg>
   );
 }
 

@@ -1,8 +1,4 @@
 -- Enums
-create type avalanche_risk_level as enum (
-  'none', 'low', 'moderate', 'considerable', 'high', 'extreme'
-);
-
 create type trailhead_access as enum (
   'clear_2wd', 'rough_2wd', '4wd_required', 'snow_blocked'
 );
@@ -22,7 +18,6 @@ create table trip_reports (
   objective_risk_score int not null check (objective_risk_score between 1 and 5),
   trailhead_access_rating trailhead_access,
   snow_present boolean not null default false,
-  avalanche_risk_level avalanche_risk_level,
   overall_recommendation boolean not null default true,
   summary text not null,
   narrative text,

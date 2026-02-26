@@ -24,15 +24,6 @@ const STEP_LABELS: Record<Step, string> = {
 
 const STEPS: Step[] = ["core", "ratings", "sections"];
 
-const AVALANCHE_LEVELS = [
-  { value: "none", label: "None" },
-  { value: "low", label: "Low" },
-  { value: "moderate", label: "Moderate" },
-  { value: "considerable", label: "Considerable" },
-  { value: "high", label: "High" },
-  { value: "extreme", label: "Extreme" },
-];
-
 const TRAILHEAD_ACCESS = [
   { value: "clear_2wd", label: "Clear (2WD)" },
   { value: "rough_2wd", label: "Rough (2WD)" },
@@ -43,18 +34,17 @@ const TRAILHEAD_ACCESS = [
 const SECTION_DEFS = [
   { key: "trailhead_conditions", label: "Trailhead Conditions", icon: "P" },
   { key: "weather", label: "Weather", icon: "W" },
-  { key: "route_conditions", label: "Route Conditions", icon: "R" },
-  { key: "gear", label: "Gear", icon: "G" },
-  { key: "water_crossings", label: "Water Crossings", icon: "~" },
-  { key: "wildlife", label: "Wildlife", icon: "A" },
-  { key: "camping", label: "Camping", icon: "C" },
-  { key: "navigation_notes", label: "Navigation Notes", icon: "N" },
   { key: "snow_conditions", label: "Snow Conditions", icon: "S" },
-  { key: "avalanche_notes", label: "Avalanche Notes", icon: "!" },
+  { key: "route_conditions", label: "Route Conditions", icon: "R" },
+  { key: "water_crossings", label: "Water Crossings", icon: "~" },
+  { key: "navigation_notes", label: "Navigation Notes", icon: "N" },
+  { key: "time_breakdown", label: "Time Breakdown", icon: "T" },
+  { key: "gear", label: "Gear", icon: "G" },
+  { key: "camping", label: "Camping", icon: "C" },
+  { key: "training_prep", label: "Training & Prep", icon: "F" },
+  { key: "wildlife", label: "Wildlife", icon: "A" },
   { key: "lessons_learned", label: "Lessons Learned", icon: "L" },
   { key: "mistakes_made", label: "Mistakes Made", icon: "M" },
-  { key: "time_breakdown", label: "Time Breakdown", icon: "T" },
-  { key: "training_prep", label: "Training & Prep", icon: "F" },
 ] as const;
 
 type SectionKey = (typeof SECTION_DEFS)[number]["key"];
@@ -86,8 +76,6 @@ export default function TripReportModal({
   const [objectiveRisk, setObjectiveRisk] = useState(3);
   const [trailheadAccess, setTrailheadAccess] = useState("");
   const [snowPresent, setSnowPresent] = useState(false);
-  const [avalancheRisk, setAvalancheRisk] = useState("none");
-
   // Sections
   const [enabledSections, setEnabledSections] = useState<Set<SectionKey>>(new Set());
   const [sectionNotes, setSectionNotes] = useState<Record<string, string>>({});
@@ -110,7 +98,6 @@ export default function TripReportModal({
       setObjectiveRisk(3);
       setTrailheadAccess("");
       setSnowPresent(false);
-      setAvalancheRisk("none");
       setEnabledSections(new Set());
       setSectionNotes({});
       setSectionData({});
@@ -144,9 +131,13 @@ export default function TripReportModal({
     const sections: TripReportSections = {};
     for (const def of SECTION_DEFS) {
       if (enabledSections.has(def.key)) {
+        const data = { ...(sectionData[def.key] || {}) };
+        if (def.key === "wildlife" && typeof data.animals_seen === "string") {
+          data.animals_seen = data.animals_seen.split(",").map((s: string) => s.trim()).filter(Boolean);
+        }
         (sections as Record<string, unknown>)[def.key] = {
           enabled: true,
-          data: sectionData[def.key] || {},
+          data,
           notes: sectionNotes[def.key] || "",
         };
       }
@@ -179,7 +170,6 @@ export default function TripReportModal({
     formData.set("objectiveRiskScore", String(objectiveRisk));
     if (trailheadAccess) formData.set("trailheadAccessRating", trailheadAccess);
     formData.set("snowPresent", String(snowPresent));
-    if (snowPresent) formData.set("avalancheRiskLevel", avalancheRisk);
     formData.set("overallRecommendation", String(overallRecommendation));
     formData.set("summary", summary);
     if (narrative) formData.set("narrative", narrative);
@@ -456,40 +446,6 @@ export default function TripReportModal({
                 </div>
               </div>
 
-              {/* Smart toggle: avalanche risk shown only when snow is present */}
-              {snowPresent && (
-                <div className="ml-4 pl-4 border-l-2 border-sky-200 space-y-3 animate-fade-in">
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)]">
-                    Avalanche Risk Level
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {AVALANCHE_LEVELS.map((lvl) => {
-                      const colors: Record<string, string> = {
-                        none: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        low: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        moderate: "bg-amber-50 text-amber-700 border-amber-200",
-                        considerable: "bg-orange-50 text-orange-700 border-orange-200",
-                        high: "bg-rose-50 text-rose-700 border-rose-200",
-                        extreme: "bg-red-100 text-red-800 border-red-300",
-                      };
-                      return (
-                        <button
-                          key={lvl.value}
-                          type="button"
-                          onClick={() => setAvalancheRisk(lvl.value)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                            avalancheRisk === lvl.value
-                              ? colors[lvl.value]
-                              : "bg-white text-[var(--color-text-secondary)] border-[var(--color-border-app)]"
-                          }`}
-                        >
-                          {lvl.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -788,7 +744,7 @@ function SectionFields({
         <input
           placeholder="Animals seen (comma-separated)"
           value={(data.animals_seen as string) || ""}
-          onChange={(e) => onFieldChange("animals_seen", e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean))}
+          onChange={(e) => onFieldChange("animals_seen", e.target.value)}
           className={inputClass}
         />
       );

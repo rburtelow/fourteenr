@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTopPeaks } from "@/lib/peaks";
 import { createClient } from "@/lib/supabase/server";
-import UserNav from "./components/UserNav";
-import MobileNav from "./components/MobileNav";
+import { getUnreadNotificationCount } from "@/lib/notifications";
+import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 const stats = [
@@ -33,17 +33,22 @@ export default async function LandingPage() {
   } = await supabase.auth.getUser();
 
   let userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null = null;
+  let navPeaks: { id: string; name: string; slug: string; elevation: number }[] = [];
+  let unreadNotificationCount = 0;
+
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("screen_name, avatar_url")
-      .eq("id", user.id)
-      .single();
+    const [{ data: profile }, { data: peaksData }, notifCount] = await Promise.all([
+      supabase.from("profiles").select("screen_name, avatar_url").eq("id", user.id).single(),
+      supabase.from("peaks").select("id, name, slug, elevation").order("name"),
+      getUnreadNotificationCount(user.id),
+    ]);
     userNav = {
       email: user.email || "",
       screen_name: profile?.screen_name || null,
       avatar_url: profile?.avatar_url || null,
     };
+    navPeaks = peaksData || [];
+    unreadNotificationCount = notifCount;
   }
 
   // Fetch up to 3 random trip reports from the last 7 days
@@ -74,34 +79,12 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased overflow-x-hidden">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <nav className="mx-4 mt-4 md:mx-8 md:mt-6">
-          <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)]">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6">
-                  <MountainLogo className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">
-                  My14er
-                </span>
-              </Link>
-
-              <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/community">Community</NavLink>
-                <NavLink href="/peaks">Peaks</NavLink>
-                <NavLink href="/profile">Profile</NavLink>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <UserNav user={userNav} />
-                <MobileNav user={userNav} />
-              </div>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <Navbar
+        user={userNav}
+        userId={user?.id}
+        unreadNotificationCount={unreadNotificationCount}
+        peaks={navPeaks}
+      />
 
       <main>
         {/* Hero Section */}
@@ -448,17 +431,6 @@ export default async function LandingPage() {
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] rounded-full hover:bg-[var(--color-surface-subtle)] transition-all"
-    >
-      {children}
-    </Link>
-  );
-}
-
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="group p-8 rounded-3xl bg-white border border-[var(--color-border-app)] card-hover">
@@ -472,14 +444,6 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
 }
 
 // Icons
-function MountainLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L2 22h20L12 2zm0 5.5L17.5 19h-11L12 7.5z" />
-    </svg>
-  );
-}
-
 function ArrowRight({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

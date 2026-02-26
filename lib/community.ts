@@ -29,6 +29,8 @@ export async function getPosts(options?: {
       image_urls,
       created_at,
       updated_at,
+      activity_type,
+      activity_metadata,
       profiles:user_id (
         screen_name,
         full_name,
@@ -146,6 +148,8 @@ export async function getPosts(options?: {
       save_count: saveCounts[post.id] || 0,
       user_has_liked: userLikes.has(post.id),
       user_has_saved: userSaves.has(post.id),
+      activity_type: (post.activity_type ?? null) as CommunityPost["activity_type"],
+      activity_metadata: (post.activity_metadata ?? null) as CommunityPost["activity_metadata"],
     };
   });
 }
@@ -381,6 +385,172 @@ export async function getEventAttendees(eventId: string): Promise<EventAttendee[
     ...a,
     profiles: a.profiles as EventAttendee["profiles"],
   }));
+}
+
+export type TrendingPeak = {
+  peak_id: string;
+  rank: number;
+  report_count: number;
+  trend_pct: number;
+  name: string;
+  slug: string;
+  calculated_at: string;
+};
+
+export async function getTrendingPeaks(limit = 5): Promise<TrendingPeak[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("trending_peaks_cache")
+    .select(
+      `
+      peak_id,
+      rank,
+      report_count,
+      trend_pct,
+      calculated_at,
+      peaks:peak_id (
+        name,
+        slug
+      )
+    `
+    )
+    .order("rank", { ascending: true })
+    .limit(limit);
+
+  if (error || !data || data.length === 0) {
+    if (error) console.error("Error fetching trending peaks:", error);
+    return [];
+  }
+
+  return data.map((row) => {
+    const peak = row.peaks as unknown as { name: string; slug: string };
+    return {
+      peak_id: row.peak_id,
+      rank: row.rank,
+      report_count: row.report_count,
+      trend_pct: row.trend_pct,
+      name: peak?.name ?? "Unknown Peak",
+      slug: peak?.slug ?? "",
+      calculated_at: row.calculated_at,
+    };
+  });
+}
+
+export async function getSavedPosts(): Promise<CommunityPost[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data: saves } = await supabase
+    .from("post_saves")
+    .select("post_id")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (!saves || saves.length === 0) return [];
+
+  const postIds = saves.map((s) => s.post_id);
+
+  const { data: posts, error } = await supabase
+    .from("community_posts")
+    .select(
+      `
+      id,
+      user_id,
+      content,
+      peak_id,
+      is_condition_report,
+      image_urls,
+      created_at,
+      updated_at,
+      activity_type,
+      activity_metadata,
+      profiles:user_id (
+        screen_name,
+        full_name,
+        avatar_url
+      ),
+      peaks:peak_id (
+        name,
+        slug,
+        elevation
+      ),
+      community_events (
+        id
+      )
+    `
+    )
+    .in("id", postIds);
+
+  if (error || !posts) return [];
+
+  const [likeCounts, commentCounts, saveCounts, userLikes] = await Promise.all([
+    supabase
+      .from("post_likes")
+      .select("post_id")
+      .in("post_id", postIds)
+      .then(({ data }) => {
+        const counts: Record<string, number> = {};
+        data?.forEach((like) => {
+          counts[like.post_id] = (counts[like.post_id] || 0) + 1;
+        });
+        return counts;
+      }),
+    supabase
+      .from("post_comments")
+      .select("post_id")
+      .in("post_id", postIds)
+      .then(({ data }) => {
+        const counts: Record<string, number> = {};
+        data?.forEach((comment) => {
+          counts[comment.post_id] = (counts[comment.post_id] || 0) + 1;
+        });
+        return counts;
+      }),
+    supabase
+      .from("post_saves")
+      .select("post_id")
+      .in("post_id", postIds)
+      .then(({ data }) => {
+        const counts: Record<string, number> = {};
+        data?.forEach((save) => {
+          counts[save.post_id] = (counts[save.post_id] || 0) + 1;
+        });
+        return counts;
+      }),
+    supabase
+      .from("post_likes")
+      .select("post_id")
+      .eq("user_id", user.id)
+      .in("post_id", postIds)
+      .then(({ data }) => new Set(data?.map((l) => l.post_id) || [])),
+  ]);
+
+  // Preserve save order (most recently saved first)
+  const postMap = new Map(posts.map((p) => [p.id, p]));
+  return postIds
+    .map((id) => postMap.get(id))
+    .filter(Boolean)
+    .map((post) => {
+      const rawEvents = post!.community_events as { id: string }[] | null;
+      return {
+        ...post!,
+        profiles: post!.profiles as CommunityPost["profiles"],
+        peaks: post!.peaks as CommunityPost["peaks"],
+        linked_event_id: rawEvents?.[0]?.id ?? null,
+        like_count: likeCounts[post!.id] || 0,
+        comment_count: commentCounts[post!.id] || 0,
+        save_count: saveCounts[post!.id] || 0,
+        user_has_liked: userLikes.has(post!.id),
+        user_has_saved: true,
+        activity_type: (post!.activity_type ?? null) as CommunityPost["activity_type"],
+        activity_metadata: (post!.activity_metadata ?? null) as CommunityPost["activity_metadata"],
+      };
+    });
 }
 
 export async function getPostComments(postId: string): Promise<PostComment[]> {

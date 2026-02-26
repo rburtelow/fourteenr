@@ -21,7 +21,6 @@ interface TripReportData {
   conditionSeverity: number;
   objectiveRisk: number;
   trailheadAccess: string | null;
-  avalancheRisk: string | null;
   recommended: boolean;
   snowPresent: boolean;
   sections: TripReportSections | null;
@@ -38,30 +37,20 @@ const TRAILHEAD_LABELS: Record<string, string> = {
   snow_blocked: "Snow Blocked",
 };
 
-const AVALANCHE_LABELS: Record<string, string> = {
-  none: "None",
-  low: "Low",
-  moderate: "Moderate",
-  considerable: "Considerable",
-  high: "High",
-  extreme: "Extreme",
-};
-
 const SECTION_LABELS: Record<string, { label: string; icon: string }> = {
   trailhead_conditions: { label: "Trailhead Conditions", icon: "P" },
   weather: { label: "Weather", icon: "W" },
-  route_conditions: { label: "Route Conditions", icon: "R" },
-  gear: { label: "Gear", icon: "G" },
-  water_crossings: { label: "Water Crossings", icon: "~" },
-  wildlife: { label: "Wildlife", icon: "A" },
-  camping: { label: "Camping", icon: "C" },
-  navigation_notes: { label: "Navigation Notes", icon: "N" },
   snow_conditions: { label: "Snow Conditions", icon: "S" },
-  avalanche_notes: { label: "Avalanche Notes", icon: "!" },
+  route_conditions: { label: "Route Conditions", icon: "R" },
+  water_crossings: { label: "Water Crossings", icon: "~" },
+  navigation_notes: { label: "Navigation Notes", icon: "N" },
+  time_breakdown: { label: "Time Breakdown", icon: "T" },
+  gear: { label: "Gear", icon: "G" },
+  camping: { label: "Camping", icon: "C" },
+  training_prep: { label: "Training & Prep", icon: "F" },
+  wildlife: { label: "Wildlife", icon: "A" },
   lessons_learned: { label: "Lessons Learned", icon: "L" },
   mistakes_made: { label: "Mistakes Made", icon: "M" },
-  time_breakdown: { label: "Time Breakdown", icon: "T" },
-  training_prep: { label: "Training & Prep", icon: "F" },
 };
 
 function formatTime(time: string | null) {
@@ -141,11 +130,30 @@ function SectionDetail({ sectionKey, section }: { sectionKey: string; section: {
   );
 }
 
+const SECTION_ORDER = [
+  "trailhead_conditions",
+  "weather",
+  "snow_conditions",
+  "route_conditions",
+  "water_crossings",
+  "navigation_notes",
+  "time_breakdown",
+  "gear",
+  "camping",
+  "training_prep",
+  "wildlife",
+  "lessons_learned",
+  "mistakes_made",
+];
+
 function TripReportViewModal({ report, isOpen, onClose }: { report: TripReportData; isOpen: boolean; onClose: () => void }) {
   const sections = report.sections || {};
-  const enabledSections = Object.entries(sections).filter(
-    ([, s]) => s && (s as { enabled: boolean }).enabled
-  );
+  const enabledSections = SECTION_ORDER
+    .filter((key) => {
+      const s = (sections as Record<string, { enabled: boolean } | null>)[key];
+      return s && s.enabled;
+    })
+    .map((key) => [key, (sections as Record<string, unknown>)[key]] as [string, unknown]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Trip Report" size="xl">
@@ -205,11 +213,6 @@ function TripReportViewModal({ report, isOpen, onClose }: { report: TripReportDa
           {report.trailheadAccess && (
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)] border border-[var(--color-border-app)]">
               {TRAILHEAD_LABELS[report.trailheadAccess] || report.trailheadAccess}
-            </span>
-          )}
-          {report.snowPresent && report.avalancheRisk && report.avalancheRisk !== "none" && (
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
-              Avalanche: {AVALANCHE_LABELS[report.avalancheRisk] || report.avalancheRisk}
             </span>
           )}
         </div>

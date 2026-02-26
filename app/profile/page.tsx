@@ -5,8 +5,8 @@ import { getAllPeaks } from "@/lib/peaks";
 import { getAllBadges, getUserBadges } from "@/lib/badges";
 import type { Peak } from "@/lib/database.types";
 import { getFollowerCount, getFollowingCount, getUniqueFriendsCount } from "@/lib/follows";
-import UserNav from "../components/UserNav";
-import MobileNav from "../components/MobileNav";
+import { getUnreadNotificationCount } from "@/lib/notifications";
+import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BadgeGrid from "../components/badges/BadgeGrid";
 import LogSummitButton from "../components/LogSummitButton";
@@ -40,6 +40,8 @@ export default async function ProfilePage() {
       }
     : null;
 
+  const unreadNotificationCount = user ? await getUnreadNotificationCount(user.id) : 0;
+
   // Fetch summit logs with joined route data for the authenticated user
   const { data: summitLogs } = user
     ? await supabase
@@ -53,7 +55,7 @@ export default async function ProfilePage() {
   const { data: tripReports } = user
     ? await supabase
         .from("trip_reports")
-        .select("id, peak_id, route_id, hike_date, start_time, end_time, total_time_minutes, summary, narrative, difficulty_rating, condition_severity_score, objective_risk_score, trailhead_access_rating, avalanche_risk_level, overall_recommendation, snow_present, sections_json, created_at")
+        .select("id, peak_id, route_id, hike_date, start_time, end_time, total_time_minutes, summary, narrative, difficulty_rating, condition_severity_score, objective_risk_score, trailhead_access_rating, overall_recommendation, snow_present, sections_json, created_at")
         .eq("user_id", user.id)
         .order("hike_date", { ascending: false })
     : { data: null };
@@ -249,7 +251,6 @@ export default async function ProfilePage() {
       conditionSeverity: report.condition_severity_score,
       objectiveRisk: report.objective_risk_score,
       trailheadAccess: report.trailhead_access_rating,
-      avalancheRisk: report.avalanche_risk_level,
       recommended: report.overall_recommendation,
       snowPresent: report.snow_present,
       sections: report.sections_json,
@@ -340,44 +341,12 @@ export default async function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased overflow-x-hidden">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <nav className="mx-4 mt-4 md:mx-8 md:mt-6">
-          <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)]">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6">
-                  <MountainLogo className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">
-                  My14er
-                </span>
-              </Link>
-
-              <div className="hidden md:flex items-center gap-1">
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/community">Community</NavLink>
-                <NavLink href="/peaks">Peaks</NavLink>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {user && (
-                  <LogSummitButton
-                    peaks={allPeaks.map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
-                    isLoggedIn
-                    className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-full hover:bg-[var(--color-brand-accent)] transition-all shadow-md shadow-[var(--color-brand-primary)]/20"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    Log a Summit
-                  </LogSummitButton>
-                )}
-                <UserNav user={userNav} />
-                <MobileNav user={userNav} />
-              </div>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <Navbar
+        user={userNav}
+        userId={user?.id}
+        unreadNotificationCount={unreadNotificationCount}
+        peaks={allPeaks.map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
+      />
 
       {/* Profile Header */}
       <div className="pt-24">
@@ -496,7 +465,7 @@ export default async function ProfilePage() {
                   <span className="flex-1 min-w-0 text-sm font-medium text-white">Log a Summit</span>
                 </LogSummitButton>
                 <SidebarLink icon={<ListIcon />} label="My Wishlist" count={watchlistPeaks.length} />
-                <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} />
+                <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} href="/friends" />
                 <SidebarLink icon={<CalendarIcon className="w-5 h-5" />} label="My Events" count={userEvents.length} href="#my-events" />
                 <SidebarLink icon={<DocumentIcon />} label="Trip Reports" count={tripReportCount} href="#trip-reports" />
                 <SidebarLink icon={<PhotoIcon />} label="Photo Gallery" count={47} />
@@ -900,21 +869,6 @@ export default async function ProfilePage() {
 }
 
 // Components
-function NavLink({ href, children, active }: { href: string; children: React.ReactNode; active?: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
-        active
-          ? 'text-[var(--color-brand-primary)] bg-[var(--color-surface-subtle)]'
-          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)]'
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
-
 function StatItem({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
     <div className="text-center md:text-left">
@@ -1019,14 +973,6 @@ function EventRow({
 }
 
 // Icons
-function MountainLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L2 22h20L12 2zm0 5.5L17.5 19h-11L12 7.5z" />
-    </svg>
-  );
-}
-
 function MountainIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

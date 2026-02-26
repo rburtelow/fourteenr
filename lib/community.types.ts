@@ -25,6 +25,19 @@ export interface CommunityPost {
   save_count: number;
   user_has_liked: boolean;
   user_has_saved: boolean;
+  activity_type: 'summit_log' | 'badge_earned' | null;
+  activity_metadata: {
+    // summit_log fields
+    route_name?: string | null;
+    summit_date?: string;
+    // badge_earned fields
+    badge_id?: string;
+    badge_slug?: string | null;
+    badge_name?: string | null;
+    badge_icon_name?: string | null;
+    badge_description?: string | null;
+    badge_category?: string | null;
+  } | null;
 }
 
 export interface CommunityEvent {
