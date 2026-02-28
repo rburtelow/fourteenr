@@ -68,6 +68,7 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
         comment_id,
         badge_id,
         follow_id,
+        group_id,
         message,
         is_read,
         created_at,
@@ -78,6 +79,9 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
         ),
         follow:follow_id (
           status
+        ),
+        group:group_id (
+          slug
         )
       `)
       .eq("user_id", userId)
@@ -158,9 +162,10 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
             const { data } = await supabase
               .from("notifications")
               .select(`
-                id, user_id, actor_id, type, post_id, comment_id, badge_id, follow_id,
+                id, user_id, actor_id, type, post_id, comment_id, badge_id, follow_id, group_id,
                 message, is_read, created_at,
-                actor:actor_id (screen_name, full_name, avatar_url)
+                actor:actor_id (screen_name, full_name, avatar_url),
+                group:group_id (slug)
               `)
               .eq("id", newRow.id)
               .single();
@@ -385,7 +390,11 @@ function NotificationItem({
     }
     if (notification.post_id) {
       onNavigate();
-      router.push(`/community#post-${notification.post_id}`);
+      if (notification.group_id && notification.group?.slug) {
+        router.push(`/groups/${notification.group.slug}#post-${notification.post_id}`);
+      } else {
+        router.push(`/community#post-${notification.post_id}`);
+      }
     }
   };
 

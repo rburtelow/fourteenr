@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createPost, deletePost, toggleLike, toggleSave } from "./actions";
+import { pinGroupPost, unpinGroupPost, removeGroupPost } from "@/app/groups/actions";
 import type { CommunityPost, PostComment } from "@/lib/community.types";
 import CommentThread from "./CommentThread";
 import FollowButton from "../components/FollowButton";
@@ -95,6 +96,12 @@ interface CommunityFeedProps {
   initialWatchedPeakIds: string[];
   allPeaks: Peak[];
   followStatuses?: Record<string, FollowStatus>;
+  groupId?: string;
+  groupSlug?: string;
+  canManage?: boolean;
+  pinnedPostIds?: string[];
+  showComposer?: boolean;
+  className?: string;
 }
 
 export default function CommunityFeed({
@@ -105,9 +112,27 @@ export default function CommunityFeed({
   initialWatchedPeakIds,
   allPeaks,
   followStatuses: initialFollowStatuses,
+  groupId,
+  groupSlug = "",
+  canManage = false,
+  pinnedPostIds,
+  showComposer = true,
+  className = "lg:col-span-6 space-y-6",
 }: CommunityFeedProps) {
   const supabase = useMemo(() => createClient(), []);
   const [posts, setPosts] = useState(initialPosts);
+  const [localPinnedIds, setLocalPinnedIds] = useState<string[]>(pinnedPostIds ?? []);
+
+  // Sort pinned posts to the top, maintain date order for the rest
+  const displayPosts = useMemo(() => {
+    if (!localPinnedIds.length) return posts;
+    const pinnedSet = new Set(localPinnedIds);
+    const pinned = localPinnedIds
+      .map((id) => posts.find((p) => p.id === id))
+      .filter(Boolean) as CommunityPost[];
+    const regular = posts.filter((p) => !pinnedSet.has(p.id));
+    return [...pinned, ...regular];
+  }, [posts, localPinnedIds]);
 
   // Scroll to a specific post if URL contains a hash like #post-{id}
   const scrolledRef = useRef(false);
@@ -270,13 +295,21 @@ export default function CommunityFeed({
   );
 
   useEffect(() => {
+    const channelName = groupId
+      ? `community:group:${groupId}:posts`
+      : "community:feed:posts";
+
     const channel = supabase
-      // Naming convention: scope:id:entity
-      .channel("community:feed:posts")
+      .channel(channelName)
       // ── community_posts ──────────────────────────────────────────────────
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "community_posts" },
+        {
+          event: "*",
+          schema: "public",
+          table: "community_posts",
+          ...(groupId ? { filter: `group_id=eq.${groupId}` } : {}),
+        },
         async (payload) => {
           if (payload.eventType === "DELETE") {
             const postId = String(payload.old?.id || "");
@@ -656,6 +689,7 @@ export default function CommunityFeed({
     formData.set("content", content);
     if (selectedPeakId) formData.set("peakId", selectedPeakId);
     formData.set("isConditionReport", String(isConditionReport));
+    if (groupId) formData.set("groupId", groupId);
 
     startTransition(async () => {
       const result = await createPost(formData);
@@ -684,9 +718,39 @@ export default function CommunityFeed({
       const result = await deletePost(postId);
       if (result.success) {
         setPosts((prev) => prev.filter((p) => p.id !== postId));
+        setLocalPinnedIds((prev) => prev.filter((id) => id !== postId));
       }
     });
   };
+
+  const handlePinPost = useCallback(async (postId: string) => {
+    if (!groupId) return;
+    setLocalPinnedIds((prev) => [...prev, postId]);
+    const result = await pinGroupPost(postId, groupId, groupSlug);
+    if (result.error) {
+      setLocalPinnedIds((prev) => prev.filter((id) => id !== postId));
+    }
+  }, [groupId, groupSlug]);
+
+  const handleUnpinPost = useCallback(async (postId: string) => {
+    if (!groupId) return;
+    setLocalPinnedIds((prev) => prev.filter((id) => id !== postId));
+    const result = await unpinGroupPost(postId, groupId, groupSlug);
+    if (result.error) {
+      setLocalPinnedIds((prev) => [...prev, postId]);
+    }
+  }, [groupId, groupSlug]);
+
+  const handleRemovePost = useCallback((postId: string) => {
+    if (!groupId) return;
+    startTransition(async () => {
+      const result = await removeGroupPost(postId, groupId, groupSlug);
+      if (result.success) {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+        setLocalPinnedIds((prev) => prev.filter((id) => id !== postId));
+      }
+    });
+  }, [groupId, groupSlug]);
 
   const handleToggleLike = async (postId: string) => {
     if (!isLoggedIn) return;
@@ -768,9 +832,9 @@ export default function CommunityFeed({
   const selectedPeak = allPeaks.find((p) => p.id === selectedPeakId);
 
   return (
-    <main className="lg:col-span-6 space-y-6">
+    <div className={className}>
       {/* Create Post */}
-      {isLoggedIn && (
+      {showComposer && isLoggedIn && (
         <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
           <div className="flex items-start gap-4">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white font-semibold flex-shrink-0">
@@ -907,7 +971,7 @@ export default function CommunityFeed({
       )}
 
       {/* Empty state */}
-      {posts.length === 0 && (
+      {displayPosts.length === 0 && (
         <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-12 text-center">
           <MountainIcon className="w-12 h-12 mx-auto text-[var(--color-text-secondary)] opacity-50" />
           <h3 className="mt-4 text-lg font-semibold text-[var(--color-text-primary)]">
@@ -920,7 +984,7 @@ export default function CommunityFeed({
       )}
 
       {/* Feed Posts */}
-      {posts.map((post, index) => {
+      {displayPosts.map((post, index) => {
         const authorName =
           post.profiles.full_name || post.profiles.screen_name || "Anonymous";
         const authorHandle =
@@ -970,6 +1034,12 @@ export default function CommunityFeed({
                           initialStatus={initialFollowStatuses[post.user_id]}
                         />
                       )}
+                      {localPinnedIds.includes(post.id) && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] text-xs font-medium">
+                          <PinIcon className="w-3 h-3" />
+                          Pinned
+                        </span>
+                      )}
                       {post.is_condition_report && (
                         <span className="px-2 py-0.5 rounded-full bg-[var(--color-amber-glow)]/10 text-[var(--color-amber-glow)] text-xs font-medium">
                           Conditions
@@ -985,21 +1055,52 @@ export default function CommunityFeed({
                     </div>
                   </div>
                 </div>
-                <div className="relative group">
-                  <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all">
-                    <MoreIcon className="w-5 h-5" />
-                  </button>
-                  {isOwnPost && (
-                    <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-[var(--color-border-app)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        Delete
-                      </button>
+                {(isOwnPost || (canManage && groupId)) && (
+                  <div className="relative group">
+                    <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all">
+                      <MoreIcon className="w-5 h-5" />
+                    </button>
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-[var(--color-border-app)] rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 overflow-hidden">
+                      {canManage && groupId && (
+                        localPinnedIds.includes(post.id) ? (
+                          <button
+                            onClick={() => handleUnpinPost(post.id)}
+                            className="w-full px-4 py-2.5 text-left text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-surface-subtle)] flex items-center gap-2.5"
+                          >
+                            <PinIcon className="w-4 h-4 text-[var(--color-brand-primary)]" />
+                            Unpin post
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handlePinPost(post.id)}
+                            disabled={localPinnedIds.length >= 3}
+                            className="w-full px-4 py-2.5 text-left text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-surface-subtle)] flex items-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <PinIcon className="w-4 h-4 text-[var(--color-brand-primary)]" />
+                            Pin post
+                          </button>
+                        )
+                      )}
+                      {isOwnPost ? (
+                        <button
+                          onClick={() => handleDeletePost(post.id)}
+                          className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                          Delete
+                        </button>
+                      ) : canManage && groupId ? (
+                        <button
+                          onClick={() => handleRemovePost(post.id)}
+                          className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                          Remove post
+                        </button>
+                      ) : null}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* Content */}
@@ -1147,14 +1248,14 @@ export default function CommunityFeed({
       })}
 
       {/* Load More */}
-      {posts.length > 0 && (
+      {displayPosts.length > 0 && (
         <div className="text-center pt-4">
           <button className="px-6 py-3 text-sm font-semibold text-[var(--color-brand-primary)] border-2 border-[var(--color-border-app-strong)] rounded-xl hover:bg-[var(--color-surface-subtle)] transition-all">
             Load More Stories
           </button>
         </div>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -1191,7 +1292,7 @@ function SummitLogPostContent({
         </div>
         {peak && (
           <Link
-            href={`/peaks/${peak.slug}`}
+            href={metadata?.trip_report_id ? `/reports/${metadata.trip_report_id}` : `/peaks/${peak.slug}`}
             className="block px-4 py-3 border-t border-[var(--color-border-app)] hover:bg-[var(--color-surface-subtle)] transition-colors"
           >
             <p className="font-bold text-lg text-[var(--color-brand-primary)]">{peak.name}</p>
@@ -1461,6 +1562,35 @@ function XIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         d="M6 18L18 6M6 6l12 12"
       />
+    </svg>
+  );
+}
+
+function PinIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l3 3-1 5 3 2-5 5-5-5 3-2-1-5 3-3z" />
+      <line x1="12" y1="17" x2="12" y2="22" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
     </svg>
   );
 }

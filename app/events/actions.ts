@@ -19,6 +19,7 @@ export async function createEvent(formData: FormData) {
   const endDate = (formData.get("endDate") as string) || null;
   const location = (formData.get("location") as string)?.trim();
   const peakId = (formData.get("peakId") as string) || null;
+  const groupId = (formData.get("groupId") as string) || null;
   const maxAttendeesStr = formData.get("maxAttendees") as string;
   const maxAttendees = maxAttendeesStr ? parseInt(maxAttendeesStr, 10) : null;
 
@@ -59,6 +60,7 @@ export async function createEvent(formData: FormData) {
       end_date: endDate ? new Date(endDate).toISOString() : null,
       location,
       peak_id: peakId || null,
+      group_id: groupId || null,
       max_attendees: maxAttendees,
     })
     .select("id")
@@ -88,6 +90,7 @@ export async function createEvent(formData: FormData) {
       user_id: user.id,
       content: postContent,
       peak_id: peakId || null,
+      group_id: groupId || null,
       is_condition_report: false,
     })
     .select("id")
@@ -110,6 +113,7 @@ export async function createEvent(formData: FormData) {
 
   revalidatePath("/events");
   revalidatePath("/community");
+  if (groupId) revalidatePath("/groups");
   return { success: true, event: { id: eventId } };
 }
 

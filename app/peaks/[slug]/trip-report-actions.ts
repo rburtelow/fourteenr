@@ -52,7 +52,7 @@ export async function createTripReport(formData: FormData) {
     return { error: "Ratings must be between 1 and 5." };
   }
 
-  const { error } = await supabase.from("trip_reports").insert({
+  const { data: reportData, error } = await supabase.from("trip_reports").insert({
     user_id: user.id,
     peak_id: peakId,
     route_id: routeId,
@@ -69,7 +69,7 @@ export async function createTripReport(formData: FormData) {
     summary,
     narrative,
     sections_json: sectionsJson as unknown as Record<string, unknown>,
-  });
+  }).select("id").single();
 
   if (error) {
     return { error: error.message };
@@ -131,6 +131,7 @@ export async function createTripReport(formData: FormData) {
     activity_metadata: {
       summit_date: hikeDate,
       route_name: routeName,
+      trip_report_id: reportData?.id ?? null,
     },
   });
 

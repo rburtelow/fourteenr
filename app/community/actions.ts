@@ -16,6 +16,7 @@ export async function createPost(formData: FormData) {
   const content = formData.get("content") as string;
   const peakId = formData.get("peakId") as string | null;
   const isConditionReport = formData.get("isConditionReport") === "true";
+  const groupId = formData.get("groupId") as string | null;
 
   if (!content || content.trim().length === 0) {
     return { error: "Post content is required" };
@@ -32,6 +33,7 @@ export async function createPost(formData: FormData) {
       content: content.trim(),
       peak_id: peakId || null,
       is_condition_report: isConditionReport,
+      group_id: groupId || null,
     })
     .select()
     .single();

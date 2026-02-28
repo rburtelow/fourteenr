@@ -141,6 +141,7 @@ export interface Database {
           end_date: string | null;
           location: string;
           peak_id: string | null;
+          group_id: string | null;
           max_attendees: number | null;
           status: string;
           community_post_id: string | null;
@@ -156,6 +157,7 @@ export interface Database {
           end_date?: string | null;
           location: string;
           peak_id?: string | null;
+          group_id?: string | null;
           max_attendees?: number | null;
           status?: string;
           community_post_id?: string | null;
@@ -171,6 +173,7 @@ export interface Database {
           end_date?: string | null;
           location?: string;
           peak_id?: string | null;
+          group_id?: string | null;
           max_attendees?: number | null;
           status?: string;
           community_post_id?: string | null;
@@ -194,6 +197,12 @@ export interface Database {
             foreignKeyName: "community_events_community_post_id_fkey";
             columns: ["community_post_id"];
             referencedRelation: "community_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "community_events_group_id_fkey";
+            columns: ["group_id"];
+            referencedRelation: "groups";
             referencedColumns: ["id"];
           }
         ];
@@ -801,6 +810,104 @@ export interface Database {
             foreignKeyName: "trending_peaks_cache_peak_id_fkey";
             columns: ["peak_id"];
             referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      groups: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          cover_image_url: string | null;
+          privacy: "public" | "private";
+          peak_id: string | null;
+          category: "general" | "route" | "range" | "skill_level" | "local_chapter" | "trip_planning" | "gear" | "conditions";
+          created_by: string;
+          member_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          cover_image_url?: string | null;
+          privacy?: "public" | "private";
+          peak_id?: string | null;
+          category?: "general" | "route" | "range" | "skill_level" | "local_chapter" | "trip_planning" | "gear" | "conditions";
+          created_by: string;
+          member_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          description?: string | null;
+          cover_image_url?: string | null;
+          privacy?: "public" | "private";
+          peak_id?: string | null;
+          category?: "general" | "route" | "range" | "skill_level" | "local_chapter" | "trip_planning" | "gear" | "conditions";
+          created_by?: string;
+          member_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "groups_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "groups_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      group_members: {
+        Row: {
+          id: string;
+          group_id: string;
+          user_id: string;
+          role: "admin" | "moderator" | "member";
+          status: "active" | "pending" | "banned";
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          user_id: string;
+          role?: "admin" | "moderator" | "member";
+          status?: "active" | "pending" | "banned";
+          joined_at?: string;
+        };
+        Update: {
+          id?: string;
+          group_id?: string;
+          user_id?: string;
+          role?: "admin" | "moderator" | "member";
+          status?: "active" | "pending" | "banned";
+          joined_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey";
+            columns: ["group_id"];
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           }
         ];

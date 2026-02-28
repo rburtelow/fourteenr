@@ -6,6 +6,8 @@ import { getAllPeaks } from "@/lib/peaks";
 import { getAllBadges, getUserBadges } from "@/lib/badges";
 import type { Peak } from "@/lib/database.types";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { getPublicGroupsForUser } from "@/lib/groups";
+import { CATEGORY_LABELS } from "@/lib/groups.types";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import BadgeGrid from "../../components/badges/BadgeGrid";
@@ -81,10 +83,11 @@ export default async function PublicProfilePage({
   const allPeaks = await getAllPeaks();
   const peakMap = new Map<string, Peak>(allPeaks.map((p) => [p.id, p]));
 
-  // Fetch badges
-  const [allBadges, userBadges] = await Promise.all([
+  // Fetch badges and groups
+  const [allBadges, userBadges, userGroups] = await Promise.all([
     getAllBadges(),
     getUserBadges(profile.id),
+    getPublicGroupsForUser(profile.id, user?.id),
   ]);
 
   // Build completed peaks display data
@@ -316,6 +319,49 @@ export default async function PublicProfilePage({
                 columns={6}
                 maxDisplay={12}
               />
+            </div>
+          </section>
+        )}
+
+        {/* Groups Section */}
+        {userGroups.length > 0 && (
+          <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-border-app)]">
+              <h2
+                className="text-xl font-bold text-[var(--color-text-primary)]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Groups
+              </h2>
+              <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                {userGroups.length} group{userGroups.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {userGroups.map((group) => {
+                  const label = CATEGORY_LABELS[group.category] ?? group.category;
+                  return (
+                    <Link
+                      key={group.id}
+                      href={`/groups/${group.slug}`}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-[var(--color-border-app)] hover:border-[var(--color-brand-primary)]/40 hover:bg-[var(--color-surface-subtle)] transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                        {group.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate group-hover:text-[var(--color-brand-primary)] transition-colors">
+                          {group.name}
+                        </p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">
+                          {label} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}

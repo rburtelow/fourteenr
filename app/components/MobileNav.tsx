@@ -101,7 +101,7 @@ export default function MobileNav({ user, peaks = [] }: MobileNavProps) {
                 <span className="font-medium">Events</span>
               </Link>
               <Link
-                href="/friends"
+                href="/groups"
                 onClick={closeMenu}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-brand-primary)] transition-colors"
               >

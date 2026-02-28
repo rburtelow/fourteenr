@@ -25,7 +25,7 @@ const LOGGED_IN_LINKS = [
   { href: "/peaks", label: "Peaks" },
   { href: "/community", label: "Community" },
   { href: "/events", label: "Events" },
-  { href: "/friends", label: "Groups" },
+  { href: "/groups", label: "Groups" },
   { href: "/profile", label: "Profile" },
 ];
 

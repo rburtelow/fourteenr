@@ -8,6 +8,7 @@ export async function getPosts(options?: {
   limit?: number;
   cursor?: string;
   userId?: string;
+  groupId?: string;
 }): Promise<CommunityPost[]> {
   const supabase = await createClient();
   const {
@@ -50,6 +51,13 @@ export async function getPosts(options?: {
     .limit(limit);
 
   // Apply filters
+  if (options?.groupId) {
+    query = query.eq("group_id", options.groupId);
+  } else {
+    // Main feed: exclude group-scoped posts
+    query = query.is("group_id", null);
+  }
+
   if (options?.filter === "conditions") {
     query = query.eq("is_condition_report", true);
   }
@@ -159,6 +167,7 @@ export async function getUpcomingEvents(options?: {
   cursor?: string;
   filter?: "upcoming" | "this_week" | "this_month" | "past";
   peakId?: string;
+  groupId?: string;
   search?: string;
   sort?: "soonest" | "popular" | "newest";
 }): Promise<CommunityEvent[]> {
@@ -183,6 +192,7 @@ export async function getUpcomingEvents(options?: {
       end_date,
       location,
       peak_id,
+      group_id,
       max_attendees,
       status,
       community_post_id,
@@ -197,6 +207,11 @@ export async function getUpcomingEvents(options?: {
         name,
         slug,
         elevation
+      ),
+      groups:group_id (
+        id,
+        name,
+        slug
       )
     `
     )
@@ -214,6 +229,10 @@ export async function getUpcomingEvents(options?: {
   } else {
     // upcoming
     query = query.gte("event_date", now).eq("status", "active").order("event_date", { ascending: true });
+  }
+
+  if (options?.groupId) {
+    query = query.eq("group_id", options.groupId);
   }
 
   if (options?.peakId) {
@@ -271,6 +290,7 @@ export async function getUpcomingEvents(options?: {
     ...event,
     profiles: event.profiles as CommunityEvent["profiles"],
     peaks: event.peaks as CommunityEvent["peaks"],
+    groups: event.groups as CommunityEvent["groups"],
     status: event.status as CommunityEvent["status"],
     attendee_count: attendeeCounts[event.id] || 0,
     user_has_rsvpd: userRsvps.has(event.id),
@@ -304,6 +324,7 @@ export async function getEventById(eventId: string): Promise<CommunityEvent | nu
       end_date,
       location,
       peak_id,
+      group_id,
       max_attendees,
       status,
       community_post_id,
@@ -318,6 +339,11 @@ export async function getEventById(eventId: string): Promise<CommunityEvent | nu
         name,
         slug,
         elevation
+      ),
+      groups:group_id (
+        id,
+        name,
+        slug
       )
     `
     )
@@ -349,6 +375,7 @@ export async function getEventById(eventId: string): Promise<CommunityEvent | nu
     ...event,
     profiles: event.profiles as CommunityEvent["profiles"],
     peaks: event.peaks as CommunityEvent["peaks"],
+    groups: event.groups as CommunityEvent["groups"],
     status: event.status as CommunityEvent["status"],
     attendee_count: attendeeCount,
     user_has_rsvpd: userRsvp,

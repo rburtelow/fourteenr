@@ -30,6 +30,7 @@ export interface CommunityPost {
     // summit_log fields
     route_name?: string | null;
     summit_date?: string;
+    trip_report_id?: string | null;
     // badge_earned fields
     badge_id?: string;
     badge_slug?: string | null;
@@ -49,6 +50,7 @@ export interface CommunityEvent {
   end_date: string | null;
   location: string;
   peak_id: string | null;
+  group_id: string | null;
   max_attendees: number | null;
   status: "active" | "cancelled" | "completed";
   community_post_id: string | null;
@@ -63,6 +65,11 @@ export interface CommunityEvent {
     name: string;
     slug: string;
     elevation: number;
+  } | null;
+  groups: {
+    id: string;
+    name: string;
+    slug: string;
   } | null;
   attendee_count: number;
   user_has_rsvpd: boolean;
