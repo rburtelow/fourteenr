@@ -16,6 +16,7 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import MembershipButton from "./MembershipButton";
 import MemberList from "./MemberList";
+import InviteButton from "./InviteButton";
 import CommunityFeed from "@/app/community/CommunityFeed";
 import GroupEventsTab from "./GroupEventsTab";
 import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/groups.types";
@@ -245,15 +246,18 @@ export default async function GroupPage({
                 memberRole={memberRole}
               />
 
-              {memberRole === "admin" && (
-                <div className="mt-3 pt-3 border-t border-[var(--color-border-app)]">
-                  <Link
-                    href={`/groups/${group.slug}/settings`}
-                    className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors"
-                  >
-                    <SettingsIcon className="w-4 h-4" />
-                    Group Settings
-                  </Link>
+              {isActiveMember && (
+                <div className="mt-3 pt-3 border-t border-[var(--color-border-app)] space-y-2.5">
+                  <InviteButton groupId={group.id} />
+                  {memberRole === "admin" && (
+                    <Link
+                      href={`/groups/${group.slug}/settings`}
+                      className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors"
+                    >
+                      <SettingsIcon className="w-4 h-4" />
+                      Group Settings
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

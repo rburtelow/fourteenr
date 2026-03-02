@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { markNotificationAsRead, markAllNotificationsAsRead } from "./notification-actions";
 import { acceptFollowRequest, rejectFollowRequest } from "./follow-actions";
+import { acceptGroupInvite, dismissGroupInvite } from "@/app/groups/actions";
 import type { Notification } from "@/lib/notifications.types";
 
 function formatTimeAgo(dateString: string): string {
@@ -258,6 +259,31 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
     }
   }, [notifications]);
 
+  const handleInviteAction = useCallback(async (
+    groupId: string,
+    groupSlug: string,
+    action: "accept" | "dismiss",
+    notificationId: string
+  ) => {
+    if (!notifications.find((n) => n.id === notificationId)?.is_read) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
+    if (action === "accept") {
+      await acceptGroupInvite(groupId, groupSlug);
+    } else {
+      await dismissGroupInvite(groupId);
+    }
+
+    // Mark notification as acted so buttons are hidden
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, group_id: null } : n))
+    );
+  }, [notifications]);
+
   const notificationIcon = (type: Notification["type"]) => {
     switch (type) {
       case "like":
@@ -297,6 +323,16 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
           <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
             <svg className="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </div>
+        );
+      case "group_join_approved":
+      case "group_join_request":
+      case "group_invite":
+        return (
+          <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-3.5 h-3.5 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
             </svg>
           </div>
         );
@@ -356,6 +392,7 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
                   notification={notification}
                   onMarkAsRead={handleMarkAsRead}
                   onFollowAction={handleFollowAction}
+                  onInviteAction={handleInviteAction}
                   notificationIcon={notificationIcon}
                   onNavigate={() => setIsOpen(false)}
                 />
@@ -372,12 +409,14 @@ function NotificationItem({
   notification,
   onMarkAsRead,
   onFollowAction,
+  onInviteAction,
   notificationIcon,
   onNavigate,
 }: {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
   onFollowAction: (followId: string, action: "accept" | "reject", notificationId: string) => void;
+  onInviteAction: (groupId: string, groupSlug: string, action: "accept" | "dismiss", notificationId: string) => void;
   notificationIcon: (type: Notification["type"]) => React.ReactNode;
   onNavigate: () => void;
 }) {
@@ -466,6 +505,37 @@ function NotificationItem({
           </div>
         )}
         {notification.type === "follow_request" && acted && (
+          <p className="mt-1 text-xs text-[var(--color-text-secondary)] italic">Responded</p>
+        )}
+
+        {/* Group invite action buttons */}
+        {notification.type === "group_invite" && notification.group_id && notification.group?.slug && !acted && (
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setActed(true);
+                onInviteAction(notification.group_id!, notification.group!.slug, "accept", notification.id);
+                onNavigate();
+                router.push(`/groups/${notification.group!.slug}`);
+              }}
+              className="px-3 py-1 text-xs font-semibold text-white bg-[var(--color-brand-primary)] rounded-lg hover:bg-[var(--color-brand-accent)] transition-all"
+            >
+              Join Group
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setActed(true);
+                onInviteAction(notification.group_id!, notification.group!.slug, "dismiss", notification.id);
+              }}
+              className="px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)] border border-[var(--color-border-app-strong)] rounded-lg hover:bg-[var(--color-surface-subtle)] transition-all"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        {notification.type === "group_invite" && acted && (
           <p className="mt-1 text-xs text-[var(--color-text-secondary)] italic">Responded</p>
         )}
       </div>

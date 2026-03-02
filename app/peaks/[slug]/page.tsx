@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getPeakBySlug } from "@/lib/peaks";
 import { getForecastByPeakSlug } from "@/lib/forecasts";
 import { createClient } from "@/lib/supabase/server";
-import type { Route, AdjustedHour, PeakForecast } from "@/lib/database.types";
+import type { RouteWithTrailhead, AdjustedHour, PeakForecast } from "@/lib/database.types";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import Navbar from "../../components/Navbar";
 import WatchButton from "./WatchButton";
@@ -257,6 +257,75 @@ export default async function PeakProfilePage({
                     ))}
                   </div>
                 </div>
+
+                {/* Trailheads Section */}
+                {(() => {
+                  const uniqueTrailheads = [
+                    ...new Map(
+                      peak.routes
+                        .filter((r) => r.trailhead_detail)
+                        .map((r) => [r.trailhead_detail!.id, r.trailhead_detail!])
+                    ).values(),
+                  ];
+                  if (uniqueTrailheads.length === 0) return null;
+                  return (
+                    <div className="animate-fade-up delay-300 bg-white rounded-3xl shadow-xl border border-[var(--color-border-app)] p-8">
+                      <h2
+                        className="text-2xl font-bold text-[var(--color-brand-primary)] mb-6"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        Trailheads
+                      </h2>
+                      <div className="space-y-4">
+                        {uniqueTrailheads.map((th) => (
+                          <div
+                            key={th.id}
+                            className="p-5 rounded-2xl border border-[var(--color-border-app)] hover:border-[var(--color-brand-primary)]/30 transition-all"
+                          >
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div>
+                                <Link
+                                  href={`/trailheads/${th.slug}`}
+                                  className="font-semibold text-[var(--color-brand-primary)] hover:underline"
+                                >
+                                  {th.name}
+                                </Link>
+                                {th.elevation_ft && (
+                                  <p className="text-xs text-[var(--color-text-muted-green)] mt-0.5">
+                                    {th.elevation_ft.toLocaleString()}&apos; elevation
+                                  </p>
+                                )}
+                              </div>
+                              {th.road_type && (
+                                <span
+                                  className={`px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${ROAD_TYPE_COLORS[th.road_type] || "bg-gray-100 text-gray-700"}`}
+                                >
+                                  {ROAD_TYPE_LABELS[th.road_type] || th.road_type}
+                                </span>
+                              )}
+                            </div>
+                            {th.driving_notes && (
+                              <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3">
+                                {th.driving_notes}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted-green)]">
+                              {th.parking_type && <span>{formatParkingType(th.parking_type)}</span>}
+                              {th.restrooms && <span>Restrooms</span>}
+                              {!th.fee_required && <span>No Fee</span>}
+                              <Link
+                                href={`/trailheads/${th.slug}`}
+                                className="ml-auto text-[var(--color-brand-primary)] font-medium hover:underline"
+                              >
+                                View Details →
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Right Column - Sidebar */}
@@ -861,7 +930,7 @@ function RouteCard({
   route,
   index,
 }: {
-  route: Route;
+  route: RouteWithTrailhead;
   index: number;
 }) {
   const difficultyColors = {
@@ -870,6 +939,8 @@ function RouteCard({
     "Class 3": "bg-amber-100 text-amber-700 border-amber-200",
     "Class 4": "bg-rose-100 text-rose-700 border-rose-200",
   };
+
+  const th = route.trailhead_detail;
 
   return (
     <div className="group p-5 rounded-2xl border border-[var(--color-border-app)] hover:border-[var(--color-brand-primary)]/30 hover:bg-[var(--color-surface-subtle)]/50 transition-all cursor-pointer">
@@ -882,9 +953,32 @@ function RouteCard({
             <h4 className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
               {route.name}
             </h4>
-            <p className="text-xs text-[var(--color-text-muted-green)]">
-              {route.trailhead ?? "Unknown trailhead"}
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              {th ? (
+                <Link
+                  href={`/trailheads/${th.slug}`}
+                  className="text-xs text-[var(--color-brand-primary)] hover:underline"
+                >
+                  {th.name}
+                </Link>
+              ) : (
+                <p className="text-xs text-[var(--color-text-muted-green)]">
+                  {route.trailhead ?? "Unknown trailhead"}
+                </p>
+              )}
+              {th?.road_type && (
+                <span
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${ROAD_TYPE_COLORS[th.road_type] || "bg-gray-100 text-gray-700"}`}
+                >
+                  {ROAD_TYPE_LABELS[th.road_type] || th.road_type}
+                </span>
+              )}
+              {th?.elevation_ft && (
+                <span className="text-xs text-[var(--color-text-muted-green)]">
+                  {th.elevation_ft.toLocaleString()}&apos;
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <span
@@ -920,6 +1014,32 @@ function RouteCard({
       </div>
     </div>
   );
+}
+
+const ROAD_TYPE_LABELS: Record<string, string> = {
+  paved: "Paved",
+  gravel: "Gravel",
+  rough_2wd: "Rough 2WD",
+  "4wd_required": "4WD",
+  "4wd_high_clearance": "4WD+",
+};
+
+const ROAD_TYPE_COLORS: Record<string, string> = {
+  paved: "bg-emerald-100 text-emerald-700",
+  gravel: "bg-sky-100 text-sky-700",
+  rough_2wd: "bg-amber-100 text-amber-700",
+  "4wd_required": "bg-rose-100 text-rose-700",
+  "4wd_high_clearance": "bg-rose-100 text-rose-800",
+};
+
+function formatParkingType(parkingType: string): string {
+  const labels: Record<string, string> = {
+    lot: "Parking Lot",
+    pulloff: "Pull-off",
+    dispersed: "Dispersed",
+    none: "No Parking",
+  };
+  return labels[parkingType] || parkingType;
 }
 
 // Icons

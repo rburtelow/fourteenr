@@ -2,7 +2,7 @@ export interface Notification {
   id: string;
   user_id: string;
   actor_id: string | null;
-  type: 'like' | 'comment' | 'badge' | 'follow_request' | 'follow_accepted' | 'group_join_approved' | 'group_join_request';
+  type: 'like' | 'comment' | 'badge' | 'follow_request' | 'follow_accepted' | 'group_join_approved' | 'group_join_request' | 'group_invite';
   post_id: string | null;
   comment_id: string | null;
   badge_id: string | null;

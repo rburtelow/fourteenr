@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   updateGroup,
+  updateGroupCoverUrl,
   updateMemberRole,
   removeMember,
   transferAdmin,
   deleteGroup,
 } from "@/app/groups/actions";
-import { CATEGORY_LABELS } from "@/lib/groups.types";
+import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/groups.types";
 import type { Group, GroupMember, GroupCategory } from "@/lib/groups.types";
+import { createClient } from "@/lib/supabase/client";
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [GroupCategory, string][];
 
@@ -57,6 +59,203 @@ function SuccessBanner({ message }: { message: string }) {
   );
 }
 
+// ─── Cover Image Upload ────────────────────────────────────────────────────────
+
+const TARGET_W = 1200;
+const TARGET_H = 400;
+
+async function resizeImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = TARGET_W;
+      canvas.height = TARGET_H;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("Canvas unavailable")); return; }
+
+      // Center-crop to 3:1 ratio
+      const targetRatio = TARGET_W / TARGET_H;
+      const imgRatio = img.width / img.height;
+      let sx = 0, sy = 0, sw = img.width, sh = img.height;
+      if (imgRatio > targetRatio) {
+        sw = img.height * targetRatio;
+        sx = (img.width - sw) / 2;
+      } else {
+        sh = img.width / targetRatio;
+        sy = (img.height - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, TARGET_W, TARGET_H);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Resize failed"))),
+        "image/jpeg",
+        0.85
+      );
+    };
+    img.onerror = () => reject(new Error("Image load failed"));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function CoverImageSection({ group }: { group: Group }) {
+  const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [pendingBlob, setPendingBlob] = useState<Blob | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setSaved(false);
+    try {
+      const blob = await resizeImage(file);
+      setPendingBlob(blob);
+      setPreview(URL.createObjectURL(blob));
+    } catch {
+      setError("Could not process image. Please try a different file.");
+    }
+  }, []);
+
+  const handleUpload = async () => {
+    if (!pendingBlob) return;
+    setUploading(true);
+    setError(null);
+    setSaved(false);
+
+    const supabase = createClient();
+    const path = `${group.id}/cover.jpg`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("group-covers")
+      .upload(path, pendingBlob, { upsert: true, contentType: "image/jpeg" });
+
+    if (uploadError) {
+      setError("Upload failed. Please try again.");
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from("group-covers")
+      .getPublicUrl(path);
+
+    // Bust cache by appending timestamp
+    const urlWithBust = `${publicUrl}?t=${Date.now()}`;
+    const res = await updateGroupCoverUrl(group.id, urlWithBust, group.slug);
+
+    if (res.error) {
+      setError(res.error);
+    } else {
+      setSaved(true);
+      setPendingBlob(null);
+      setPreview(null);
+      router.refresh();
+    }
+    setUploading(false);
+  };
+
+  const handleRemove = async () => {
+    setError(null);
+    setSaved(false);
+    const res = await updateGroupCoverUrl(group.id, null, group.slug);
+    if (res.error) {
+      setError(res.error);
+    } else {
+      setSaved(true);
+      router.refresh();
+    }
+  };
+
+  const gradientClass = CATEGORY_COLORS[group.category] ?? "from-slate-500 to-slate-700";
+  const currentCover = preview ?? group.cover_image_url;
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
+        Cover Image
+      </label>
+      <p className="text-xs text-[var(--color-text-secondary)] mb-3">
+        Recommended: 1200×400 px. Images will be cropped to fit.
+      </p>
+
+      {/* Preview */}
+      <div
+        className={`relative h-32 rounded-xl overflow-hidden bg-gradient-to-br ${gradientClass} mb-3`}
+      >
+        {currentCover && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={currentCover}
+            alt="Cover preview"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+        {!currentCover && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-white/60 text-xs font-medium">Default gradient (no image)</p>
+          </div>
+        )}
+      </div>
+
+      {error && <ErrorBanner message={error} />}
+      {saved && !error && <SuccessBanner message="Cover image saved." />}
+
+      <div className="flex items-center gap-2 mt-2">
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] hover:border-[var(--color-border-app-strong)] transition-all"
+        >
+          {currentCover ? "Change Image" : "Upload Image"}
+        </button>
+
+        {pendingBlob && (
+          <button
+            type="button"
+            onClick={handleUpload}
+            disabled={uploading}
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[var(--color-brand-primary)] hover:bg-[var(--color-brand-accent)] transition-all disabled:opacity-50"
+          >
+            {uploading ? "Uploading…" : "Save Cover"}
+          </button>
+        )}
+
+        {group.cover_image_url && !pendingBlob && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+          >
+            Remove
+          </button>
+        )}
+
+        {pendingBlob && (
+          <button
+            type="button"
+            onClick={() => { setPreview(null); setPendingBlob(null); }}
+            className="px-3 py-2 rounded-xl text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-subtle)]"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+    </div>
+  );
+}
+
 // ─── Tab: Details ─────────────────────────────────────────────────────────────
 
 function DetailsTab({ group }: { group: Group }) {
@@ -90,7 +289,10 @@ function DetailsTab({ group }: { group: Group }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-5">
+      <CoverImageSection group={group} />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
       {error && <ErrorBanner message={error} />}
       {saved && !error && <SuccessBanner message="Changes saved." />}
 
@@ -176,6 +378,7 @@ function DetailsTab({ group }: { group: Group }) {
         </button>
       </div>
     </form>
+    </div>
   );
 }
 

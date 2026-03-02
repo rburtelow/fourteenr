@@ -323,6 +323,40 @@ export async function updateGroup(groupId: string, formData: FormData) {
   return { success: true, slug: newSlug };
 }
 
+// ─── Settings: Cover Image URL ────────────────────────────────────────────────
+
+export async function updateGroupCoverUrl(groupId: string, coverUrl: string | null, groupSlug: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: "You must be logged in" };
+
+  // Verify admin role
+  const { data: membership } = await supabase
+    .from("group_members")
+    .select("role")
+    .eq("group_id", groupId)
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (membership?.role !== "admin") return { error: "Only admins can update the cover image" };
+
+  const { error } = await supabase
+    .from("groups")
+    .update({ cover_image_url: coverUrl })
+    .eq("id", groupId);
+
+  if (error) {
+    console.error("Error updating cover image:", error);
+    return { error: "Failed to save cover image" };
+  }
+
+  revalidatePath(`/groups/${groupSlug}`);
+  revalidatePath(`/groups/${groupSlug}/settings`);
+  return { success: true };
+}
+
 // ─── Settings: Member Role Management ─────────────────────────────────────────
 
 export async function updateMemberRole(memberId: string, newRole: string, groupSlug: string) {
@@ -499,6 +533,118 @@ export async function removeGroupPost(postId: string, groupId: string, groupSlug
 
   revalidatePath(`/groups/${groupSlug}`);
   return { success: true };
+}
+
+// ─── Invite to Group ──────────────────────────────────────────────────────────
+
+export async function inviteToGroup(groupId: string, inviteeUserId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: "You must be logged in" };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.rpc as any)("send_group_invite", {
+    p_group_id: groupId,
+    p_invitee_id: inviteeUserId,
+  });
+
+  if (error) {
+    console.error("Error sending invite:", error);
+    return { error: "Failed to send invite" };
+  }
+
+  const result = data as { success?: boolean; error?: string };
+  if (result?.error) return { error: result.error };
+
+  return { success: true };
+}
+
+export async function acceptGroupInvite(groupId: string, groupSlug: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: "You must be logged in" };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.rpc as any)("accept_group_invite", {
+    p_group_id: groupId,
+  });
+
+  if (error) {
+    console.error("Error accepting invite:", error);
+    return { error: "Failed to accept invite" };
+  }
+
+  const result = data as { success?: boolean; error?: string };
+  if (result?.error) return { error: result.error };
+
+  revalidatePath(`/groups/${groupSlug}`);
+  revalidatePath("/groups");
+  return { success: true };
+}
+
+export async function dismissGroupInvite(groupId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: "You must be logged in" };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from("group_invites")
+    .update({ status: "dismissed" })
+    .eq("group_id", groupId)
+    .eq("invitee_id", user.id)
+    .eq("status", "pending");
+
+  if (error) {
+    console.error("Error dismissing invite:", error);
+    return { error: "Failed to dismiss invite" };
+  }
+
+  return { success: true };
+}
+
+export async function getInviteModalData(groupId: string): Promise<{
+  following: Array<{ id: string; screen_name: string | null; full_name: string | null; avatar_url: string | null }>;
+  memberUserIds: string[];
+  invitedUserIds: string[];
+}> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { following: [], memberUserIds: [], invitedUserIds: [] };
+
+  const [followingData, membersData, invitesData] = await Promise.all([
+    supabase
+      .from("follows")
+      .select("following_id, profiles:following_id (id, screen_name, full_name, avatar_url)")
+      .eq("follower_id", user.id)
+      .eq("status", "accepted"),
+    supabase
+      .from("group_members")
+      .select("user_id")
+      .eq("group_id", groupId)
+      .eq("status", "active"),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("group_invites")
+      .select("invitee_id")
+      .eq("group_id", groupId)
+      .eq("status", "pending"),
+  ]);
+
+  return {
+    following: ((followingData.data || []).map((r: { profiles: unknown }) => r.profiles) as Array<{
+      id: string;
+      screen_name: string | null;
+      full_name: string | null;
+      avatar_url: string | null;
+    }>).filter(Boolean),
+    memberUserIds: (membersData.data || []).map((m: { user_id: string }) => m.user_id),
+    invitedUserIds: ((invitesData.data || []) as { invitee_id: string }[]).map((i) => i.invitee_id),
+  };
 }
 
 // ─── Settings: Delete Group ────────────────────────────────────────────────────

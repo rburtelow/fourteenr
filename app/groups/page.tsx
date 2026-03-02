@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getGroups } from "@/lib/groups";
+import { getGroups, getSuggestedGroups } from "@/lib/groups";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -11,7 +11,12 @@ export const metadata = {
   description: "Find and join communities of Colorado 14er hikers.",
 };
 
-export default async function GroupsPage() {
+export default async function GroupsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string }>;
+}) {
+  const { search: initialSearch = "" } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,15 +24,17 @@ export default async function GroupsPage() {
 
   let userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null = null;
   let unreadNotificationCount = 0;
+  let suggestedGroups: Awaited<ReturnType<typeof getSuggestedGroups>> = [];
 
   if (user) {
-    const [{ data: profile }, notifCount] = await Promise.all([
+    const [{ data: profile }, notifCount, suggested] = await Promise.all([
       supabase
         .from("profiles")
         .select("screen_name, avatar_url")
         .eq("id", user.id)
         .single(),
       getUnreadNotificationCount(user.id),
+      getSuggestedGroups(user.id, 6),
     ]);
 
     userNav = {
@@ -36,6 +43,7 @@ export default async function GroupsPage() {
       avatar_url: profile?.avatar_url || null,
     };
     unreadNotificationCount = notifCount;
+    suggestedGroups = suggested;
   }
 
   // Fetch all peaks for the group creator peak selector
@@ -92,6 +100,8 @@ export default async function GroupsPage() {
           initialGroups={groups}
           allPeaks={(allPeaks || []).map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
           isLoggedIn={!!user}
+          suggestedGroups={suggestedGroups}
+          initialSearch={initialSearch}
         />
       </div>
 

@@ -212,6 +212,111 @@ export async function getUserGroupsForSidebar(userId: string, limit = 5): Promis
     .slice(0, limit);
 }
 
+export async function getGroupInvitedUserIds(groupId: string): Promise<string[]> {
+  const supabase = await createClient();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from('group_invites')
+    .select('invitee_id')
+    .eq('group_id', groupId)
+    .eq('status', 'pending');
+
+  if (error) {
+    console.error('Error fetching invited user ids:', error);
+    return [];
+  }
+
+  return ((data as { invitee_id: string }[]) || []).map((r) => r.invitee_id);
+}
+
+export async function getSuggestedGroups(userId: string, limit = 6): Promise<Group[]> {
+  const supabase = await createClient();
+
+  // Get groups user is already in
+  const { data: userMemberships } = await supabase
+    .from('group_members')
+    .select('group_id')
+    .eq('user_id', userId)
+    .eq('status', 'active');
+
+  const userGroupIds = new Set((userMemberships || []).map((m) => m.group_id));
+
+  const scoreMap = new Map<string, number>(); // group_id -> relevance score
+
+  // Signal 1 (score +2): Groups linked to peaks the user has summited
+  const { data: userSummits } = await supabase
+    .from('summit_logs')
+    .select('peak_id')
+    .eq('user_id', userId);
+
+  const userPeakIds = [...new Set((userSummits || []).map((s: { peak_id: string }) => s.peak_id))];
+
+  if (userPeakIds.length > 0) {
+    const { data: peakGroups } = await supabase
+      .from('groups')
+      .select('id')
+      .in('peak_id', userPeakIds);
+
+    for (const g of peakGroups || []) {
+      if (!userGroupIds.has(g.id)) {
+        scoreMap.set(g.id, (scoreMap.get(g.id) ?? 0) + 2);
+      }
+    }
+  }
+
+  // Signal 2 (score +1): Groups that followed users belong to
+  const { data: followingRows } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId)
+    .eq('status', 'accepted');
+
+  const followingIds = (followingRows || []).map((f: { following_id: string }) => f.following_id);
+
+  if (followingIds.length > 0) {
+    const { data: followingGroups } = await supabase
+      .from('group_members')
+      .select('group_id')
+      .in('user_id', followingIds)
+      .eq('status', 'active');
+
+    for (const gm of followingGroups || []) {
+      if (!userGroupIds.has(gm.group_id)) {
+        scoreMap.set(gm.group_id, (scoreMap.get(gm.group_id) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Get ranked group IDs
+  const rankedIds = [...scoreMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id)
+    .slice(0, limit);
+
+  if (rankedIds.length === 0) {
+    // Fallback: popular public groups the user isn't already in
+    const { data: popularGroups } = await supabase
+      .from('groups')
+      .select('*, peaks(name, slug, elevation)')
+      .order('member_count', { ascending: false })
+      .limit(limit + userGroupIds.size + 5);
+
+    return ((popularGroups || []) as Group[])
+      .filter((g) => !userGroupIds.has(g.id))
+      .slice(0, limit);
+  }
+
+  const { data: suggestedGroups } = await supabase
+    .from('groups')
+    .select('*, peaks(name, slug, elevation)')
+    .in('id', rankedIds);
+
+  return ((suggestedGroups || []) as Group[]).sort(
+    (a, b) => (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0)
+  );
+}
+
 export async function getUserMembership(
   groupId: string,
   userId: string

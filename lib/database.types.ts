@@ -469,6 +469,7 @@ export interface Database {
           difficulty: string | null;
           estimated_time: string | null;
           trailhead: string | null;
+          trailhead_id: string | null;
           description: string | null;
           created_at: string | null;
           updated_at: string | null;
@@ -482,6 +483,7 @@ export interface Database {
           difficulty?: string | null;
           estimated_time?: string | null;
           trailhead?: string | null;
+          trailhead_id?: string | null;
           description?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
@@ -495,6 +497,7 @@ export interface Database {
           difficulty?: string | null;
           estimated_time?: string | null;
           trailhead?: string | null;
+          trailhead_id?: string | null;
           description?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
@@ -505,8 +508,74 @@ export interface Database {
             columns: ["peak_id"];
             referencedRelation: "peaks";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "routes_trailhead_id_fkey";
+            columns: ["trailhead_id"];
+            referencedRelation: "trailheads";
+            referencedColumns: ["id"];
           }
         ];
+      };
+      trailheads: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          latitude: number | null;
+          longitude: number | null;
+          elevation_ft: number | null;
+          road_type: string | null;
+          parking_type: string | null;
+          parking_capacity: string | null;
+          restrooms: boolean;
+          fee_required: boolean;
+          winter_accessible: boolean;
+          nearest_town: string | null;
+          driving_notes: string | null;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          elevation_ft?: number | null;
+          road_type?: string | null;
+          parking_type?: string | null;
+          parking_capacity?: string | null;
+          restrooms?: boolean;
+          fee_required?: boolean;
+          winter_accessible?: boolean;
+          nearest_town?: string | null;
+          driving_notes?: string | null;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          name?: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          elevation_ft?: number | null;
+          road_type?: string | null;
+          parking_type?: string | null;
+          parking_capacity?: string | null;
+          restrooms?: boolean;
+          fee_required?: boolean;
+          winter_accessible?: boolean;
+          nearest_town?: string | null;
+          driving_notes?: string | null;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       peak_watchlist: {
         Row: {
@@ -1088,3 +1157,6 @@ export type TripReportInsert = Database["public"]["Tables"]["trip_reports"]["Ins
 export type FollowRow = Database["public"]["Tables"]["follows"]["Row"];
 export type FollowInsert = Database["public"]["Tables"]["follows"]["Insert"];
 export type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];
+export type Trailhead = Database["public"]["Tables"]["trailheads"]["Row"];
+export type RouteWithTrailhead = Route & { trailhead_detail: Trailhead | null };
+export type PeakWithRoutesAndTrailheads = Peak & { routes: RouteWithTrailhead[] };

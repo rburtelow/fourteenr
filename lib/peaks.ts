@@ -1,7 +1,7 @@
 import { createClient } from "./supabase/server";
-import type { Peak, Route, PeakWithRoutes } from "./database.types";
+import type { Peak, RouteWithTrailhead, PeakWithRoutesAndTrailheads } from "./database.types";
 
-export async function getPeakBySlug(slug: string): Promise<PeakWithRoutes | null> {
+export async function getPeakBySlug(slug: string): Promise<PeakWithRoutesAndTrailheads | null> {
   const supabase = await createClient();
   // Fetch peak
   const { data: peak, error: peakError } = await supabase
@@ -14,13 +14,13 @@ export async function getPeakBySlug(slug: string): Promise<PeakWithRoutes | null
     return null;
   }
 
-  // Fetch routes for this peak (reuse same client)
+  // Fetch routes with trailhead data for this peak
   const { data: routes, error: routesError } = await supabase
     .from("routes")
-    .select("*")
+    .select("*, trailhead_detail:trailheads(*)")
     .eq("peak_id", peak.id)
     .order("distance", { ascending: true })
-    .returns<Route[]>();
+    .returns<RouteWithTrailhead[]>();
 
   if (routesError) {
     console.error("Error fetching routes:", routesError);

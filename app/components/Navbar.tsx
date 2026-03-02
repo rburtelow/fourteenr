@@ -6,6 +6,7 @@ import UserNav from "./UserNav";
 import MobileNav from "./MobileNav";
 import NotificationBell from "@/app/community/NotificationBell";
 import LogSummitButton from "./LogSummitButton";
+import GlobalSearch from "./GlobalSearch";
 
 type NavUser = {
   email: string;
@@ -23,6 +24,7 @@ interface NavbarProps {
 const LOGGED_IN_LINKS = [
   { href: "/", label: "Home" },
   { href: "/peaks", label: "Peaks" },
+  { href: "/trailheads", label: "Trailheads" },
   { href: "/community", label: "Community" },
   { href: "/events", label: "Events" },
   { href: "/groups", label: "Groups" },
@@ -32,6 +34,7 @@ const LOGGED_IN_LINKS = [
 const LOGGED_OUT_LINKS = [
   { href: "/", label: "Home" },
   { href: "/peaks", label: "Peaks" },
+  { href: "/trailheads", label: "Trailheads" },
   { href: "/community", label: "Community" },
 ];
 
@@ -70,6 +73,7 @@ export default function Navbar({
 
             {/* Right Side */}
             <div className="flex items-center gap-2">
+              <GlobalSearch />
               {user && (
                 <>
                   <LogSummitButton
