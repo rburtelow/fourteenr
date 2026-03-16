@@ -1,6 +1,6 @@
 -- Community events table
 create table public.community_events (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   created_by uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   title text not null check (char_length(title) between 1 and 200),
   description text check (description is null or char_length(description) <= 2000),
@@ -46,7 +46,7 @@ create trigger community_events_updated_at
 
 -- Event attendees table
 create table public.event_attendees (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   event_id uuid not null references public.community_events(id) on delete cascade,
   user_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   created_at timestamptz not null default now(),

@@ -944,6 +944,7 @@ export default function CommunityFeed({
                     <MapPinIcon className="w-5 h-5" />
                   </button>
                   <button
+                    aria-label="Select peak"
                     onClick={() => {
                       setShowPeakSelector(!showPeakSelector);
                       if (showPeakSelector) setPeakSearch("");

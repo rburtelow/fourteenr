@@ -1,6 +1,6 @@
 -- Community posts table: social feed posts for the hiking community
 create table public.community_posts (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   content text not null check (char_length(content) between 1 and 2000),
   peak_id uuid references public.peaks(id) on delete set null,
@@ -46,7 +46,7 @@ create trigger community_posts_updated_at
 
 -- Post likes table
 create table public.post_likes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   post_id uuid not null references public.community_posts(id) on delete cascade,
   created_at timestamptz not null default now(),
@@ -72,7 +72,7 @@ create policy "Users can delete their own likes"
 
 -- Post comments table
 create table public.post_comments (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   post_id uuid not null references public.community_posts(id) on delete cascade,
   user_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   content text not null check (char_length(content) between 1 and 1000),
@@ -107,7 +107,7 @@ create trigger post_comments_updated_at
 
 -- Post saves/bookmarks table
 create table public.post_saves (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   post_id uuid not null references public.community_posts(id) on delete cascade,
   created_at timestamptz not null default now(),

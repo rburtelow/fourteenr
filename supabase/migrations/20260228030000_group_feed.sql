@@ -19,7 +19,7 @@ create index if not exists idx_community_posts_group
 
 -- 2. group_pinned_posts — up to 3 pinned posts per group (enforced in app logic)
 create table if not exists public.group_pinned_posts (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   group_id uuid not null references public.groups(id) on delete cascade,
   post_id uuid not null references public.community_posts(id) on delete cascade,
   pinned_by uuid not null references public.profiles(id) on delete cascade,

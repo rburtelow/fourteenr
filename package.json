@@ -10,7 +10,7 @@
     "test": "playwright test",
     "test:setup": "playwright test tests/setup/create-users.spec.ts",
     "test:seed": "playwright test tests/setup/seed-community.spec.ts",
-    "migrate": "supabase migration up --local"
+    "migrate": "supabase db push"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

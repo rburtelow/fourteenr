@@ -1,6 +1,6 @@
 -- Create notifications table
 create table public.notifications (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   actor_id uuid references public.profiles(id) on delete set null,
   type text not null check (type in ('like', 'comment', 'badge')),

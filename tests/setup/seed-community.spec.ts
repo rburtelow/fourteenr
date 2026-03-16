@@ -17,8 +17,8 @@ import { test, expect, type Page } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
 
 const USERS = {
-  rburtelow: { email: "rburtelow@gmail.com", password: "Test1234!" },
-  blah: { email: "blah@blah.com", password: "Test1234!" },
+  rburtelow: { email: "rburtelow@gmail.com", password: "Test1234!", screenName: "rburtelow" },
+  blah: { email: "blah@blah.com", password: "Test1234!", screenName: "blah" },
 };
 
 // Posts each user will create: { content, peakSearch (partial), peakName (exact) }
@@ -55,13 +55,16 @@ const POSTS = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-async function login(page: Page, email: string, password: string) {
+async function login(page: Page, email: string, password: string, screenName?: string) {
   await page.goto("/auth/login");
   await page.fill("#email", email);
   await page.fill("#password", password);
   await page.getByRole("button", { name: "Sign In" }).click();
   await page.waitForURL(
-    (url) => url.pathname === "/" || url.search.includes("error"),
+    (url) =>
+      url.pathname === "/" ||
+      url.pathname === "/auth/setup-profile" ||
+      url.search.includes("error"),
     { timeout: 15_000 }
   );
   const url = new URL(page.url());
@@ -69,6 +72,16 @@ async function login(page: Page, email: string, password: string) {
     const err = decodeURIComponent(url.searchParams.get("error") ?? "");
     throw new Error(`Login failed for ${email}: ${err}`);
   }
+
+  // Complete profile setup if redirected there
+  if (url.pathname === "/auth/setup-profile") {
+    const name = screenName ?? email.split("@")[0];
+    await page.fill("#screen_name", name);
+    await page.getByRole("button", { name: "Complete Setup" }).click();
+    await page.waitForURL((u) => u.pathname === "/", { timeout: 15_000 });
+    console.log(`  ✓  Profile setup complete for ${email} (@${name})`);
+  }
+
   console.log(`  ✓  Logged in as ${email}`);
 }
 
@@ -87,16 +100,26 @@ async function createPost(
   peakSearch: string,
   peakName: string
 ) {
+  // Capture server action responses for debugging
+  const serverActionResponses: string[] = [];
+  page.on("response", async (response) => {
+    if (response.url().includes("/community") && response.request().method() === "POST") {
+      try {
+        const text = await response.text();
+        serverActionResponses.push(`[${response.status()}] ${text.slice(0, 300)}`);
+      } catch {}
+    }
+  });
+
   await page.goto("/community");
+  await page.waitForLoadState("networkidle");
   await page.waitForSelector('textarea[placeholder="Share your trail story..."]');
 
   // Fill the post content
   await page.fill('textarea[placeholder="Share your trail story..."]', content);
 
-  // Open the peak selector — mountain icon is the 3rd button in the icon toolbar.
-  // Scope to main to avoid matching the nav bar's flex.items-center.gap-2 div.
-  const iconGroup = page.locator("main .flex.items-center.gap-2").first();
-  await iconGroup.locator("button").nth(2).click();
+  // Open the peak selector via its aria-label.
+  await page.getByRole("button", { name: "Select peak" }).click();
 
   // Wait for the peak search dropdown
   await page.waitForSelector('input[placeholder="Search peaks..."]');
@@ -113,13 +136,30 @@ async function createPost(
     .first()
     .click();
 
-  // Confirm the peak tag appeared
-  await expect(page.locator("main").getByText(peakName).first()).toBeVisible({
-    timeout: 3_000,
+  // Confirm the peak tag appeared (no <main> element on this page, scope to body)
+  await expect(page.getByText(peakName, { exact: true }).first()).toBeVisible({
+    timeout: 5_000,
   });
 
   // Submit the post
   await page.getByRole("button", { name: "Post" }).click();
+
+  // Wait for the textarea to clear — confirms the server action succeeded
+  // Log any server action responses for debugging
+  await page.waitForTimeout(500);
+  if (serverActionResponses.length > 0) {
+    console.log(`    [server action responses] ${serverActionResponses.join(" | ")}`);
+  } else {
+    console.log("    [no server action POST captured yet]");
+  }
+  await expect(
+    page.locator('textarea[placeholder="Share your trail story..."]')
+  ).toHaveValue("", { timeout: 15_000 });
+
+  // Reload to get server-rendered fresh data (revalidatePath may have already
+  // triggered a router refresh, but a hard goto is most reliable for seeding)
+  await page.goto("/community");
+  await page.waitForSelector('textarea[placeholder="Share your trail story..."]');
 
   // Confirm the new post card is visible in the feed
   const snippet = content.slice(0, 50);
@@ -276,8 +316,9 @@ async function rsvpToEvent(page: Page, eventTitle: string) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 test("rburtelow creates posts", async ({ page }) => {
+  test.setTimeout(90_000);
   console.log("\n→ rburtelow: creating posts");
-  await login(page, USERS.rburtelow.email, USERS.rburtelow.password);
+  await login(page, USERS.rburtelow.email, USERS.rburtelow.password, USERS.rburtelow.screenName);
 
   for (const p of POSTS.rburtelow) {
     await createPost(page, p.content, p.peakSearch, p.peakName);
@@ -285,8 +326,9 @@ test("rburtelow creates posts", async ({ page }) => {
 });
 
 test("blah creates posts", async ({ page }) => {
+  test.setTimeout(90_000);
   console.log("\n→ blah: creating posts");
-  await login(page, USERS.blah.email, USERS.blah.password);
+  await login(page, USERS.blah.email, USERS.blah.password, USERS.blah.screenName);
 
   for (const p of POSTS.blah) {
     await createPost(page, p.content, p.peakSearch, p.peakName);

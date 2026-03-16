@@ -34,27 +34,17 @@ log_warn() {
 cleanup() {
   echo ""
   log_warn "Shutting down..."
-  kill "$BADGE_PID" "$WEATHER_PID" "$TREND_PID" 2>/dev/null || true
+  kill "$KONG_PID" "$BADGE_PID" "$WEATHER_PID" "$TREND_PID" 2>/dev/null || true
 }
 trap cleanup EXIT
 
-# 1. Ensure Docker is running
-log_step "Checking Docker..."
-if ! docker info &>/dev/null; then
-  log_warn "Docker is not running. Starting Docker..."
-  open -a Docker
-  log_step "Waiting for Docker to start"
-  until docker info &>/dev/null; do
-    sleep 2
-    printf "."
-  done
-  echo ""
-  log_success "Docker is ready."
-else
-  log_success "Docker is already running."
-fi
+# 1. Port-forward Supabase Kong API gateway
+log_step "Port-forwarding Supabase Kong (localhost:8000)..."
+kubectl port-forward svc/supabase-supabase-kong 8000:8000 -n supabase &
+KONG_PID=$!
+log_success "Kong port-forward running (pid: $KONG_PID)"
 
-# 2. Serve edge functions in the background
+# 3. Serve edge functions in the background
 echo ""
 log_step "Starting badge-worker..."
 supabase functions serve badge-worker &
@@ -71,7 +61,7 @@ supabase functions serve trend-worker &
 TREND_PID=$!
 log_success "trend-worker running (pid: $TREND_PID)"
 
-# 3. Start dev server
+# 4. Start dev server
 echo ""
 log_step "Starting dev server..."
 cd "$PROJECT_DIR"

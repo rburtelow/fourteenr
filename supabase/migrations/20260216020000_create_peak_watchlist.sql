@@ -1,6 +1,6 @@
 -- Peak watchlist table: lets users save/unsave peaks to their watchlist
 create table public.peak_watchlist (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   peak_id uuid not null references public.peaks(id) on delete cascade,
   created_at timestamptz default now() not null,

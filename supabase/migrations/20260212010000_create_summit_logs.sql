@@ -1,6 +1,6 @@
 -- Summit logs table: tracks when a user summits a peak
 create table public.summit_logs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   peak_id uuid not null references public.peaks(id) on delete cascade,
   route_id uuid references public.routes(id) on delete set null,

@@ -1,6 +1,6 @@
 -- Create follows table
 create table public.follows (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   follower_id uuid not null references public.profiles(id) on delete cascade,
   following_id uuid not null references public.profiles(id) on delete cascade,
   status text not null default 'pending' check (status in ('pending', 'accepted', 'rejected')),

@@ -18,7 +18,7 @@ create type public.member_status as enum ('active', 'pending', 'banned');
 
 -- Groups table
 create table public.groups (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(name) between 1 and 100),
   slug text unique not null,
   description text check (description is null or char_length(description) <= 500),
@@ -56,7 +56,7 @@ create trigger groups_updated_at
 
 -- Group members table
 create table public.group_members (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   group_id uuid not null references public.groups(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
   role public.group_role not null default 'member',

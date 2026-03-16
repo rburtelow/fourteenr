@@ -1,9 +1,6 @@
--- Enable UUID extension
-create extension if not exists "uuid-ossp";
-
 -- Peaks table
 create table peaks (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   name text not null,
   elevation integer not null, -- feet
@@ -26,7 +23,7 @@ create table peaks (
 
 -- Routes table (one peak can have many routes)
 create table routes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   peak_id uuid not null references peaks(id) on delete cascade,
   name text not null,
   distance numeric(4,1), -- miles

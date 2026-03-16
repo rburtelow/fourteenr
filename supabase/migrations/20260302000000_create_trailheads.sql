@@ -2,7 +2,7 @@
 -- Trailheads are first-class entities representing the starting points for 14er routes.
 
 create table trailheads (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   name text not null,
   latitude numeric(9,6),
