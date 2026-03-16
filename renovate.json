@@ -1,0 +1,64 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["every week on monday at 10am"],
+  "timezone": "America/Denver",
+  "prCreation": "not-pending",
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5,
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Next.js + React core (pin together)",
+      "matchPackageNames": [
+        "next",
+        "eslint-config-next",
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "groupName": "Next.js & React",
+      "groupSlug": "nextjs-react"
+    },
+    {
+      "description": "Supabase",
+      "matchPackageNames": ["@supabase/supabase-js", "@supabase/ssr"],
+      "groupName": "Supabase",
+      "groupSlug": "supabase"
+    },
+    {
+      "description": "Tailwind CSS ecosystem",
+      "matchPackageNames": ["tailwindcss", "@tailwindcss/postcss"],
+      "groupName": "Tailwind CSS",
+      "groupSlug": "tailwind"
+    },
+    {
+      "description": "TypeScript + types",
+      "matchPackageNames": ["typescript", "@types/node"],
+      "groupName": "TypeScript",
+      "groupSlug": "typescript"
+    },
+    {
+      "description": "Testing",
+      "matchPackageNames": ["@playwright/test"],
+      "groupName": "Testing",
+      "groupSlug": "testing"
+    },
+    {
+      "description": "Linting",
+      "matchPackageNames": ["eslint"],
+      "groupName": "ESLint",
+      "groupSlug": "eslint"
+    },
+    {
+      "description": "Minor + patch non-major updates — batch together to reduce noise",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchDepTypes": ["dependencies", "devDependencies"],
+      "groupName": "All non-major updates",
+      "groupSlug": "all-minor-patch",
+      "automerge": false
+    }
+  ]
+}
