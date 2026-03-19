@@ -251,6 +251,8 @@ export interface Database {
           comment_id: string | null;
           badge_id: string | null;
           follow_id: string | null;
+          group_id: string | null;
+          event_id: string | null;
           message: string;
           is_read: boolean;
           created_at: string;
@@ -264,6 +266,8 @@ export interface Database {
           comment_id?: string | null;
           badge_id?: string | null;
           follow_id?: string | null;
+          group_id?: string | null;
+          event_id?: string | null;
           message: string;
           is_read?: boolean;
           created_at?: string;
@@ -277,6 +281,8 @@ export interface Database {
           comment_id?: string | null;
           badge_id?: string | null;
           follow_id?: string | null;
+          group_id?: string | null;
+          event_id?: string | null;
           message?: string;
           is_read?: boolean;
           created_at?: string;
@@ -363,6 +369,8 @@ export interface Database {
           avatar_url: string | null;
           location: string | null;
           bio: string | null;
+          is_private: boolean;
+          privacy_settings: Record<string, unknown>;
           created_at: string;
           updated_at: string;
         };
@@ -374,6 +382,8 @@ export interface Database {
           avatar_url?: string | null;
           location?: string | null;
           bio?: string | null;
+          is_private?: boolean;
+          privacy_settings?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };
@@ -385,6 +395,8 @@ export interface Database {
           avatar_url?: string | null;
           location?: string | null;
           bio?: string | null;
+          is_private?: boolean;
+          privacy_settings?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };
@@ -949,6 +961,7 @@ export interface Database {
           role: "admin" | "moderator" | "member";
           status: "active" | "pending" | "banned";
           joined_at: string;
+          last_visited_at: string | null;
         };
         Insert: {
           id?: string;
@@ -957,6 +970,7 @@ export interface Database {
           role?: "admin" | "moderator" | "member";
           status?: "active" | "pending" | "banned";
           joined_at?: string;
+          last_visited_at?: string | null;
         };
         Update: {
           id?: string;
@@ -965,6 +979,7 @@ export interface Database {
           role?: "admin" | "moderator" | "member";
           status?: "active" | "pending" | "banned";
           joined_at?: string;
+          last_visited_at?: string | null;
         };
         Relationships: [
           {
@@ -976,6 +991,49 @@ export interface Database {
           {
             foreignKeyName: "group_members_user_id_fkey";
             columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      group_pinned_posts: {
+        Row: {
+          id: string;
+          group_id: string;
+          post_id: string;
+          pinned_by: string;
+          pinned_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          post_id: string;
+          pinned_by: string;
+          pinned_at?: string;
+        };
+        Update: {
+          id?: string;
+          group_id?: string;
+          post_id?: string;
+          pinned_by?: string;
+          pinned_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_pinned_posts_group_id_fkey";
+            columns: ["group_id"];
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_pinned_posts_post_id_fkey";
+            columns: ["post_id"];
+            referencedRelation: "community_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_pinned_posts_pinned_by_fkey";
+            columns: ["pinned_by"];
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import TripReportModal from "@/app/peaks/[slug]/TripReportModal";
 import Modal from "@/app/components/Modal";
 import type { Route } from "@/lib/database.types";
+import { getRoutesByPeakId } from "./log-summit-actions";
 
 interface LogSummitButtonProps {
   peakId?: string;
@@ -31,6 +32,8 @@ export default function LogSummitButton({
   const [selectedPeakId, setSelectedPeakId] = useState("");
   const [selectedPeakName, setSelectedPeakName] = useState("");
   const [search, setSearch] = useState("");
+  const [fetchedRoutes, setFetchedRoutes] = useState<Route[]>([]);
+  const [loadingRoutes, setLoadingRoutes] = useState(false);
 
   if (!isLoggedIn) {
     return (
@@ -49,10 +52,17 @@ export default function LogSummitButton({
     }
   };
 
-  const handlePeakSelect = (id: string, name: string) => {
+  const handlePeakSelect = async (id: string, name: string) => {
     setSelectedPeakId(id);
     setSelectedPeakName(name);
     setShowPicker(false);
+    setLoadingRoutes(true);
+    try {
+      const routes = await getRoutesByPeakId(id);
+      setFetchedRoutes(routes);
+    } finally {
+      setLoadingRoutes(false);
+    }
     setShowReport(true);
   };
 
@@ -111,10 +121,11 @@ export default function LogSummitButton({
           setShowReport(false);
           setSelectedPeakId("");
           setSelectedPeakName("");
+          setFetchedRoutes([]);
         }}
         peakId={activePeakId}
         peakName={activePeakName}
-        routes={fixedRoutes}
+        routes={fixedRoutes.length > 0 ? fixedRoutes : fetchedRoutes}
         onReportCreated={() => router.refresh()}
       />
     </>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo, useRef, useCallback } from "react";
-import type { PeakWithRouteCount } from "@/lib/peaks";
+import type { Peak } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -31,6 +31,8 @@ interface PeaksClientProps {
   initialWatchedPeakIds?: string[];
   forecasts?: Record<string, ForecastBadge>;
 }
+
+type PeakWithRouteCount = Peak & { routeCount: number };
 
 export default function PeaksClient({ peaks, userNav, userId, unreadNotificationCount = 0, initialWatchedPeakIds = [], forecasts = {} }: PeaksClientProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");

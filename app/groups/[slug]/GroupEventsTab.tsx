@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { CommunityEvent } from "@/lib/community.types";
 import { toggleEventAttendance } from "@/app/events/actions";
@@ -36,6 +36,10 @@ export default function GroupEventsTab({
   const router = useRouter();
   const [events, setEvents] = useState(initialEvents);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  useEffect(() => {
+    setEvents(initialEvents);
+  }, [initialEvents]);
   const [rsvpPending, setRsvpPending] = useState<Set<string>>(() => new Set());
   const pendingRsvpRef = useRef<Set<string>>(new Set());
 

@@ -70,6 +70,7 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
         badge_id,
         follow_id,
         group_id,
+        event_id,
         message,
         is_read,
         created_at,
@@ -163,7 +164,7 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
             const { data } = await supabase
               .from("notifications")
               .select(`
-                id, user_id, actor_id, type, post_id, comment_id, badge_id, follow_id, group_id,
+                id, user_id, actor_id, type, post_id, comment_id, badge_id, follow_id, group_id, event_id,
                 message, is_read, created_at,
                 actor:actor_id (screen_name, full_name, avatar_url),
                 group:group_id (slug)
@@ -336,6 +337,14 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
             </svg>
           </div>
         );
+      case "event_updated":
+        return (
+          <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-3.5 h-3.5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+          </div>
+        );
     }
   };
 
@@ -427,7 +436,10 @@ function NotificationItem({
     if (!notification.is_read) {
       onMarkAsRead(notification.id);
     }
-    if (notification.post_id) {
+    if (notification.type === "event_updated" && notification.event_id) {
+      onNavigate();
+      router.push(`/events/${notification.event_id}`);
+    } else if (notification.post_id) {
       onNavigate();
       if (notification.group_id && notification.group?.slug) {
         router.push(`/groups/${notification.group.slug}#post-${notification.post_id}`);

@@ -8,9 +8,14 @@ import type { Peak } from "@/lib/database.types";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import { getPublicGroupsForUser } from "@/lib/groups";
 import { CATEGORY_LABELS } from "@/lib/groups.types";
+import { isAcceptedFollower, getFollowStatus, getFollowerCount, getFollowingCount } from "@/lib/follows";
+import { canViewSection, type PrivacySettings } from "@/lib/privacy";
+import FollowButton from "./FollowButton";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import BadgeGrid from "../../components/badges/BadgeGrid";
+import TripReportsList from "../../profile/TripReportsList";
+import type { TripReportData } from "../../profile/TripReportsList";
 
 const TOTAL_14ERS = 58;
 
@@ -25,7 +30,7 @@ export default async function PublicProfilePage({
   // Fetch profile by screen_name
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, screen_name, avatar_url, full_name, location, bio, created_at")
+    .select("id, screen_name, avatar_url, full_name, location, bio, created_at, privacy_settings")
     .eq("screen_name", username)
     .single();
 
@@ -57,7 +62,24 @@ export default async function PublicProfilePage({
 
   const isOwnProfile = user?.id === profile.id;
 
-  // Fetch summit logs for the profile user
+  // Check follower status and follow status
+  const [isFollower, followStatus] = !isOwnProfile && user
+    ? await Promise.all([
+        isAcceptedFollower(user.id, profile.id),
+        getFollowStatus(user.id, profile.id),
+      ])
+    : [false, "none" as const];
+
+  const privacySettings = (profile.privacy_settings ?? {}) as Partial<PrivacySettings>;
+  const canViewStats = canViewSection("show_stats", privacySettings, isOwnProfile, isFollower);
+  const canViewSummitHistory = canViewSection("show_summit_history", privacySettings, isOwnProfile, isFollower);
+  const canViewBadges = canViewSection("show_badges", privacySettings, isOwnProfile, isFollower);
+  const canViewGroups = canViewSection("show_groups", privacySettings, isOwnProfile, isFollower);
+  const canViewWishlist = canViewSection("show_wishlist", privacySettings, isOwnProfile, isFollower);
+  const canViewTripReports = canViewSection("show_trip_reports", privacySettings, isOwnProfile, isFollower);
+  const canViewEvents = canViewSection("show_events", privacySettings, isOwnProfile, isFollower);
+
+  // Fetch summit logs
   const { data: summitLogs } = await supabase
     .from("summit_logs")
     .select("id, peak_id, route_id, summit_date, rating, weather, notes")
@@ -79,9 +101,72 @@ export default async function PublicProfilePage({
 
   const routeMap = new Map((summitRoutes || []).map((r) => [r.id, r]));
 
-  // Fetch all peaks for lookups
+  // Fetch all peaks
   const allPeaks = await getAllPeaks();
   const peakMap = new Map<string, Peak>(allPeaks.map((p) => [p.id, p]));
+
+  // Fetch trip reports (for stats + section)
+  const { data: tripReports } = await supabase
+    .from("trip_reports")
+    .select("id, peak_id, route_id, hike_date, start_time, end_time, total_time_minutes, summary, narrative, difficulty_rating, condition_severity_score, objective_risk_score, trailhead_access_rating, overall_recommendation, snow_present, sections_json, created_at")
+    .eq("user_id", profile.id)
+    .order("hike_date", { ascending: false });
+
+  // Fetch watchlist
+  const { data: watchlistRows } = await supabase
+    .from("peak_watchlist")
+    .select("id, peak_id, created_at")
+    .eq("user_id", profile.id)
+    .order("created_at", { ascending: false });
+
+  // Fetch events
+  type RawEvent = { id: string; title: string; event_date: string; location: string; status: string; peaks: { name: string } | null };
+  type UserEvent = { id: string; title: string; event_date: string; location: string; status: string; peak_name: string | null; role: "hosting" | "going" };
+
+  const [{ data: createdEvents }, { data: rsvpdRows }] = await Promise.all([
+    supabase
+      .from("community_events")
+      .select("id, title, event_date, location, status, peaks:peak_id(name)")
+      .eq("created_by", profile.id)
+      .order("event_date", { ascending: false }),
+    supabase
+      .from("event_attendees")
+      .select("event_id")
+      .eq("user_id", profile.id),
+  ]);
+
+  const createdIds = new Set((createdEvents || []).map((e) => e.id));
+  const nonCreatedIds = (rsvpdRows || [])
+    .map((r) => r.event_id)
+    .filter((id) => !createdIds.has(id));
+
+  const { data: rsvpdEvents } =
+    nonCreatedIds.length > 0
+      ? await supabase
+          .from("community_events")
+          .select("id, title, event_date, location, status, peaks:peak_id(name)")
+          .in("id", nonCreatedIds)
+          .order("event_date", { ascending: false })
+      : { data: [] };
+
+  const mapEvent = (e: RawEvent, role: "hosting" | "going"): UserEvent => ({
+    id: e.id,
+    title: e.title,
+    event_date: e.event_date,
+    location: e.location,
+    status: e.status,
+    peak_name: e.peaks?.name ?? null,
+    role,
+  });
+
+  const userEvents: UserEvent[] = [
+    ...(createdEvents || []).map((e) => mapEvent(e as RawEvent, "hosting")),
+    ...(rsvpdEvents || []).map((e) => mapEvent(e as RawEvent, "going")),
+  ].sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+
+  const now = new Date();
+  const upcomingUserEvents = userEvents.filter((e) => new Date(e.event_date) >= now && e.status !== "cancelled");
+  const pastUserEvents = userEvents.filter((e) => new Date(e.event_date) < now || e.status === "cancelled");
 
   // Fetch badges and groups
   const [allBadges, userBadges, userGroups] = await Promise.all([
@@ -90,7 +175,13 @@ export default async function PublicProfilePage({
     getPublicGroupsForUser(profile.id, user?.id),
   ]);
 
-  // Build completed peaks display data
+  // Fetch follower/following counts
+  const [followerCount, followingCount] = await Promise.all([
+    getFollowerCount(profile.id),
+    getFollowingCount(profile.id),
+  ]);
+
+  // Build completed peaks
   const completedPeaks = (summitLogs || []).flatMap((log) => {
     const peak = peakMap.get(log.peak_id);
     if (!peak) return [];
@@ -112,6 +203,55 @@ export default async function PublicProfilePage({
     ];
   });
 
+  // Build watchlist display
+  const watchlistPeaks = (watchlistRows || []).flatMap((row) => {
+    const peak = peakMap.get(row.peak_id);
+    if (!peak) return [];
+    return [{
+      id: row.id,
+      slug: peak.slug,
+      name: peak.name,
+      elevation: peak.elevation.toLocaleString() + "'",
+      region: peak.range || "",
+      difficulty: peak.difficulty || "",
+      addedDate: new Date(row.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    }];
+  });
+
+  // Build trip report display
+  const tripReportDisplay: TripReportData[] = (tripReports || []).flatMap((report) => {
+    const peak = peakMap.get(report.peak_id);
+    if (!peak) return [];
+    return [{
+      id: report.id,
+      peakSlug: peak.slug,
+      peakName: peak.name,
+      peakElevation: peak.elevation.toLocaleString() + "'",
+      hikeDate: new Date(report.hike_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      hikeDateRaw: report.hike_date,
+      startTime: report.start_time,
+      endTime: report.end_time,
+      totalTimeMinutes: report.total_time_minutes,
+      summary: report.summary,
+      narrative: report.narrative,
+      difficultyRating: report.difficulty_rating,
+      conditionSeverity: report.condition_severity_score,
+      objectiveRisk: report.objective_risk_score,
+      trailheadAccess: report.trailhead_access_rating,
+      recommended: report.overall_recommendation,
+      snowPresent: report.snow_present,
+      sections: report.sections_json,
+    }];
+  });
+
   // Compute profile stats
   const logs = summitLogs || [];
   const uniquePeakIds = new Set(logs.map((l) => l.peak_id));
@@ -129,23 +269,24 @@ export default async function PublicProfilePage({
 
   const uniqueDates = new Set(logs.map((l) => l.summit_date));
   const daysOnTrail = uniqueDates.size;
-
   const peaksRemaining = TOTAL_14ERS - summitCount;
   const percentComplete = Math.round((summitCount / TOTAL_14ERS) * 1000) / 10;
+  const tripReportCount = (tripReports || []).length;
 
   const profileStats = {
     summits: summitCount,
     totalElevation: totalElevation.toLocaleString(),
-    totalMiles:
-      totalMiles % 1 === 0 ? totalMiles.toString() : totalMiles.toFixed(1),
+    totalMiles: totalMiles % 1 === 0 ? totalMiles.toString() : totalMiles.toFixed(1),
     daysOnTrail,
     peaksRemaining,
     percentComplete,
+    tripReports: tripReportCount,
+    followers: followerCount,
+    following: followingCount,
   };
 
   // Display values
-  const displayName =
-    profile.full_name || profile.screen_name || "Hiker";
+  const displayName = profile.full_name || profile.screen_name || "Hiker";
   const screenName = profile.screen_name ? `@${profile.screen_name}` : "";
   const userLocation = profile.location || null;
   const joinDate = profile.created_at
@@ -227,7 +368,7 @@ export default async function PublicProfilePage({
                   </div>
                 </div>
 
-                {/* Action buttons - stack on mobile, inline on larger screens */}
+                {/* Action buttons */}
                 <div className="flex items-center gap-3 w-full sm:w-auto flex-shrink-0">
                   {isOwnProfile ? (
                     <Link
@@ -238,55 +379,46 @@ export default async function PublicProfilePage({
                       Edit Profile
                     </Link>
                   ) : (
-                    <button className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
-                      <UserPlusIcon className="w-4 h-4" />
-                      Follow
-                    </button>
+                    <FollowButton
+                      targetUserId={profile.id}
+                      targetUsername={username}
+                      initialStatus={followStatus}
+                    />
                   )}
                 </div>
               </div>
             </div>
 
             {/* Stats Bar */}
-            <div className="mt-4 pt-4 px-6 md:px-8 pb-6 md:pb-8 border-t border-[var(--color-border-app)]">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                <StatItem
-                  label="Summits"
-                  value={profileStats.summits.toString()}
-                  suffix="/58"
-                />
-                <StatItem
-                  label="Elevation Gained"
-                  value={profileStats.totalElevation}
-                  suffix=" ft"
-                />
-                <StatItem
-                  label="Miles Hiked"
-                  value={profileStats.totalMiles}
-                  suffix=" mi"
-                />
-                <StatItem
-                  label="Days on Trail"
-                  value={profileStats.daysOnTrail.toString()}
-                />
-                <div className="col-span-2 md:col-span-1 text-center md:text-left">
-                  <p className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-1">
-                    Progress
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-3 bg-[var(--color-surface-subtle)] rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--color-brand-highlight)] rounded-full transition-all duration-500"
-                        style={{ width: `${profileStats.percentComplete}%` }}
-                      />
+            {canViewStats && (
+              <div className="mt-4 pt-4 px-6 md:px-8 pb-6 md:pb-8 border-t border-[var(--color-border-app)]">
+                <div className="grid grid-cols-2 md:grid-cols-8 gap-6">
+                  <StatItem label="Summits" value={profileStats.summits.toString()} suffix="/58" />
+                  <StatItem label="Elevation Gained" value={profileStats.totalElevation} suffix=" ft" />
+                  <StatItem label="Miles Hiked" value={profileStats.totalMiles} suffix=" mi" />
+                  <StatItem label="Days on Trail" value={profileStats.daysOnTrail.toString()} />
+                  <StatItem label="Trip Reports" value={profileStats.tripReports.toString()} />
+                  <StatItem label="Followers" value={profileStats.followers.toString()} />
+                  <StatItem label="Following" value={profileStats.following.toString()} />
+                  <div className="col-span-2 md:col-span-1 text-center md:text-left">
+                    <p className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase mb-1">
+                      Progress
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-3 bg-[var(--color-surface-subtle)] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--color-brand-highlight)] rounded-full transition-all duration-500"
+                          style={{ width: `${profileStats.percentComplete}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-bold text-[var(--color-brand-primary)]">
+                        {profileStats.percentComplete}%
+                      </span>
                     </div>
-                    <span className="text-sm font-bold text-[var(--color-brand-primary)]">
-                      {profileStats.percentComplete}%
-                    </span>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -294,7 +426,7 @@ export default async function PublicProfilePage({
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 space-y-8">
         {/* Badges Section */}
-        {userBadges.length > 0 && (
+        {canViewBadges && userBadges.length > 0 && (
           <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
             <div className="p-6 border-b border-[var(--color-border-app)]">
               <div className="flex items-center justify-between">
@@ -324,7 +456,7 @@ export default async function PublicProfilePage({
         )}
 
         {/* Groups Section */}
-        {userGroups.length > 0 && (
+        {canViewGroups && userGroups.length > 0 && (
           <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
             <div className="p-6 border-b border-[var(--color-border-app)]">
               <h2
@@ -366,114 +498,241 @@ export default async function PublicProfilePage({
           </section>
         )}
 
-        {/* Summit History Section */}
-        <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
-          <div className="p-6 border-b border-[var(--color-border-app)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2
-                  className="text-xl font-bold text-[var(--color-text-primary)]"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Summit History
-                </h2>
-                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                  {completedPeaks.length} peak
-                  {completedPeaks.length !== 1 ? "s" : ""} conquered
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {completedPeaks.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--color-surface-subtle)] flex items-center justify-center mb-4">
-                <MountainIcon className="w-8 h-8 text-[var(--color-text-secondary)]" />
-              </div>
-              <p className="text-[var(--color-text-secondary)]">
-                No summits logged yet
+        {/* Wishlist Section */}
+        {canViewWishlist && watchlistPeaks.length > 0 && (
+          <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-border-app)]">
+              <h2
+                className="text-xl font-bold text-[var(--color-text-primary)]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Peak Wishlist
+              </h2>
+              <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                {watchlistPeaks.length} peak{watchlistPeaks.length !== 1 ? "s" : ""} on the list
               </p>
             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {completedPeaks.map((peak, index) => (
-                <article
+            <div className="divide-y divide-[var(--color-border-app)]">
+              {watchlistPeaks.map((peak) => (
+                <div
                   key={peak.id}
-                  className="group card-hover bg-[var(--color-surface-subtle)]/30 rounded-2xl overflow-hidden border border-[var(--color-border-app)] animate-fade-up"
-                  style={{ animationDelay: `${index * 50}ms` }}
+                  className="p-4 sm:p-5 hover:bg-[var(--color-surface-subtle)]/50 transition-colors group"
                 >
-                  <div className="relative h-36 overflow-hidden">
-                    <Image
-                      src="/hero.png"
-                      alt=""
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute top-3 right-3">
-                      <div className="flex items-center gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <StarIcon
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < peak.rating
-                                ? "text-[var(--color-amber-glow)]"
-                                : "text-white/30"
-                            }`}
-                            filled={i < peak.rating}
-                          />
-                        ))}
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-surface-subtle)] to-[var(--color-border-app-strong)] flex items-center justify-center flex-shrink-0">
+                      <MountainIcon className="w-5 h-5 text-[var(--color-brand-primary)]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          href={`/peaks/${peak.slug}`}
+                          className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors hover:underline"
+                        >
+                          {peak.name}
+                        </Link>
+                        {peak.difficulty && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
+                            {peak.difficulty}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 mt-1 text-sm text-[var(--color-text-secondary)]">
+                        <span className="font-mono text-[var(--color-brand-primary)]">{peak.elevation}</span>
+                        <span>{peak.region}</span>
                       </div>
                     </div>
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-xs font-medium text-white flex items-center gap-1">
-                          <CheckCircleIcon className="w-3 h-3" />
-                          Summited
+                    <span className="text-xs text-[var(--color-text-secondary)] flex-shrink-0">
+                      Added {peak.addedDate}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Summit History Section */}
+        {canViewSummitHistory && (
+          <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-border-app)]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2
+                    className="text-xl font-bold text-[var(--color-text-primary)]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Summit History
+                  </h2>
+                  <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                    {completedPeaks.length} peak{completedPeaks.length !== 1 ? "s" : ""} conquered
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {completedPeaks.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--color-surface-subtle)] flex items-center justify-center mb-4">
+                  <MountainIcon className="w-8 h-8 text-[var(--color-text-secondary)]" />
+                </div>
+                <p className="text-[var(--color-text-secondary)]">No summits logged yet</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                {completedPeaks.map((peak, index) => (
+                  <article
+                    key={peak.id}
+                    className="group card-hover bg-[var(--color-surface-subtle)]/30 rounded-2xl overflow-hidden border border-[var(--color-border-app)] animate-fade-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="relative h-36 overflow-hidden">
+                      <Image
+                        src="/hero.png"
+                        alt=""
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute top-3 right-3">
+                        <div className="flex items-center gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <StarIcon
+                              key={i}
+                              className={`w-4 h-4 ${
+                                i < peak.rating
+                                  ? "text-[var(--color-amber-glow)]"
+                                  : "text-white/30"
+                              }`}
+                              filled={i < peak.rating}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-xs font-medium text-white flex items-center gap-1">
+                            <CheckCircleIcon className="w-3 h-3" />
+                            Summited
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <Link
+                        href={`/peaks/${peak.slug}`}
+                        className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors hover:underline"
+                      >
+                        {peak.name}
+                      </Link>
+                      <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                        <span className="font-mono text-[var(--color-brand-primary)]">
+                          {peak.elevation}
+                        </span>
+                        <span className="mx-2">•</span>
+                        {peak.region}
+                      </p>
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--color-border-app)]">
+                        <span className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1">
+                          <CalendarIcon className="w-3.5 h-3.5" />
+                          {peak.completedDate}
+                        </span>
+                        <span className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1">
+                          <CloudIcon className="w-3.5 h-3.5" />
+                          {peak.weather}
                         </span>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <Link
-                      href={`/peaks/${peak.slug}`}
-                      className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors hover:underline"
-                    >
-                      {peak.name}
-                    </Link>
-                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                      <span className="font-mono text-[var(--color-brand-primary)]">
-                        {peak.elevation}
-                      </span>
-                      <span className="mx-2">•</span>
-                      {peak.region}
-                    </p>
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--color-border-app)]">
-                      <span className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1">
-                        <CalendarIcon className="w-3.5 h-3.5" />
-                        {peak.completedDate}
-                      </span>
-                      <span className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1">
-                        <CloudIcon className="w-3.5 h-3.5" />
-                        {peak.weather}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+                  </article>
+                ))}
+              </div>
+            )}
 
-          {completedPeaks.length > 0 && (
-            <div className="p-4 bg-[var(--color-surface-subtle)]/30 text-center">
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Showing all{" "}
-                <span className="font-semibold">{completedPeaks.length}</span>{" "}
-                summit{completedPeaks.length !== 1 ? "s" : ""}
-              </p>
+            {completedPeaks.length > 0 && (
+              <div className="p-4 bg-[var(--color-surface-subtle)]/30 text-center">
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  Showing all{" "}
+                  <span className="font-semibold">{completedPeaks.length}</span>{" "}
+                  summit{completedPeaks.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Trip Reports Section */}
+        {canViewTripReports && tripReportDisplay.length > 0 && (
+          <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-border-app)]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2
+                    className="text-xl font-bold text-[var(--color-text-primary)]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Trip Reports
+                  </h2>
+                  <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                    {tripReportDisplay.length} report{tripReportDisplay.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              </div>
             </div>
-          )}
-        </section>
+            <TripReportsList reports={tripReportDisplay} />
+          </section>
+        )}
+
+        {/* Events Section */}
+        {canViewEvents && userEvents.length > 0 && (
+          <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-border-app)]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2
+                    className="text-xl font-bold text-[var(--color-text-primary)]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Events
+                  </h2>
+                  <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                    {userEvents.length} event{userEvents.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
+                <Link
+                  href="/events"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20"
+                >
+                  Browse Events
+                </Link>
+              </div>
+            </div>
+            <div className="divide-y divide-[var(--color-border-app)]">
+              {upcomingUserEvents.length > 0 && (
+                <>
+                  <div className="px-4 sm:px-6 py-2.5 bg-[var(--color-surface-subtle)]/60">
+                    <span className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">
+                      Upcoming · {upcomingUserEvents.length}
+                    </span>
+                  </div>
+                  {upcomingUserEvents.map((event) => (
+                    <EventRow key={event.id} event={event} />
+                  ))}
+                </>
+              )}
+              {pastUserEvents.length > 0 && (
+                <>
+                  <div className="px-4 sm:px-6 py-2.5 bg-[var(--color-surface-subtle)]/60">
+                    <span className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">
+                      Past · {pastUserEvents.length}
+                    </span>
+                  </div>
+                  {pastUserEvents.map((event) => (
+                    <EventRow key={event.id} event={event} />
+                  ))}
+                </>
+              )}
+            </div>
+          </section>
+        )}
       </div>
 
       <Footer />
@@ -505,6 +764,67 @@ function StatItem({
         )}
       </p>
     </div>
+  );
+}
+
+function EventRow({
+  event,
+}: {
+  event: {
+    id: string;
+    title: string;
+    event_date: string;
+    location: string;
+    status: string;
+    peak_name: string | null;
+    role: "hosting" | "going";
+  };
+}) {
+  const date = new Date(event.event_date);
+  const month = date.toLocaleDateString("en-US", { month: "short" });
+  const day = String(date.getDate());
+  const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const isCancelled = event.status === "cancelled";
+  const isPast = date < new Date() && !isCancelled;
+
+  return (
+    <Link
+      href={`/events/${event.id}`}
+      className="flex items-center gap-4 p-4 sm:p-5 hover:bg-[var(--color-surface-subtle)]/50 transition-colors group"
+    >
+      <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center flex-shrink-0 ${isCancelled ? "bg-red-50" : isPast ? "bg-[var(--color-surface-subtle)]" : "bg-[var(--color-brand-primary)]/10"}`}>
+        <span className={`text-xs font-bold ${isCancelled ? "text-red-500" : isPast ? "text-[var(--color-text-secondary)]" : "text-[var(--color-brand-primary)]"}`}>
+          {month}
+        </span>
+        <span className={`text-sm font-bold ${isCancelled ? "text-red-500" : isPast ? "text-[var(--color-text-secondary)]" : "text-[var(--color-brand-primary)]"}`}>
+          {day}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className={`font-semibold text-sm group-hover:text-[var(--color-brand-primary)] transition-colors truncate ${isCancelled ? "line-through text-[var(--color-text-secondary)]" : "text-[var(--color-text-primary)]"}`}>
+            {event.title}
+          </p>
+          <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${
+            event.role === "hosting"
+              ? "bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)]"
+              : "bg-[var(--color-brand-highlight)]/10 text-[var(--color-brand-highlight)]"
+          }`}>
+            {event.role === "hosting" ? "Hosting" : "Going"}
+          </span>
+          {isCancelled && (
+            <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
+              Cancelled
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 truncate">
+          {time} · {event.location}
+          {event.peak_name && <span> · {event.peak_name}</span>}
+        </p>
+      </div>
+      <ArrowRightIcon className="w-4 h-4 text-[var(--color-text-muted-green)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+    </Link>
   );
 }
 
@@ -583,23 +903,6 @@ function EditIcon({ className }: { className?: string }) {
   );
 }
 
-function UserPlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
-      />
-    </svg>
-  );
-}
 
 function CheckIcon({ className }: { className?: string }) {
   return (
@@ -665,6 +968,14 @@ function CloudIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"
       />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
     </svg>
   );
 }

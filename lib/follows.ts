@@ -2,6 +2,22 @@ import { createClient } from "@/lib/supabase/server";
 
 export type FollowStatus = "none" | "pending" | "accepted" | "following_you";
 
+export async function isAcceptedFollower(
+  viewerId: string,
+  ownerId: string
+): Promise<boolean> {
+  if (!viewerId || !ownerId) return false;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("follows")
+    .select("id")
+    .eq("follower_id", viewerId)
+    .eq("following_id", ownerId)
+    .eq("status", "accepted")
+    .maybeSingle();
+  return !!data;
+}
+
 export async function getFollowStatus(
   currentUserId: string,
   targetUserId: string

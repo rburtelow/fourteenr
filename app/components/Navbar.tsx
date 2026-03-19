@@ -6,7 +6,6 @@ import UserNav from "./UserNav";
 import MobileNav from "./MobileNav";
 import NotificationBell from "@/app/community/NotificationBell";
 import LogSummitButton from "./LogSummitButton";
-import GlobalSearch from "./GlobalSearch";
 
 type NavUser = {
   email: string;
@@ -73,7 +72,6 @@ export default function Navbar({
 
             {/* Right Side */}
             <div className="flex items-center gap-2">
-              <GlobalSearch />
               {user && (
                 <>
                   <LogSummitButton

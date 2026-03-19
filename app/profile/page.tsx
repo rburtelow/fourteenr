@@ -505,7 +505,7 @@ export default async function ProfilePage() {
               <nav className="space-y-1">
                 <SidebarLink icon={<UserIcon />} label="Account" />
                 <SidebarLink icon={<BellIcon className="w-5 h-5" />} label="Notifications" />
-                <SidebarLink icon={<LockIcon />} label="Privacy" />
+                <SidebarLink icon={<LockIcon />} label="Privacy" href="/profile/settings" />
                 <SidebarLink icon={<DownloadIcon />} label="Export Data" />
               </nav>
             </div>

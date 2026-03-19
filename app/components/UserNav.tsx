@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 
 type UserNavProps = {
   user: {
@@ -14,12 +15,24 @@ type UserNavProps = {
 
 export default function UserNav({ user }: UserNavProps) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.refresh();
   };
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   if (!user) {
     return (
@@ -45,20 +58,31 @@ export default function UserNav({ user }: UserNavProps) {
     : user.email.slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex items-center gap-3">
-      <Link
-        href="/profile"
-        className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-shadow"
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg transition-shadow"
         title={user.screen_name || user.email}
       >
         {initials}
-      </Link>
-      <button
-        onClick={handleSignOut}
-        className="hidden sm:block text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors px-3 py-2"
-      >
-        Sign Out
       </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-lg border border-[var(--color-border-app)] py-1 z-50">
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-colors"
+          >
+            Profile
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="w-full text-left px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
     </div>
   );
 }
