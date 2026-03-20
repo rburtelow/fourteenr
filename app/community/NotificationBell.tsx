@@ -453,7 +453,7 @@ function NotificationItem({
     <div
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-start gap-3 text-left hover:bg-[var(--color-surface-subtle)] transition-colors cursor-pointer ${
-        !notification.is_read ? "bg-[var(--color-brand-primary)]/[0.03]" : ""
+        !notification.is_read ? "bg-[var(--color-brand-primary)]/10" : ""
       }`}
     >
       {/* Actor avatar or type icon */}

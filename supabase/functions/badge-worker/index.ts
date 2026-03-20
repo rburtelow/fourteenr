@@ -208,11 +208,54 @@ Deno.serve(async (req) => {
 
       console.log(`Awarded ${newBadges.length} new badges`);
 
-      // Create community feed posts for each new badge
       const badgeById = new Map(
         (badges as BadgeDefinition[]).map((b: BadgeDefinition) => [b.id, b])
       );
 
+      // Consolidate notifications for users who earned multiple badges in this run.
+      // The trigger already created one notification per badge row — for multi-badge users,
+      // replace those individual notifications with a single combined one.
+      const badgesByUser = new Map<string, typeof newBadges>();
+      for (const nb of newBadges) {
+        const existing = badgesByUser.get(nb.user_id) ?? [];
+        existing.push(nb);
+        badgesByUser.set(nb.user_id, existing);
+      }
+
+      for (const [userId, userBadges] of badgesByUser) {
+        if (userBadges.length <= 1) continue;
+
+        const badgeIds = userBadges.map((nb) => nb.badge_id);
+        const names = userBadges
+          .map((nb) => badgeById.get(nb.badge_id)?.name)
+          .filter(Boolean) as string[];
+
+        let message: string;
+        if (names.length === 2) {
+          message = `You earned 2 new badges: "${names[0]}" and "${names[1]}"!`;
+        } else {
+          const allButLast = names.slice(0, -1).map((n) => `"${n}"`).join(", ");
+          message = `You earned ${names.length} new badges: ${allButLast}, and "${names[names.length - 1]}"!`;
+        }
+
+        // Delete the per-row trigger notifications for this user's new badges
+        await supabase
+          .from("notifications")
+          .delete()
+          .eq("user_id", userId)
+          .eq("type", "badge")
+          .in("badge_id", badgeIds);
+
+        // Insert one consolidated notification (no single badge_id to attach)
+        await supabase.from("notifications").insert({
+          user_id: userId,
+          type: "badge",
+          badge_id: null,
+          message,
+        });
+      }
+
+      // Create community feed posts for each new badge
       const activityPosts = newBadges.map((nb) => {
         const badge = badgeById.get(nb.badge_id);
         const badgeName = badge?.name ?? "a badge";
