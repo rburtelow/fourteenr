@@ -37,3 +37,17 @@ export async function updatePrivacySettings(formData: FormData): Promise<{ error
   revalidatePath("/profile/settings");
   return { success: true };
 }
+
+export async function updateAvatarUrl(avatarUrl: string | null): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  return { error: null };
+}

@@ -61,13 +61,18 @@ export default function UserNav({ user }: UserNavProps) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg transition-shadow"
+        className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg transition-shadow"
         title={user.screen_name || user.email}
       >
-        {initials}
+        {user.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.avatar_url} alt={user.screen_name || user.email} className="w-full h-full object-cover" />
+        ) : (
+          initials
+        )}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-lg border border-[var(--color-border-app)] py-1 z-50">
+        <div className="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-md border border-[var(--color-border-app)] overflow-hidden z-50">
           <Link
             href="/profile"
             onClick={() => setOpen(false)}

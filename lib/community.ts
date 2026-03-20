@@ -150,6 +150,8 @@ export async function getPosts(options?: {
       ...post,
       profiles: post.profiles as CommunityPost["profiles"],
       peaks: post.peaks as CommunityPost["peaks"],
+      group_id: null,
+      groups: null,
       linked_event_id: rawEvents?.[0]?.id ?? null,
       like_count: likeCounts[post.id] || 0,
       comment_count: commentCounts[post.id] || 0,
@@ -568,6 +570,8 @@ export async function getSavedPosts(): Promise<CommunityPost[]> {
         ...post!,
         profiles: post!.profiles as CommunityPost["profiles"],
         peaks: post!.peaks as CommunityPost["peaks"],
+        group_id: null,
+        groups: null,
         linked_event_id: rawEvents?.[0]?.id ?? null,
         like_count: likeCounts[post!.id] || 0,
         comment_count: commentCounts[post!.id] || 0,
@@ -578,6 +582,223 @@ export async function getSavedPosts(): Promise<CommunityPost[]> {
         activity_metadata: (post!.activity_metadata ?? null) as CommunityPost["activity_metadata"],
       };
     });
+}
+
+const POST_SELECT = `
+  id,
+  user_id,
+  content,
+  peak_id,
+  group_id,
+  is_condition_report,
+  image_urls,
+  created_at,
+  updated_at,
+  activity_type,
+  activity_metadata,
+  profiles:user_id (
+    screen_name,
+    full_name,
+    avatar_url
+  ),
+  peaks:peak_id (
+    name,
+    slug,
+    elevation
+  ),
+  groups:group_id (
+    id,
+    name,
+    slug
+  ),
+  community_events (
+    id
+  )
+`;
+
+async function enrichPostsWithEngagement(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  posts: Array<Record<string, unknown>>,
+  userId: string | null,
+): Promise<CommunityPost[]> {
+  if (!posts || posts.length === 0) return [];
+
+  const postIds = posts.map((p) => p.id as string);
+
+  const [likeCounts, commentCounts, saveCounts, userLikes, userSaves] =
+    await Promise.all([
+      supabase
+        .from("post_likes")
+        .select("post_id")
+        .in("post_id", postIds)
+        .then(({ data }) => {
+          const counts: Record<string, number> = {};
+          data?.forEach((like) => {
+            counts[like.post_id] = (counts[like.post_id] || 0) + 1;
+          });
+          return counts;
+        }),
+      supabase
+        .from("post_comments")
+        .select("post_id")
+        .in("post_id", postIds)
+        .then(({ data }) => {
+          const counts: Record<string, number> = {};
+          data?.forEach((comment) => {
+            counts[comment.post_id] = (counts[comment.post_id] || 0) + 1;
+          });
+          return counts;
+        }),
+      supabase
+        .from("post_saves")
+        .select("post_id")
+        .in("post_id", postIds)
+        .then(({ data }) => {
+          const counts: Record<string, number> = {};
+          data?.forEach((save) => {
+            counts[save.post_id] = (counts[save.post_id] || 0) + 1;
+          });
+          return counts;
+        }),
+      userId
+        ? supabase
+            .from("post_likes")
+            .select("post_id")
+            .eq("user_id", userId)
+            .in("post_id", postIds)
+            .then(({ data }) => new Set(data?.map((l) => l.post_id) || []))
+        : Promise.resolve(new Set<string>()),
+      userId
+        ? supabase
+            .from("post_saves")
+            .select("post_id")
+            .eq("user_id", userId)
+            .in("post_id", postIds)
+            .then(({ data }) => new Set(data?.map((s) => s.post_id) || []))
+        : Promise.resolve(new Set<string>()),
+    ]);
+
+  return posts.map((post) => {
+    const rawEvents = post.community_events as { id: string }[] | null;
+    return {
+      ...post,
+      profiles: post.profiles as CommunityPost["profiles"],
+      peaks: post.peaks as CommunityPost["peaks"],
+      groups: (post.groups ?? null) as CommunityPost["groups"],
+      group_id: (post.group_id ?? null) as string | null,
+      linked_event_id: rawEvents?.[0]?.id ?? null,
+      like_count: likeCounts[post.id as string] || 0,
+      comment_count: commentCounts[post.id as string] || 0,
+      save_count: saveCounts[post.id as string] || 0,
+      user_has_liked: userLikes.has(post.id as string),
+      user_has_saved: userSaves.has(post.id as string),
+      activity_type: (post.activity_type ?? null) as CommunityPost["activity_type"],
+      activity_metadata: (post.activity_metadata ?? null) as CommunityPost["activity_metadata"],
+    } as CommunityPost;
+  });
+}
+
+/**
+ * Recommended feed: prioritizes posts about peaks on the user's watchlist.
+ * Watchlist posts come first (sorted by recency), followed by recent general posts.
+ */
+export async function getRecommendedPosts(options?: {
+  limit?: number;
+}): Promise<CommunityPost[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const limit = options?.limit ?? 30;
+
+  // Get user's watchlist peak IDs
+  const { data: watchlist } = await supabase
+    .from("peak_watchlist")
+    .select("peak_id")
+    .eq("user_id", user.id);
+
+  const watchedPeakIds = (watchlist || []).map((w) => w.peak_id);
+
+  if (watchedPeakIds.length === 0) {
+    // No watchlist — fall back to latest
+    return getPosts({ limit });
+  }
+
+  // Fetch watchlist-related posts (about peaks the user watches)
+  const { data: watchlistPosts } = await supabase
+    .from("community_posts")
+    .select(POST_SELECT)
+    .in("peak_id", watchedPeakIds)
+    .is("group_id", null)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  // Fetch recent general posts to fill remaining slots
+  const { data: recentPosts } = await supabase
+    .from("community_posts")
+    .select(POST_SELECT)
+    .is("group_id", null)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  // Merge: watchlist posts first, then recent posts that aren't duplicates
+  const seen = new Set<string>();
+  const merged: Array<Record<string, unknown>> = [];
+
+  for (const post of watchlistPosts || []) {
+    if (!seen.has(post.id)) {
+      seen.add(post.id);
+      merged.push(post);
+    }
+  }
+  for (const post of recentPosts || []) {
+    if (!seen.has(post.id) && merged.length < limit) {
+      seen.add(post.id);
+      merged.push(post);
+    }
+  }
+
+  return enrichPostsWithEngagement(supabase, merged, user.id);
+}
+
+/**
+ * Groups feed: posts from all groups the user belongs to.
+ */
+export async function getGroupFeedPosts(options?: {
+  limit?: number;
+}): Promise<CommunityPost[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const limit = options?.limit ?? 20;
+
+  // Get user's group memberships
+  const { data: memberships } = await supabase
+    .from("group_members")
+    .select("group_id")
+    .eq("user_id", user.id);
+
+  const groupIds = (memberships || []).map((m) => m.group_id);
+
+  if (groupIds.length === 0) return [];
+
+  const { data: posts, error } = await supabase
+    .from("community_posts")
+    .select(POST_SELECT)
+    .in("group_id", groupIds)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !posts) return [];
+
+  return enrichPostsWithEngagement(supabase, posts, user.id);
 }
 
 export async function getPostComments(postId: string): Promise<PostComment[]> {

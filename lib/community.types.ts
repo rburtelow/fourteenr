@@ -25,6 +25,12 @@ export interface CommunityPost {
   save_count: number;
   user_has_liked: boolean;
   user_has_saved: boolean;
+  group_id: string | null;
+  groups: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
   activity_type: 'summit_log' | 'badge_earned' | null;
   activity_metadata: {
     // summit_log fields

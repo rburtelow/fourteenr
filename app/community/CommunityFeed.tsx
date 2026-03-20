@@ -88,8 +88,12 @@ interface Peak {
   elevation: number;
 }
 
+type FeedTab = "recommended" | "latest" | "groups";
+
 interface CommunityFeedProps {
   posts: CommunityPost[];
+  recommendedPosts?: CommunityPost[];
+  groupFeedPosts?: CommunityPost[];
   avatarInitials: string;
   isLoggedIn: boolean;
   currentUserId?: string;
@@ -106,6 +110,8 @@ interface CommunityFeedProps {
 
 export default function CommunityFeed({
   posts: initialPosts,
+  recommendedPosts: initialRecommended,
+  groupFeedPosts: initialGroupFeed,
   avatarInitials,
   isLoggedIn,
   currentUserId,
@@ -121,18 +127,35 @@ export default function CommunityFeed({
 }: CommunityFeedProps) {
   const supabase = useMemo(() => createClient(), []);
   const [posts, setPosts] = useState(initialPosts);
+  const [recommendedPosts, setRecommendedPosts] = useState(initialRecommended ?? []);
+  const [groupFeedPosts, setGroupFeedPosts] = useState(initialGroupFeed ?? []);
+  const [activeTab, setActiveTab] = useState<FeedTab>(
+    isLoggedIn && initialRecommended && initialRecommended.length > 0
+      ? "recommended"
+      : "latest"
+  );
   const [localPinnedIds, setLocalPinnedIds] = useState<string[]>(pinnedPostIds ?? []);
 
-  // Sort pinned posts to the top, maintain date order for the rest
+  // Select posts based on active tab, then sort pinned to top
   const displayPosts = useMemo(() => {
-    if (!localPinnedIds.length) return posts;
+    // When in a group context, ignore tabs
+    const basePosts =
+      groupId
+        ? posts
+        : activeTab === "recommended"
+          ? recommendedPosts
+          : activeTab === "groups"
+            ? groupFeedPosts
+            : posts;
+
+    if (!localPinnedIds.length) return basePosts;
     const pinnedSet = new Set(localPinnedIds);
     const pinned = localPinnedIds
-      .map((id) => posts.find((p) => p.id === id))
+      .map((id) => basePosts.find((p) => p.id === id))
       .filter(Boolean) as CommunityPost[];
-    const regular = posts.filter((p) => !pinnedSet.has(p.id));
+    const regular = basePosts.filter((p) => !pinnedSet.has(p.id));
     return [...pinned, ...regular];
-  }, [posts, localPinnedIds]);
+  }, [posts, recommendedPosts, groupFeedPosts, activeTab, localPinnedIds, groupId]);
 
   // Scroll to a specific post if URL contains a hash like #post-{id}
   const scrolledRef = useRef(false);
@@ -270,7 +293,7 @@ export default function CommunityFeed({
 
       const rawEvents = data.community_events as { id: string }[] | null;
       return {
-        ...(data as Omit<
+        ...(data as unknown as Omit<
           CommunityPost,
           | "like_count"
           | "comment_count"
@@ -281,6 +304,8 @@ export default function CommunityFeed({
         >),
         profiles: data.profiles as CommunityPost["profiles"],
         peaks: data.peaks as CommunityPost["peaks"],
+        group_id: null,
+        groups: null,
         linked_event_id: rawEvents?.[0]?.id ?? null,
         like_count: snapshot.like_count,
         comment_count: snapshot.comment_count,
@@ -355,20 +380,18 @@ export default function CommunityFeed({
               return; // Absorb echo from this tab
             }
             // Same user, different device — reflect their like
-            setPosts((prev) =>
-              prev.map((p) =>
-                p.id === postId
-                  ? { ...p, like_count: p.like_count + 1, user_has_liked: true }
-                  : p
-              )
-            );
+            const applyLike = (p: CommunityPost) =>
+              p.id === postId ? { ...p, like_count: p.like_count + 1, user_has_liked: true } : p;
+            setPosts((prev) => prev.map(applyLike));
+            setRecommendedPosts((prev) => prev.map(applyLike));
+            setGroupFeedPosts((prev) => prev.map(applyLike));
             return;
           }
-          setPosts((prev) =>
-            prev.map((p) =>
-              p.id === postId ? { ...p, like_count: p.like_count + 1 } : p
-            )
-          );
+          const applyLike = (p: CommunityPost) =>
+            p.id === postId ? { ...p, like_count: p.like_count + 1 } : p;
+          setPosts((prev) => prev.map(applyLike));
+          setRecommendedPosts((prev) => prev.map(applyLike));
+          setGroupFeedPosts((prev) => prev.map(applyLike));
         }
       )
       .on(
@@ -382,22 +405,18 @@ export default function CommunityFeed({
               pendingLikeRef.current.delete(postId);
               return;
             }
-            setPosts((prev) =>
-              prev.map((p) =>
-                p.id === postId
-                  ? { ...p, like_count: Math.max(0, p.like_count - 1), user_has_liked: false }
-                  : p
-              )
-            );
+            const applyUnlike = (p: CommunityPost) =>
+              p.id === postId ? { ...p, like_count: Math.max(0, p.like_count - 1), user_has_liked: false } : p;
+            setPosts((prev) => prev.map(applyUnlike));
+            setRecommendedPosts((prev) => prev.map(applyUnlike));
+            setGroupFeedPosts((prev) => prev.map(applyUnlike));
             return;
           }
-          setPosts((prev) =>
-            prev.map((p) =>
-              p.id === postId
-                ? { ...p, like_count: Math.max(0, p.like_count - 1) }
-                : p
-            )
-          );
+          const applyUnlike = (p: CommunityPost) =>
+            p.id === postId ? { ...p, like_count: Math.max(0, p.like_count - 1) } : p;
+          setPosts((prev) => prev.map(applyUnlike));
+          setRecommendedPosts((prev) => prev.map(applyUnlike));
+          setGroupFeedPosts((prev) => prev.map(applyUnlike));
         }
       )
       // ── post_saves ───────────────────────────────────────────────────────
@@ -412,20 +431,18 @@ export default function CommunityFeed({
               pendingSaveRef.current.delete(postId);
               return;
             }
-            setPosts((prev) =>
-              prev.map((p) =>
-                p.id === postId
-                  ? { ...p, save_count: p.save_count + 1, user_has_saved: true }
-                  : p
-              )
-            );
+            const applySave = (p: CommunityPost) =>
+              p.id === postId ? { ...p, save_count: p.save_count + 1, user_has_saved: true } : p;
+            setPosts((prev) => prev.map(applySave));
+            setRecommendedPosts((prev) => prev.map(applySave));
+            setGroupFeedPosts((prev) => prev.map(applySave));
             return;
           }
-          setPosts((prev) =>
-            prev.map((p) =>
-              p.id === postId ? { ...p, save_count: p.save_count + 1 } : p
-            )
-          );
+          const applySave = (p: CommunityPost) =>
+            p.id === postId ? { ...p, save_count: p.save_count + 1 } : p;
+          setPosts((prev) => prev.map(applySave));
+          setRecommendedPosts((prev) => prev.map(applySave));
+          setGroupFeedPosts((prev) => prev.map(applySave));
         }
       )
       .on(
@@ -439,22 +456,18 @@ export default function CommunityFeed({
               pendingSaveRef.current.delete(postId);
               return;
             }
-            setPosts((prev) =>
-              prev.map((p) =>
-                p.id === postId
-                  ? { ...p, save_count: Math.max(0, p.save_count - 1), user_has_saved: false }
-                  : p
-              )
-            );
+            const applyUnsave = (p: CommunityPost) =>
+              p.id === postId ? { ...p, save_count: Math.max(0, p.save_count - 1), user_has_saved: false } : p;
+            setPosts((prev) => prev.map(applyUnsave));
+            setRecommendedPosts((prev) => prev.map(applyUnsave));
+            setGroupFeedPosts((prev) => prev.map(applyUnsave));
             return;
           }
-          setPosts((prev) =>
-            prev.map((p) =>
-              p.id === postId
-                ? { ...p, save_count: Math.max(0, p.save_count - 1) }
-                : p
-            )
-          );
+          const applyUnsave = (p: CommunityPost) =>
+            p.id === postId ? { ...p, save_count: Math.max(0, p.save_count - 1) } : p;
+          setPosts((prev) => prev.map(applyUnsave));
+          setRecommendedPosts((prev) => prev.map(applyUnsave));
+          setGroupFeedPosts((prev) => prev.map(applyUnsave));
         }
       )
       // ── post_comments ────────────────────────────────────────────────────
@@ -752,20 +765,28 @@ export default function CommunityFeed({
     });
   }, [groupId, groupSlug]);
 
+  // Apply a mapping transform to all three post lists so tabs stay in sync
+  const updateAllLists = useCallback(
+    (mapper: (p: CommunityPost) => CommunityPost) => {
+      setPosts((prev) => prev.map(mapper));
+      setRecommendedPosts((prev) => prev.map(mapper));
+      setGroupFeedPosts((prev) => prev.map(mapper));
+    },
+    []
+  );
+
   const handleToggleLike = async (postId: string) => {
     if (!isLoggedIn) return;
 
-    // Optimistic update
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? {
-              ...p,
-              user_has_liked: !p.user_has_liked,
-              like_count: p.user_has_liked ? p.like_count - 1 : p.like_count + 1,
-            }
-          : p
-      )
+    // Optimistic update across all tabs
+    updateAllLists((p) =>
+      p.id === postId
+        ? {
+            ...p,
+            user_has_liked: !p.user_has_liked,
+            like_count: p.user_has_liked ? p.like_count - 1 : p.like_count + 1,
+          }
+        : p
     );
 
     // Mark as pending so the realtime echo from this tab is absorbed
@@ -775,18 +796,16 @@ export default function CommunityFeed({
     if (result.error) {
       pendingLikeRef.current.delete(postId);
       // Rollback on error
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? {
-                ...p,
-                user_has_liked: !p.user_has_liked,
-                like_count: p.user_has_liked
-                  ? p.like_count - 1
-                  : p.like_count + 1,
-              }
-            : p
-        )
+      updateAllLists((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              user_has_liked: !p.user_has_liked,
+              like_count: p.user_has_liked
+                ? p.like_count - 1
+                : p.like_count + 1,
+            }
+          : p
       );
     }
   };
@@ -794,17 +813,15 @@ export default function CommunityFeed({
   const handleToggleSave = async (postId: string) => {
     if (!isLoggedIn) return;
 
-    // Optimistic update
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? {
-              ...p,
-              user_has_saved: !p.user_has_saved,
-              save_count: p.user_has_saved ? p.save_count - 1 : p.save_count + 1,
-            }
-          : p
-      )
+    // Optimistic update across all tabs
+    updateAllLists((p) =>
+      p.id === postId
+        ? {
+            ...p,
+            user_has_saved: !p.user_has_saved,
+            save_count: p.user_has_saved ? p.save_count - 1 : p.save_count + 1,
+          }
+        : p
     );
 
     pendingSaveRef.current.add(postId);
@@ -813,26 +830,74 @@ export default function CommunityFeed({
     if (result.error) {
       pendingSaveRef.current.delete(postId);
       // Rollback on error
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? {
-                ...p,
-                user_has_saved: !p.user_has_saved,
-                save_count: p.user_has_saved
-                  ? p.save_count - 1
-                  : p.save_count + 1,
-              }
-            : p
-        )
+      updateAllLists((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              user_has_saved: !p.user_has_saved,
+              save_count: p.user_has_saved
+                ? p.save_count - 1
+                : p.save_count + 1,
+            }
+          : p
       );
     }
   };
 
   const selectedPeak = allPeaks.find((p) => p.id === selectedPeakId);
 
+  const feedTabs: { key: FeedTab; label: string; icon: React.ReactNode }[] = [
+    {
+      key: "recommended",
+      label: "Recommended",
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+        </svg>
+      ),
+    },
+    {
+      key: "latest",
+      label: "Latest",
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+    {
+      key: "groups",
+      label: "Groups",
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <div className={className}>
+      {/* Feed Tabs */}
+      {!groupId && isLoggedIn && (
+        <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-1.5 flex gap-1">
+          {feedTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${
+                activeTab === tab.key
+                  ? "bg-[var(--color-brand-primary)] text-white shadow-sm"
+                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)]"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Create Post */}
       {showComposer && isLoggedIn && (
         <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-5">
@@ -976,10 +1041,18 @@ export default function CommunityFeed({
         <div className="bg-white rounded-2xl border border-[var(--color-border-app)] p-12 text-center">
           <MountainIcon className="w-12 h-12 mx-auto text-[var(--color-text-secondary)] opacity-50" />
           <h3 className="mt-4 text-lg font-semibold text-[var(--color-text-primary)]">
-            No posts yet
+            {activeTab === "groups"
+              ? "No group posts yet"
+              : activeTab === "recommended"
+                ? "Add peaks to your watchlist"
+                : "No posts yet"}
           </h3>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            Be the first to share your trail story!
+            {activeTab === "groups"
+              ? "Join some groups to see their posts here."
+              : activeTab === "recommended"
+                ? "Watch peaks you're planning to hike to get personalized recommendations."
+                : "Be the first to share your trail story!"}
           </p>
         </div>
       )}
@@ -1053,6 +1126,21 @@ export default function CommunityFeed({
                         <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/30" />
                       )}
                       <span>{timeAgo}</span>
+                      {activeTab === "groups" && post.groups && (
+                        <>
+                          <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/30" />
+                          <Link
+                            href={`/groups/${post.groups.slug}`}
+                            className="inline-flex items-center gap-1 text-[var(--color-brand-primary)] hover:underline font-medium"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                            </svg>
+                            {post.groups.name}
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1124,7 +1212,11 @@ export default function CommunityFeed({
 
               {/* Peak Tag */}
               {post.peaks && (
-                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface-subtle)] text-sm">
+                <Link
+                  href={`/peaks/${post.peaks.slug}`}
+                  className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface-subtle)] text-sm hover:bg-[var(--color-brand-primary)]/10 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <MountainIcon className="w-4 h-4 text-[var(--color-brand-primary)]" />
                   <span className="font-medium text-[var(--color-text-primary)]">
                     {post.peaks.name}
@@ -1133,7 +1225,7 @@ export default function CommunityFeed({
                   <span className="font-mono text-[var(--color-brand-primary)]">
                     {post.peaks.elevation.toLocaleString()}&apos;
                   </span>
-                </div>
+                </Link>
               )}
             </div>
 

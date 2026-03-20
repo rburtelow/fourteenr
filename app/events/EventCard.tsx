@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { CommunityEvent } from "@/lib/community.types";
 
 
@@ -12,6 +13,7 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, isLoggedIn, onToggleRsvp, rsvpPending }: EventCardProps) {
+  const router = useRouter();
   const eventDate = new Date(event.event_date);
   const month = eventDate.toLocaleDateString("en-US", { month: "short" });
   const day = eventDate.getDate();
@@ -21,7 +23,10 @@ export default function EventCard({ event, isLoggedIn, onToggleRsvp, rsvpPending
 
   return (
     <div className={`bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden card-hover transition-all ${isCancelled ? "opacity-60" : ""}`}>
-      <Link href={`/events/${event.id}`} className="block p-5">
+      <div
+        onClick={() => router.push(`/events/${event.id}`)}
+        className="block p-5 cursor-pointer"
+      >
         <div className="flex items-start gap-4">
           {/* Date badge */}
           <div className="w-14 h-14 rounded-xl bg-[var(--color-brand-primary)]/10 flex flex-col items-center justify-center flex-shrink-0">
@@ -87,7 +92,7 @@ export default function EventCard({ event, isLoggedIn, onToggleRsvp, rsvpPending
             </div>
           </div>
         </div>
-      </Link>
+      </div>
 
       {/* RSVP button */}
       {!isCancelled && isLoggedIn && (

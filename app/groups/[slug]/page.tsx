@@ -19,6 +19,7 @@ import MemberList from "./MemberList";
 import InviteButton from "./InviteButton";
 import CommunityFeed from "@/app/community/CommunityFeed";
 import GroupEventsTab from "./GroupEventsTab";
+import GroupCoverUpload from "./GroupCoverUpload";
 import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/groups.types";
 import type { GroupRole } from "@/lib/groups.types";
 
@@ -215,6 +216,11 @@ export default async function GroupPage({
                 </Link>
               )}
             </div>
+            {memberRole === "admin" && (
+              <div className="flex-shrink-0 self-end">
+                <GroupCoverUpload groupId={group.id} groupSlug={group.slug} />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "schedule": ["every week on monday at 10am"],
+  "schedule": ["before 11am on monday"],
   "timezone": "America/Chicago",
   "minimumReleaseAge": "3 days",
   "prHourlyLimit": 2,

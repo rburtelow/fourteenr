@@ -12,6 +12,7 @@ import BadgeGrid from "../components/badges/BadgeGrid";
 import LogSummitButton from "../components/LogSummitButton";
 import TripReportsList from "./TripReportsList";
 import type { TripReportData } from "./TripReportsList";
+import AvatarUpload from "./AvatarUpload";
 
 const TOTAL_14ERS = 58; // canonical count of Colorado 14ers
 
@@ -369,10 +370,18 @@ export default async function ProfilePage() {
                 <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 flex-1 w-full sm:w-auto min-w-0">
                   {/* Avatar */}
                   <div className="relative flex-shrink-0">
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
-                      {initials}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white">
+                    {user ? (
+                      <AvatarUpload
+                        userId={user.id}
+                        avatarUrl={profile?.avatar_url ?? null}
+                        initials={initials}
+                      />
+                    ) : (
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-accent)] border-4 border-white flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
+                        {initials}
+                      </div>
+                    )}
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--color-brand-highlight)] rounded-full flex items-center justify-center border-2 border-white pointer-events-none">
                       <CheckIcon className="w-3 h-3 text-white" />
                     </div>
                   </div>

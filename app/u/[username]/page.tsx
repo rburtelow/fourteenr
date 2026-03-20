@@ -309,7 +309,7 @@ export default async function PublicProfilePage({
       {/* Profile Header */}
       <div className="pt-24">
         <div className="relative h-48 md:h-64 overflow-hidden">
-          <Image src="/hero.png" alt="" fill className="object-cover" />
+          <Image src="/hero.png" alt="" fill sizes="100vw" className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-page)] via-transparent to-transparent" />
           <div className="absolute inset-0 bg-[var(--color-brand-primary)]/20" />
         </div>

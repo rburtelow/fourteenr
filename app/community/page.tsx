@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getRecentBadges } from "@/lib/badges";
-import { getPosts, getUpcomingEvents, getTrendingPeaks } from "@/lib/community";
+import { getPosts, getRecommendedPosts, getGroupFeedPosts, getUpcomingEvents, getTrendingPeaks } from "@/lib/community";
 import { getUserGroupsForSidebar } from "@/lib/groups";
 import { CATEGORY_COLORS } from "@/lib/groups.types";
 import { getUnreadNotificationCount } from "@/lib/notifications";
@@ -52,8 +52,12 @@ export default async function CommunityPage() {
     summitCount = count ?? 0;
   }
 
-  // Fetch community posts from the database
-  const feedPosts = await getPosts({ limit: 20 });
+  // Fetch community posts for all three feed tabs
+  const [feedPosts, recommendedPosts, groupFeedPosts] = await Promise.all([
+    getPosts({ limit: 20 }),
+    user ? getRecommendedPosts({ limit: 30 }) : Promise.resolve([]),
+    user ? getGroupFeedPosts({ limit: 20 }) : Promise.resolve([]),
+  ]);
 
   // Fetch follow statuses for all post authors
   let followStatuses: Record<string, FollowStatus> = {};
@@ -125,6 +129,17 @@ export default async function CommunityPage() {
     sidebarGroups = await getUserGroupsForSidebar(user.id, 5);
   }
 
+  // Get count of groups the user belongs to
+  let userGroupCount = 0;
+  if (user) {
+    const { count } = await supabase
+      .from("group_members")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "active");
+    userGroupCount = count ?? 0;
+  }
+
   // Get count of events the user is attending
   let userEventCount = 0;
   if (user) {
@@ -159,26 +174,13 @@ export default async function CommunityPage() {
       {/* Page Header */}
       <div className="pt-28 pb-8 border-b border-[var(--color-border-app)] bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <span className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-widest uppercase">
-                The Community
-              </span>
-              <h1 className="mt-2 text-3xl lg:text-4xl font-bold text-[var(--color-brand-primary)] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-                Trail Talk
-              </h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors rounded-full hover:bg-[var(--color-surface-subtle)]">
-                Latest
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-[var(--color-brand-primary)] bg-[var(--color-surface-subtle)] rounded-full">
-                Following
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] transition-colors rounded-full hover:bg-[var(--color-surface-subtle)]">
-                Conditions
-              </button>
-            </div>
+          <div>
+            <span className="text-xs font-semibold text-[var(--color-text-muted-green)] tracking-widest uppercase">
+              The Community
+            </span>
+            <h1 className="mt-2 text-3xl lg:text-4xl font-bold text-[var(--color-brand-primary)] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+              Trail Talk
+            </h1>
           </div>
         </div>
       </div>
@@ -261,7 +263,7 @@ export default async function CommunityPage() {
                   <SidebarLink icon={<CompassIcon />} label="Peaks Watched" count={watchedPeakIds.length} />
                   <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} href="/friends" />
                   <SidebarLink icon={<CalendarIcon />} label="Events" count={userEventCount} href="/events" />
-                  <SidebarLink icon={<GroupsIcon />} label="Groups" href="/groups" />
+                  <SidebarLink icon={<GroupsIcon />} label="Groups" count={user ? userGroupCount : undefined} href="/groups" />
                   {user ? (
                     <SavedQuickLink initialCount={savedPostCount} userId={user.id} />
                   ) : (
@@ -370,6 +372,8 @@ export default async function CommunityPage() {
           {/* Main Feed */}
           <CommunityFeed
             posts={feedPosts}
+            recommendedPosts={recommendedPosts}
+            groupFeedPosts={groupFeedPosts}
             avatarInitials={avatarInitials}
             isLoggedIn={!!user}
             currentUserId={user?.id}

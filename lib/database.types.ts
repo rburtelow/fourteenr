@@ -11,6 +11,7 @@ export interface Database {
           user_id: string;
           content: string;
           peak_id: string | null;
+          group_id: string | null;
           is_condition_report: boolean;
           image_urls: string[];
           created_at: string;
@@ -23,6 +24,7 @@ export interface Database {
           user_id?: string;
           content: string;
           peak_id?: string | null;
+          group_id?: string | null;
           is_condition_report?: boolean;
           image_urls?: string[];
           created_at?: string;
@@ -35,6 +37,7 @@ export interface Database {
           user_id?: string;
           content?: string;
           peak_id?: string | null;
+          group_id?: string | null;
           is_condition_report?: boolean;
           image_urls?: string[];
           created_at?: string;
@@ -53,6 +56,12 @@ export interface Database {
             foreignKeyName: "community_posts_peak_id_fkey";
             columns: ["peak_id"];
             referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "community_posts_group_id_fkey";
+            columns: ["group_id"];
+            referencedRelation: "groups";
             referencedColumns: ["id"];
           }
         ];
