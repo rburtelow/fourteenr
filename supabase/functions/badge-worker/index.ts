@@ -255,24 +255,60 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Create community feed posts for each new badge
-      const activityPosts = newBadges.map((nb) => {
-        const badge = badgeById.get(nb.badge_id);
-        const badgeName = badge?.name ?? "a badge";
-        return {
-          user_id: nb.user_id,
-          content: `Earned the "${badgeName}" badge! ${badge?.description ?? ""}`.trim(),
-          peak_id: nb.trigger_peak_id,
-          is_condition_report: false,
-          activity_type: "badge_earned",
-          activity_metadata: {
+      // Create community feed posts — one per user, grouping multiple badges together
+      const activityPosts = [...badgesByUser.entries()].map(([userId, userBadges]) => {
+        if (userBadges.length === 1) {
+          const nb = userBadges[0];
+          const badge = badgeById.get(nb.badge_id);
+          const badgeName = badge?.name ?? "a badge";
+          return {
+            user_id: userId,
+            content: `Earned the "${badgeName}" badge! ${badge?.description ?? ""}`.trim(),
+            peak_id: nb.trigger_peak_id,
+            is_condition_report: false,
+            activity_type: "badge_earned",
+            activity_metadata: {
+              badge_id: nb.badge_id,
+              badge_slug: badge?.slug ?? null,
+              badge_name: badge?.name ?? null,
+              badge_icon_name: badge?.icon_name ?? null,
+              badge_description: badge?.description ?? null,
+              badge_category: badge?.category ?? null,
+            },
+          };
+        }
+
+        // Multiple badges — build grouped post
+        const names = userBadges
+          .map((nb) => badgeById.get(nb.badge_id)?.name)
+          .filter(Boolean) as string[];
+        const badgesArray = userBadges.map((nb) => {
+          const badge = badgeById.get(nb.badge_id);
+          return {
             badge_id: nb.badge_id,
             badge_slug: badge?.slug ?? null,
             badge_name: badge?.name ?? null,
             badge_icon_name: badge?.icon_name ?? null,
             badge_description: badge?.description ?? null,
             badge_category: badge?.category ?? null,
-          },
+          };
+        });
+
+        let content: string;
+        if (names.length === 2) {
+          content = `Earned 2 new badges: "${names[0]}" and "${names[1]}"!`;
+        } else {
+          const allButLast = names.slice(0, -1).map((n) => `"${n}"`).join(", ");
+          content = `Earned ${names.length} new badges: ${allButLast}, and "${names[names.length - 1]}"!`;
+        }
+
+        return {
+          user_id: userId,
+          content,
+          peak_id: userBadges[0].trigger_peak_id,
+          is_condition_report: false,
+          activity_type: "badge_earned",
+          activity_metadata: { badges: badgesArray },
         };
       });
 

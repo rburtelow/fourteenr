@@ -1405,14 +1405,54 @@ function BadgeEarnedPostContent({
 }: {
   metadata: CommunityPost["activity_metadata"];
 }) {
-  const badgeName = metadata?.badge_name ?? "Badge";
-  const badgeDescription = metadata?.badge_description ?? "";
+  // Grouped (multiple badges)
+  if (metadata?.badges && metadata.badges.length > 1) {
+    const badges = metadata.badges;
+    return (
+      <div className="mt-4">
+        <div className="rounded-xl border border-[var(--color-border-app)] overflow-hidden bg-gradient-to-br from-amber-50 to-white">
+          <div className="px-4 py-3 border-b border-amber-100">
+            <p className="text-xs font-semibold text-[var(--color-amber-glow)] uppercase tracking-wider">
+              {badges.length} Badges Earned
+            </p>
+          </div>
+          <div className="divide-y divide-amber-100">
+            {badges.map((b, i) => {
+              const fakeBadge = {
+                icon_name: b.badge_icon_name ?? "mountain-sunrise",
+                name: b.badge_name ?? "Badge",
+                category: (b.badge_category ?? "milestone") as BadgeCategory,
+                slug: b.badge_slug ?? "",
+                description: b.badge_description ?? "",
+              } as BadgeDefinition;
+              return (
+                <div key={i} className="px-4 py-3 flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    <BadgeIcon badge={fakeBadge} earned={true} size="md" showTooltip={false} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[var(--color-text-primary)]">{b.badge_name ?? "Badge"}</p>
+                    {b.badge_description && (
+                      <p className="text-sm text-[var(--color-text-secondary)]">{b.badge_description}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // Single badge (including legacy single-badge posts)
+  const badgeName = metadata?.badge_name ?? metadata?.badges?.[0]?.badge_name ?? "Badge";
+  const badgeDescription = metadata?.badge_description ?? metadata?.badges?.[0]?.badge_description ?? "";
   const fakeBadge = {
-    icon_name: metadata?.badge_icon_name ?? "mountain-sunrise",
+    icon_name: metadata?.badge_icon_name ?? metadata?.badges?.[0]?.badge_icon_name ?? "mountain-sunrise",
     name: badgeName,
-    category: (metadata?.badge_category ?? "milestone") as BadgeCategory,
-    slug: metadata?.badge_slug ?? "",
+    category: (metadata?.badge_category ?? metadata?.badges?.[0]?.badge_category ?? "milestone") as BadgeCategory,
+    slug: metadata?.badge_slug ?? metadata?.badges?.[0]?.badge_slug ?? "",
     description: badgeDescription,
   } as BadgeDefinition;
 

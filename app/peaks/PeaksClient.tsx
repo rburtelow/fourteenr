@@ -434,7 +434,7 @@ export default function PeaksClient({ peaks, userNav, userId, unreadNotification
         </section>
 
         {/* CTA Section */}
-        <section className="py-24 lg:py-32">
+        {!userId && <section className="py-24 lg:py-32">
           <div className="max-w-5xl mx-auto px-4 sm:px-8">
             <div className="relative bg-[var(--color-stone-light)] rounded-[2.5rem] p-12 lg:p-20 overflow-hidden">
               <div className="absolute bottom-0 left-0 right-0 h-32 opacity-10">
@@ -465,7 +465,7 @@ export default function PeaksClient({ peaks, userNav, userId, unreadNotification
               </div>
             </div>
           </div>
-        </section>
+        </section>}
       </main>
 
       <Footer />

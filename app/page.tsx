@@ -391,7 +391,7 @@ export default async function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-24 lg:py-32">
+        {!user && <section className="py-24 lg:py-32">
           <div className="max-w-5xl mx-auto px-4 sm:px-8">
             <div className="relative bg-[var(--color-stone-light)] rounded-[2.5rem] p-12 lg:p-20 overflow-hidden">
               {/* Decorative mountain silhouette */}
@@ -423,7 +423,7 @@ export default async function LandingPage() {
               </div>
             </div>
           </div>
-        </section>
+        </section>}
       </main>
 
       <Footer />

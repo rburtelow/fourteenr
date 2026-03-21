@@ -14,6 +14,7 @@ import QuickMarkPeaksButton from "../components/QuickMarkPeaksButton";
 import TripReportsList from "./TripReportsList";
 import type { TripReportData } from "./TripReportsList";
 import AvatarUpload from "./AvatarUpload";
+import SummitHistoryGrid from "./SummitHistoryGrid";
 
 const TOTAL_14ERS = 58; // canonical count of Colorado 14ers
 
@@ -625,76 +626,7 @@ export default async function ProfilePage() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                {completedPeaks.map((peak, index) => (
-                  <article
-                    key={peak.id}
-                    className="group card-hover bg-[var(--color-surface-subtle)]/30 rounded-2xl overflow-hidden border border-[var(--color-border-app)] animate-fade-up"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="relative h-36 overflow-hidden">
-                      <Image
-                        src="/hero.png"
-                        alt=""
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute top-3 right-3">
-                        <div className="flex items-center gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <StarIcon
-                              key={i}
-                              className={`w-4 h-4 ${
-                                i < peak.rating ? 'text-[var(--color-amber-glow)]' : 'text-white/30'
-                              }`}
-                              filled={i < peak.rating}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-xs font-medium text-white flex items-center gap-1">
-                            <CheckCircleIcon className="w-3 h-3" />
-                            Summited
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                        {peak.name}
-                      </h3>
-                      <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                        <span className="font-mono text-[var(--color-brand-primary)]">{peak.elevation}</span>
-                        <span className="mx-2">•</span>
-                        {peak.region}
-                      </p>
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--color-border-app)]">
-                        <span className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1">
-                          <CalendarIcon className="w-3.5 h-3.5" />
-                          {peak.completedDate}
-                        </span>
-                        <span className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1">
-                          <CloudIcon className="w-3.5 h-3.5" />
-                          {peak.weather}
-                        </span>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <div className="p-4 bg-[var(--color-surface-subtle)]/30 flex items-center justify-between">
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  Showing <span className="font-semibold">{completedPeaks.length}</span> summits
-                </p>
-                <button className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline flex items-center gap-2 group">
-                  View All History
-                  <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
+              <SummitHistoryGrid peaks={completedPeaks} />
             </section>
 
             {/* Trip Reports Section */}

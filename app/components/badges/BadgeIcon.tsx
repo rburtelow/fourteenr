@@ -123,7 +123,7 @@ export default function BadgeIcon({
         />
       </div>
       {showTooltip && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--color-text-primary)]/98 backdrop-blur-sm text-white text-xs rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
+        <div className="absolute top-full left-0 mt-2 px-3 py-2 bg-[var(--color-text-primary)]/98 backdrop-blur-sm text-white text-xs rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
           <p className="font-semibold">{badge.name}</p>
           <p className="text-white/70 text-[10px] mt-0.5">{badge.description}</p>
           {earnedDate && (

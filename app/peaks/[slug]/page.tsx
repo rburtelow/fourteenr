@@ -480,7 +480,7 @@ export default async function PeakProfilePage({
         </section>
 
         {/* CTA Section */}
-        <section className="py-20">
+        {!user && <section className="py-20">
           <div className="max-w-5xl mx-auto px-4 sm:px-8">
             <div className="relative bg-[var(--color-stone-light)] rounded-[2.5rem] p-12 lg:p-16 overflow-hidden">
               <div className="absolute bottom-0 left-0 right-0 h-24 opacity-10">
@@ -523,7 +523,7 @@ export default async function PeakProfilePage({
               </div>
             </div>
           </div>
-        </section>
+        </section>}
       </main>
 
       {/* Footer */}

@@ -37,13 +37,22 @@ export interface CommunityPost {
     route_name?: string | null;
     summit_date?: string;
     trip_report_id?: string | null;
-    // badge_earned fields
+    // badge_earned fields (single badge — legacy)
     badge_id?: string;
     badge_slug?: string | null;
     badge_name?: string | null;
     badge_icon_name?: string | null;
     badge_description?: string | null;
     badge_category?: string | null;
+    // badge_earned fields (multiple badges — grouped)
+    badges?: Array<{
+      badge_id: string;
+      badge_slug?: string | null;
+      badge_name?: string | null;
+      badge_icon_name?: string | null;
+      badge_description?: string | null;
+      badge_category?: string | null;
+    }>;
   } | null;
 }
 

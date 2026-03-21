@@ -37,7 +37,7 @@ export default function LogSummitButton({
 
   if (!isLoggedIn) {
     return (
-      <a href="/auth/login" className={className}>
+      <a href="/auth/login" className={`block ${className}`}>
         {children}
       </a>
     );
