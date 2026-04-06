@@ -22,10 +22,10 @@ export default function EventCard({ event, isLoggedIn, onToggleRsvp, rsvpPending
   const isCancelled = event.status === "cancelled";
 
   return (
-    <div className={`bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden card-hover transition-all ${isCancelled ? "opacity-60" : ""}`}>
+    <div className={`bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden card-hover transition-all flex flex-col ${isCancelled ? "opacity-60" : ""}`}>
       <div
         onClick={() => router.push(`/events/${event.id}`)}
-        className="block p-5 cursor-pointer"
+        className="block p-5 cursor-pointer flex-1"
       >
         <div className="flex items-start gap-4">
           {/* Date badge */}

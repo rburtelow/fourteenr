@@ -358,6 +358,7 @@ export default async function ProfilePage() {
             src="/hero.png"
             alt=""
             fill
+            sizes="100vw"
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-page)] via-transparent to-transparent" />
@@ -489,7 +490,6 @@ export default async function ProfilePage() {
                 <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} href="/friends" />
                 <SidebarLink icon={<CalendarIcon className="w-5 h-5" />} label="My Events" count={userEvents.length} href="#my-events" />
                 <SidebarLink icon={<DocumentIcon />} label="Trip Reports" count={tripReportCount} href="#trip-reports" />
-                <SidebarLink icon={<PhotoIcon />} label="Photo Gallery" count={47} />
                 <SidebarLink icon={<TrophyIcon />} label="Achievements" count={2} />
               </nav>
             </div>
@@ -534,69 +534,109 @@ export default async function ProfilePage() {
 
           {/* Main Content */}
           <main className="lg:col-span-9 space-y-6 lg:space-y-8 min-w-0">
-            {/* Wishlist Section */}
+            {/* Add to Wishlist / Peak Search Section */}
             <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
               <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
-                      Peak Wishlist
-                    </h2>
-                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                      Peaks you want to conquer next
-                    </p>
-                  </div>
-                  <button className="px-4 py-2 text-sm font-semibold text-white bg-[var(--color-brand-primary)] rounded-xl hover:bg-[var(--color-brand-accent)] transition-all flex items-center gap-2 shadow-lg shadow-[var(--color-brand-primary)]/20">
-                    <PlusIcon className="w-4 h-4" />
-                    Add Peak
-                  </button>
+                <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
+                  My Wishlist
+                </h2>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                  Search and add peaks you want to climb
+                </p>
+              </div>
+
+              <div className="p-4 sm:p-6">
+                {/* Search Input */}
+                <div className="relative mb-6">
+                  <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-secondary)]" />
+                  <input
+                    type="text"
+                    placeholder={`Search ${allPeaks.length} peaks...`}
+                    className="w-full pl-12 pr-4 py-3 bg-[var(--color-surface-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 transition-all"
+                  />
                 </div>
-              </div>
 
-              <div className="divide-y divide-[var(--color-border-app)]">
-                {watchlistPeaks.map((peak) => (
-                  <div
-                    key={peak.id}
-                    className="p-4 sm:p-5 hover:bg-[var(--color-surface-subtle)]/50 transition-colors group"
-                  >
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-[var(--color-surface-subtle)] to-[var(--color-border-app-strong)] flex items-center justify-center flex-shrink-0">
-                        <MountainIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--color-brand-primary)]" />
-                      </div>
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Link href={`/peaks/${peak.slug}`} className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors hover:underline">
-                            {peak.name}
-                          </Link>
-                          {peak.difficulty && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
-                              {peak.difficulty}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-[var(--color-text-secondary)]">
-                          <span className="font-mono text-[var(--color-brand-primary)]">{peak.elevation}</span>
-                          <span>{peak.region}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-surface-subtle)] transition-all opacity-0 group-hover:opacity-100 hidden sm:block">
-                          <CalendarPlusIcon className="w-5 h-5" />
-                        </button>
-                        <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 hidden sm:block">
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
-                        <ArrowRightIcon className="w-5 h-5 text-[var(--color-text-muted-green)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                {/* Peak Table — watched peaks first */}
+                <div className="overflow-x-auto">
+                  <table className="w-full table-fixed">
+                    <thead>
+                      <tr className="border-b border-[var(--color-border-app)]">
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Peak</th>
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden sm:table-cell">Region</th>
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Elevation</th>
+                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden md:table-cell">Class</th>
+                        <th className="px-3 sm:px-4 py-3"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...allPeaks]
+                        .sort((a, b) => {
+                          const aW = watchedPeakIds.has(a.id) ? 0 : 1;
+                          const bW = watchedPeakIds.has(b.id) ? 0 : 1;
+                          return aW - bW;
+                        })
+                        .slice(0, Math.max(8, watchlistPeaks.length))
+                        .map((peak, i) => {
+                          const isCompleted = completedPeakIds.has(peak.id);
+                          const isWishlisted = watchedPeakIds.has(peak.id);
+                          return (
+                            <tr
+                              key={peak.id}
+                              className="border-b border-[var(--color-border-app)] last:border-0 hover:bg-[var(--color-surface-subtle)]/50 transition-colors"
+                            >
+                              <td className="px-3 sm:px-4 py-3">
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                  <span className="text-xs font-mono text-[var(--color-text-muted-green)] w-4 sm:w-5 flex-shrink-0">
+                                    {String(i + 1).padStart(2, '0')}
+                                  </span>
+                                  {isCompleted && (
+                                    <CheckCircleIcon className="w-4 h-4 text-[var(--color-brand-highlight)] flex-shrink-0" />
+                                  )}
+                                  <Link href={`/peaks/${peak.slug}`} className={`font-medium hover:underline text-sm sm:text-base ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
+                                    {peak.name}
+                                  </Link>
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-4 py-3 text-sm text-[var(--color-text-secondary)] hidden sm:table-cell">
+                                {peak.range || ""}
+                              </td>
+                              <td className="px-3 sm:px-4 py-3">
+                                <span className="font-mono text-[var(--color-brand-primary)] text-sm whitespace-nowrap">
+                                  {peak.elevation.toLocaleString()}&apos;
+                                </span>
+                              </td>
+                              <td className="px-3 sm:px-4 py-3 hidden md:table-cell">
+                                <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
+                                  {peak.difficulty || "—"}
+                                </span>
+                              </td>
+                              <td className="px-3 sm:px-4 py-3 text-right">
+                                {isCompleted ? (
+                                  <span className="text-xs font-medium text-[var(--color-brand-highlight)]">
+                                    Completed
+                                  </span>
+                                ) : isWishlisted ? (
+                                  <span className="text-xs font-medium text-[var(--color-amber-glow)]">
+                                    Watching
+                                  </span>
+                                ) : (
+                                  <Link href={`/peaks/${peak.slug}`} className="px-3 py-1.5 text-xs font-semibold text-[var(--color-brand-primary)] border border-[var(--color-border-app-strong)] rounded-lg hover:bg-[var(--color-surface-subtle)] transition-all">
+                                    View
+                                  </Link>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
 
-              <div className="p-4 bg-[var(--color-surface-subtle)]/30 text-center">
-                <Link href="/peaks" className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
-                  Browse All {allPeaks.length} Peaks
-                </Link>
+                <div className="mt-4 text-center">
+                  <Link href="/peaks" className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
+                    View All {allPeaks.length} Peaks
+                  </Link>
+                </div>
               </div>
             </section>
 
@@ -713,104 +753,6 @@ export default async function ProfilePage() {
               )}
             </section>
 
-            {/* Peak Search Section */}
-            <section className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
-              <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
-                <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
-                  Add to Wishlist
-                </h2>
-                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                  Search and add peaks you want to climb
-                </p>
-              </div>
-
-              <div className="p-4 sm:p-6">
-                {/* Search Input */}
-                <div className="relative mb-6">
-                  <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-secondary)]" />
-                  <input
-                    type="text"
-                    placeholder={`Search ${allPeaks.length} peaks...`}
-                    className="w-full pl-12 pr-4 py-3 bg-[var(--color-surface-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 transition-all"
-                  />
-                </div>
-
-                {/* Quick Add Grid */}
-                <div className="overflow-x-auto">
-                  <table className="w-full table-fixed">
-                    <thead>
-                      <tr className="border-b border-[var(--color-border-app)]">
-                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Peak</th>
-                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden sm:table-cell">Region</th>
-                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase">Elevation</th>
-                        <th className="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-[var(--color-text-muted-green)] tracking-wider uppercase hidden md:table-cell">Class</th>
-                        <th className="px-3 sm:px-4 py-3"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allPeaks.slice(0, 8).map((peak, i) => {
-                        const isCompleted = completedPeakIds.has(peak.id);
-                        const isWishlisted = watchedPeakIds.has(peak.id);
-                        return (
-                          <tr
-                            key={peak.id}
-                            className="border-b border-[var(--color-border-app)] last:border-0 hover:bg-[var(--color-surface-subtle)]/50 transition-colors"
-                          >
-                            <td className="px-3 sm:px-4 py-3">
-                              <div className="flex items-center gap-2 sm:gap-3">
-                                <span className="text-xs font-mono text-[var(--color-text-muted-green)] w-4 sm:w-5 flex-shrink-0">
-                                  {String(i + 1).padStart(2, '0')}
-                                </span>
-                                {isCompleted && (
-                                  <CheckCircleIcon className="w-4 h-4 text-[var(--color-brand-highlight)] flex-shrink-0" />
-                                )}
-                                <Link href={`/peaks/${peak.slug}`} className={`font-medium hover:underline text-sm sm:text-base ${isCompleted ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-primary)]'}`}>
-                                  {peak.name}
-                                </Link>
-                              </div>
-                            </td>
-                            <td className="px-3 sm:px-4 py-3 text-sm text-[var(--color-text-secondary)] hidden sm:table-cell">
-                              {peak.range || ""}
-                            </td>
-                            <td className="px-3 sm:px-4 py-3">
-                              <span className="font-mono text-[var(--color-brand-primary)] text-sm whitespace-nowrap">
-                                {peak.elevation.toLocaleString()}&apos;
-                              </span>
-                            </td>
-                            <td className="px-3 sm:px-4 py-3 hidden md:table-cell">
-                              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-surface-subtle)] text-[var(--color-text-secondary)]">
-                                {peak.difficulty || "—"}
-                              </span>
-                            </td>
-                            <td className="px-3 sm:px-4 py-3 text-right">
-                              {isCompleted ? (
-                                <span className="text-xs font-medium text-[var(--color-brand-highlight)]">
-                                  Completed
-                                </span>
-                              ) : isWishlisted ? (
-                                <span className="text-xs font-medium text-[var(--color-amber-glow)]">
-                                  Watching
-                                </span>
-                              ) : (
-                                <Link href={`/peaks/${peak.slug}`} className="px-3 py-1.5 text-xs font-semibold text-[var(--color-brand-primary)] border border-[var(--color-border-app-strong)] rounded-lg hover:bg-[var(--color-surface-subtle)] transition-all">
-                                  View
-                                </Link>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="mt-4 text-center">
-                  <Link href="/peaks" className="text-sm font-semibold text-[var(--color-brand-primary)] hover:underline">
-                    View All {allPeaks.length} Peaks
-                  </Link>
-                </div>
-              </div>
-            </section>
           </main>
         </div>
       </div>
