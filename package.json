@@ -13,7 +13,7 @@
     "migrate": "supabase db push"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.8.0",
+    "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
     "maplibre-gl": "^5.0.0",
     "next": "16.2.2",
