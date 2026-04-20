@@ -1,20 +1,23 @@
 {
-  "extends": [
-    "config:recommended",
-    "schedule:automergeDaily"
-  ],
-  "timezone": "America/Chicago",
-  "minimumReleaseAge": "3 days",
-  "packageRules": [
-    {
-      "description": "Automatically merge minor and patch-level updates",
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "digest"
-      ],
-      "automerge": true,
-      "automergeType": "branch"
-    }
-  ]
+    "extends": [
+        "config:recommended"
+    ],
+    "platformAutomerge": true,
+    "schedule": [
+        "before 6am on Monday"
+    ],
+    "packageRules": [
+        {
+            "description": "Group and automatically merge minor and patch-level updates weekly",
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
+                "digest",
+                "lockFileMaintenance"
+            ],
+            "automerge": true,
+            "automergeType": "pr",
+            "groupName": "all non-major dependencies"
+        }
+    ]
 }
