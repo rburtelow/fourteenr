@@ -1,0 +1,53 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - navigation [ref=e4]:
+        - generic [ref=e6]:
+          - link "My14er" [ref=e7] [cursor=pointer]:
+            - /url: /
+            - img [ref=e9]
+            - generic [ref=e11]: My14er
+          - generic [ref=e12]:
+            - link "Home" [ref=e13] [cursor=pointer]:
+              - /url: /
+            - link "Peaks" [ref=e14] [cursor=pointer]:
+              - /url: /peaks
+            - link "Trailheads" [ref=e15] [cursor=pointer]:
+              - /url: /trailheads
+            - link "Community" [ref=e16] [cursor=pointer]:
+              - /url: /community
+          - generic [ref=e18]:
+            - link "Sign In" [ref=e19] [cursor=pointer]:
+              - /url: /auth/login
+            - link "Get Started" [ref=e20] [cursor=pointer]:
+              - /url: /auth/signup
+    - main [ref=e21]:
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - img [ref=e27]
+            - heading "Welcome Back" [level=1] [ref=e29]
+            - paragraph [ref=e30]: Sign in to continue your summit journey
+          - button "Continue with Google" [ref=e32]:
+            - img [ref=e33]
+            - text: Continue with Google
+          - generic [ref=e42]: or sign in with email
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - generic [ref=e45]: Email
+              - textbox "Email" [ref=e46]:
+                - /placeholder: you@example.com
+                - text: rburtelow@gmail.com
+            - generic [ref=e47]:
+              - generic [ref=e48]: Password
+              - textbox "Password" [ref=e49]:
+                - /placeholder: Your password
+                - text: Test1234!
+            - button "Sign In" [ref=e50]: Sign In
+        - paragraph [ref=e53]:
+          - text: Don't have an account?
+          - link "Create one" [ref=e54] [cursor=pointer]:
+            - /url: /auth/signup
+  - button "Open Next.js Dev Tools" [ref=e60] [cursor=pointer]:
+    - img [ref=e61]
+  - alert [ref=e64]

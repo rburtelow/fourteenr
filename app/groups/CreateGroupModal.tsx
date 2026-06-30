@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/app/components/Modal";
+import Select from "@/app/components/Select";
 import { createGroup } from "./actions";
 import { CATEGORY_LABELS } from "@/lib/groups.types";
 import type { GroupCategory } from "@/lib/groups.types";
@@ -27,6 +28,7 @@ export default function CreateGroupModal({ isOpen, onClose, allPeaks }: CreateGr
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [privacy, setPrivacy] = useState<"public" | "private">("public");
+  const [category, setCategory] = useState<GroupCategory>("general");
   const [selectedPeakId, setSelectedPeakId] = useState<string | null>(null);
   const [showPeakSelector, setShowPeakSelector] = useState(false);
   const [peakSearch, setPeakSearch] = useState("");
@@ -132,18 +134,13 @@ export default function CreateGroupModal({ isOpen, onClose, allPeaks }: CreateGr
           <label htmlFor="group-category" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             Category
           </label>
-          <select
+          <Select
             id="group-category"
             name="category"
-            defaultValue="general"
-            className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] transition-colors"
-          >
-            {CATEGORIES.map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+            value={category}
+            onChange={(v) => setCategory(v as GroupCategory)}
+            options={CATEGORIES.map(([value, label]) => ({ value, label }))}
+          />
         </div>
 
         {/* Privacy Toggle */}

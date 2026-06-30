@@ -1,0 +1,32 @@
+[      45ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/3tzefbg9uupg9.css:0
+[      46ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/27wh212bkt6tc.css:0
+[      48ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/media/2a65768255d6b625-s.p.3u4lli0-axodc.woff2:0
+[      48ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/43laz1qdf-0fo.js:0
+[      48ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/3tvzeshz-14vx.js:0
+[      49ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/2pw0fiwwncq1f.js:0
+[      50ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/media/5c285b27cdda1fe8-s.p.2_mbdogr7ni8i.woff2:0
+[      50ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/0e17tap4rh60_.js:0
+[      50ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/turbopack-0-sa1zvpaxjpc.js:0
+[      51ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/3e7nm3a8k6s2l.js:0
+[      52ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/05hei7abu2212.js:0
+[      52ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/0usnt13bxnjxa.js:0
+[      52ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/1iwp1n48lsdia.js:0
+[      65ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost:3000/_next/image?url=%2Fhero.webp&w=3840&q=70:0
+[    3075ms] [WARNING] The resource http://localhost:3000/_next/static/media/5c285b27cdda1fe8-s.p.2_mbdogr7ni8i.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/:0
+[    3075ms] [WARNING] The resource http://localhost:3000/_next/static/media/2a65768255d6b625-s.p.3u4lli0-axodc.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/:0
+[   31990ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/media/2a65768255d6b625-s.p.3u4lli0-axodc.woff2:0
+[   31991ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/media/5c285b27cdda1fe8-s.p.2_mbdogr7ni8i.woff2:0
+[   31991ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/27wh212bkt6tc.css:0
+[   31992ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/3tzefbg9uupg9.css:0
+[   31997ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/2pw0fiwwncq1f.js:0
+[   31997ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/1iwp1n48lsdia.js:0
+[   31999ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/0e17tap4rh60_.js:0
+[   32000ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/05hei7abu2212.js:0
+[   32000ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/turbopack-0-sa1zvpaxjpc.js:0
+[   32001ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/43laz1qdf-0fo.js:0
+[   32002ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/0usnt13bxnjxa.js:0
+[   32002ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/3e7nm3a8k6s2l.js:0
+[   32006ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/3tvzeshz-14vx.js:0
+[   32007ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost:3000/_next/image?url=%2Fhero.webp&w=3840&q=70:0
+[   35014ms] [WARNING] The resource http://localhost:3000/_next/static/media/5c285b27cdda1fe8-s.p.2_mbdogr7ni8i.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/:0
+[   35014ms] [WARNING] The resource http://localhost:3000/_next/static/media/2a65768255d6b625-s.p.3u4lli0-axodc.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/:0

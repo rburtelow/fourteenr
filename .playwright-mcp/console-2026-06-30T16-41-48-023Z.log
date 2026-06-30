@@ -1,0 +1,222 @@
+[    2913ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[    2926ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[    2938ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   64005ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  268988ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  268998ms] [LOG] [Fast Refresh] done in 107ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  273390ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  273416ms] [LOG] [Fast Refresh] done in 47ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  278436ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  278455ms] [LOG] [Fast Refresh] done in 44ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  286002ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  286159ms] [ERROR] ./app/components/MentionInput.tsx:364:60
+Unexpected character '“'
+  362 |       {name && <input type="hidden" name={name} value={value} />}
+  363 |
+> 364 |       {showDropdown && dropdownRect && typeof document !== “undefined” && createPortal(
+      |                                                            ^
+  365 |         <div
+  366 |           style={{
+  367 |             position: “absolute”,
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/components/MentionInput.tsx [Client Component Browser]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component Browser]
+    ./app/components/LogSummitButton.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/MentionInput.tsx [Client Component SSR]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component SSR]
+    ./app/components/LogSummitButton.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:3318
+[  286250ms] [ERROR] ./app/components/MentionInput.tsx:364:60
+Unexpected character '“'
+  362 |       {name && <input type="hidden" name={name} value={value} />}
+  363 |
+> 364 |       {showDropdown && dropdownRect && typeof document !== “undefined” && createPortal(
+      |                                                            ^
+  365 |         <div
+  366 |           style={{
+  367 |             position: “absolute”,
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/components/MentionInput.tsx [Client Component Browser]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component Browser]
+    ./app/components/LogSummitButton.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/MentionInput.tsx [Client Component SSR]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component SSR]
+    ./app/components/LogSummitButton.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:3318
+[  286291ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  305351ms] [ERROR] ./app/components/MentionInput.tsx:364:60
+Unexpected character '“'
+  362 |       {name && <input type="hidden" name={name} value={value} />}
+  363 |
+> 364 |       {showDropdown && dropdownRect && typeof document !== “undefined” && createPortal(
+      |                                                            ^
+  365 |         <div
+  366 |           style={{
+  367 |             position: “absolute”,
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/components/MentionInput.tsx [Client Component Browser]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component Browser]
+    ./app/components/LogSummitButton.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/MentionInput.tsx [Client Component SSR]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component SSR]
+    ./app/components/LogSummitButton.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:3318
+[  305372ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  327805ms] [ERROR] ./app/components/MentionInput.tsx:364:60
+Unexpected character '“'
+  362 |       {name && <input type="hidden" name={name} value={value} />}
+  363 |
+> 364 |       {showDropdown && dropdownRect && typeof document !== “undefined” && createPortal(
+      |                                                            ^
+  365 |         <div
+  366 |           style={{
+  367 |             position: “absolute”,
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/components/MentionInput.tsx [Client Component Browser]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component Browser]
+    ./app/components/LogSummitButton.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/MentionInput.tsx [Client Component SSR]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component SSR]
+    ./app/components/LogSummitButton.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:3318
+[  327819ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  336112ms] [ERROR] ./app/components/MentionInput.tsx:364:60
+Unexpected character '“'
+  362 |       {name && <input type="hidden" name={name} value={value} />}
+  363 |
+> 364 |       {showDropdown && dropdownRect && typeof document !== “undefined” && createPortal(
+      |                                                            ^
+  365 |         <div
+  366 |           style={{
+  367 |             position: “absolute”,
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/components/MentionInput.tsx [Client Component Browser]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component Browser]
+    ./app/components/LogSummitButton.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/MentionInput.tsx [Client Component SSR]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component SSR]
+    ./app/components/LogSummitButton.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:3318
+[  336197ms] [ERROR] ./app/components/MentionInput.tsx:364:60
+Unexpected character '“'
+  362 |       {name && <input type="hidden" name={name} value={value} />}
+  363 |
+> 364 |       {showDropdown && dropdownRect && typeof document !== “undefined” && createPortal(
+      |                                                            ^
+  365 |         <div
+  366 |           style={{
+  367 |             position: “absolute”,
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/components/MentionInput.tsx [Client Component Browser]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component Browser]
+    ./app/components/LogSummitButton.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/MentionInput.tsx [Client Component SSR]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component SSR]
+    ./app/components/LogSummitButton.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:3318
+[  336260ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  345360ms] [ERROR] ./app/components/MentionInput.tsx:364:60
+Unexpected character '“'
+  362 |       {name && <input type="hidden" name={name} value={value} />}
+  363 |
+> 364 |       {showDropdown && dropdownRect && typeof document !== “undefined” && createPortal(
+      |                                                            ^
+  365 |         <div
+  366 |           style={{
+  367 |             position: “absolute”,
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/components/MentionInput.tsx [Client Component Browser]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component Browser]
+    ./app/components/LogSummitButton.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Client Component Browser]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/MentionInput.tsx [Client Component SSR]
+    ./app/peaks/[slug]/TripReportModal.tsx [Client Component SSR]
+    ./app/components/LogSummitButton.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Client Component SSR]
+    ./app/components/Navbar.tsx [Server Component]
+    ./app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:3318
+[  345419ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  396327ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  396382ms] [LOG] [Fast Refresh] done in 144ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  398787ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  399291ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  399319ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  399362ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  399850ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  399943ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  417540ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  443243ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477

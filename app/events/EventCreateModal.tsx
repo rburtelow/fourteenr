@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import Modal from "@/app/components/Modal";
+import MentionInput from "@/app/components/MentionInput";
 import { createEvent } from "./actions";
 
 interface Peak {
@@ -27,6 +28,7 @@ export default function EventCreateModal({ isOpen, onClose, allPeaks, onEventCre
   const [selectedPeakId, setSelectedPeakId] = useState<string | null>(null);
   const [showPeakSelector, setShowPeakSelector] = useState(false);
   const [peakSearch, setPeakSearch] = useState("");
+  const [description, setDescription] = useState("");
   const peakSelectorRef = useRef<HTMLDivElement>(null);
   const peakSearchRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +40,7 @@ export default function EventCreateModal({ isOpen, onClose, allPeaks, onEventCre
       setSelectedPeakId(null);
       setShowPeakSelector(false);
       setPeakSearch("");
+      setDescription("");
     }
   }, [isOpen]);
 
@@ -124,12 +127,14 @@ export default function EventCreateModal({ isOpen, onClose, allPeaks, onEventCre
           <label htmlFor="event-description" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             Description
           </label>
-          <textarea
+          <MentionInput
             id="event-description"
             name="description"
+            value={description}
+            onChange={setDescription}
             rows={3}
             maxLength={2000}
-            placeholder="Tell people about this event..."
+            placeholder="Tell people about this event... Use @ to tag peaks, trailheads, and people."
             className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] resize-none"
           />
         </div>

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useTransition } from "react";
 import Modal from "@/app/components/Modal";
+import Select from "@/app/components/Select";
+import MentionInput from "@/app/components/MentionInput";
 import { createTripReport } from "./trip-report-actions";
 import type { Route, TripReportSections } from "@/lib/database.types";
 
@@ -252,18 +254,15 @@ export default function TripReportModal({
                 <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
                   Route
                 </label>
-                <select
+                <Select
                   value={routeId}
-                  onChange={(e) => setRouteId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)]"
-                >
-                  <option value="">Select a route (optional)</option>
-                  {routes.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name} {r.difficulty ? `(${r.difficulty})` : ""}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setRouteId}
+                  placeholder="Select a route (optional)"
+                  options={routes.map((r) => ({
+                    value: r.id,
+                    label: `${r.name}${r.difficulty ? ` (${r.difficulty})` : ""}`,
+                  }))}
+                />
                 {selectedRoute?.trailhead && (
                   <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)]">
                     <TrailheadPinIcon className="w-4 h-4 text-[var(--color-brand-primary)] flex-shrink-0" />
@@ -326,12 +325,12 @@ export default function TripReportModal({
               <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
                 Summary *
               </label>
-              <textarea
+              <MentionInput
                 value={summary}
-                onChange={(e) => setSummary(e.target.value)}
+                onChange={setSummary}
                 rows={2}
                 maxLength={500}
-                placeholder="Brief summary of your trip (e.g., 'Beautiful bluebird day, trail in great shape...')"
+                placeholder="Brief summary of your trip (e.g., 'Beautiful bluebird day, trail in great shape...'). Use @ to tag peaks, trailheads, and people."
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] resize-none"
               />
               <p className="text-xs text-[var(--color-text-secondary)] mt-1">{summary.length}/500</p>
@@ -342,11 +341,11 @@ export default function TripReportModal({
               <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
                 Full Narrative
               </label>
-              <textarea
+              <MentionInput
                 value={narrative}
-                onChange={(e) => setNarrative(e.target.value)}
+                onChange={setNarrative}
                 rows={4}
-                placeholder="Tell the full story of your hike..."
+                placeholder="Tell the full story of your hike... Use @ to tag peaks, trailheads, and people."
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] resize-none"
               />
             </div>

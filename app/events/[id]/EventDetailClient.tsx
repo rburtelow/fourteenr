@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Select from "@/app/components/Select";
+import MentionInput from "@/app/components/MentionInput";
 import { useRouter } from "next/navigation";
 import type { CommunityEvent } from "@/lib/community.types";
 import { toggleEventAttendance, cancelEvent, updateEvent } from "../actions";
@@ -33,6 +35,8 @@ export default function EventDetailClient({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [editPeakId, setEditPeakId] = useState(initialEvent.peak_id || "");
+  const [editDescription, setEditDescription] = useState(initialEvent.description || "");
 
   const isFull = event.max_attendees !== null && event.attendee_count >= event.max_attendees;
   const isCancelled = event.status === "cancelled";
@@ -207,12 +211,14 @@ export default function EventDetailClient({
             <label htmlFor="edit-description" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
               Description
             </label>
-            <textarea
+            <MentionInput
               id="edit-description"
               name="description"
+              value={editDescription}
+              onChange={setEditDescription}
               rows={3}
-              defaultValue={event.description || ""}
               maxLength={2000}
+              placeholder="Use @ to tag peaks, trailheads, and people."
               className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] resize-none"
             />
           </div>
@@ -263,19 +269,17 @@ export default function EventDetailClient({
             <label htmlFor="edit-peak" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
               Link to a 14er
             </label>
-            <select
+            <Select
               id="edit-peak"
               name="peakId"
-              defaultValue={event.peak_id || ""}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)]"
-            >
-              <option value="">None</option>
-              {allPeaks.map((peak) => (
-                <option key={peak.id} value={peak.id}>
-                  {peak.name} ({peak.elevation.toLocaleString()}&apos;)
-                </option>
-              ))}
-            </select>
+              value={editPeakId}
+              onChange={setEditPeakId}
+              placeholder="None"
+              options={allPeaks.map((peak) => ({
+                value: peak.id,
+                label: `${peak.name} (${peak.elevation.toLocaleString()}')`,
+              }))}
+            />
           </div>
 
           <div>

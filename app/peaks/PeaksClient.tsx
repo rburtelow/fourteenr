@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import type { Peak } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "../components/Navbar";
@@ -525,21 +525,50 @@ function FilterSelect({
   labels?: Record<string, string>;
   icon: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
   return (
-    <div className="relative">
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted-green)]">{icon}</div>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="appearance-none pl-10 pr-10 py-3 rounded-xl bg-[var(--color-surface-subtle)] border-none text-sm font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 cursor-pointer"
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`flex items-center pl-10 pr-10 py-3 rounded-xl bg-[var(--color-surface-subtle)] border text-sm font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 cursor-pointer transition-colors ${open ? "border-[var(--color-brand-primary)]" : "border-transparent"}`}
       >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {labels ? labels[option] || option : option}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted-green)] pointer-events-none" />
+        {value}
+      </button>
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted-green)] pointer-events-none">{icon}</div>
+      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted-green)] pointer-events-none transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
+
+      {open && (
+        <div className="absolute z-50 mt-1.5 left-0 min-w-full rounded-xl bg-white border border-[var(--color-border-app)] shadow-lg shadow-black/10 overflow-hidden">
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => { onChange(opt); setOpen(false); }}
+              className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${
+                opt === value
+                  ? "bg-[var(--color-brand-primary)]/5 text-[var(--color-brand-primary)]"
+                  : "text-[var(--color-text-primary)] hover:bg-[var(--color-surface-subtle)]"
+              }`}
+            >
+              {labels ? labels[opt] || opt : opt}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

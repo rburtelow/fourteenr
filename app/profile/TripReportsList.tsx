@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import Modal from "@/app/components/Modal";
+import MentionText from "@/app/components/MentionText";
+import { mentionsToPlainText } from "@/lib/mentions";
 import type { TripReportSections } from "@/lib/database.types";
 
 interface TripReportData {
@@ -245,7 +247,7 @@ function TripReportViewModal({ report, isOpen, onClose }: { report: TripReportDa
         {/* Summary */}
         <div>
           <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] uppercase tracking-wider mb-2">Summary</h3>
-          <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">{report.summary}</p>
+          <p className="text-sm text-[var(--color-text-primary)] leading-relaxed"><MentionText content={report.summary} /></p>
         </div>
 
         {/* Narrative */}
@@ -253,7 +255,7 @@ function TripReportViewModal({ report, isOpen, onClose }: { report: TripReportDa
           <div>
             <h3 className="text-sm font-semibold text-[var(--color-text-muted-green)] uppercase tracking-wider mb-2">Full Report</h3>
             <div className="text-sm text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
-              {report.narrative}
+              <MentionText content={report.narrative} />
             </div>
           </div>
         )}
@@ -328,7 +330,7 @@ export default function TripReportsList({ reports }: TripReportsListProps) {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-[var(--color-text-secondary)] mt-1 line-clamp-2">{report.summary}</p>
+                  <p className="text-sm text-[var(--color-text-secondary)] mt-1 line-clamp-2">{mentionsToPlainText(report.summary)}</p>
                   <div className="mt-2 text-xs text-[var(--color-text-secondary)] space-y-1">
                     <span className="flex items-center gap-1 whitespace-nowrap">
                       <CalendarIcon className="w-3.5 h-3.5 flex-shrink-0" />

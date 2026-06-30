@@ -262,6 +262,7 @@ export interface Database {
           follow_id: string | null;
           group_id: string | null;
           event_id: string | null;
+          report_id: string | null;
           message: string;
           is_read: boolean;
           created_at: string;
@@ -277,6 +278,7 @@ export interface Database {
           follow_id?: string | null;
           group_id?: string | null;
           event_id?: string | null;
+          report_id?: string | null;
           message: string;
           is_read?: boolean;
           created_at?: string;
@@ -292,6 +294,7 @@ export interface Database {
           follow_id?: string | null;
           group_id?: string | null;
           event_id?: string | null;
+          report_id?: string | null;
           message?: string;
           is_read?: boolean;
           created_at?: string;

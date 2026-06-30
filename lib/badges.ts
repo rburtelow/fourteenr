@@ -1,4 +1,6 @@
+import { unstable_cache } from "next/cache";
 import { createClient } from "./supabase/server";
+import { createPublicClient } from "./supabase/public";
 import type { BadgeDefinition, UserBadgeWithDefinition } from "./database.types";
 
 /**
@@ -45,29 +47,24 @@ export async function getUserBadges(userId: string): Promise<UserBadgeWithDefini
 /**
  * Get recent badges earned across all users (for community feed)
  */
-export async function getRecentBadges(limit: number = 10): Promise<
-  (UserBadgeWithDefinition & { profiles: { screen_name: string | null; avatar_url: string | null } })[]
-> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("user_badges")
-    .select(`
-      *,
-      badge_definitions (*),
-      profiles (screen_name, avatar_url)
-    `)
-    .order("earned_at", { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error("Error fetching recent badges:", error);
-    return [];
-  }
-
-  return (data || []) as (UserBadgeWithDefinition & {
-    profiles: { screen_name: string | null; avatar_url: string | null };
-  })[];
-}
+export const getRecentBadges = unstable_cache(
+  async (limit: number = 10): Promise<
+    (UserBadgeWithDefinition & { profiles: { screen_name: string | null; avatar_url: string | null } })[]
+  > => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("user_badges")
+      .select(`*, badge_definitions (*), profiles (screen_name, avatar_url)`)
+      .order("earned_at", { ascending: false })
+      .limit(limit);
+    if (error) { console.error("Error fetching recent badges:", error); return []; }
+    return (data || []) as (UserBadgeWithDefinition & {
+      profiles: { screen_name: string | null; avatar_url: string | null };
+    })[];
+  },
+  ["recent-badges"],
+  { revalidate: 300, tags: ["badges"] }
+);
 
 /**
  * Get badge definitions by category

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { CommunityEvent } from "@/lib/community.types";
 import { toggleEventAttendance } from "./actions";
 import EventCard from "./EventCard";
+import Select from "@/app/components/Select";
 import EventCreateModal from "./EventCreateModal";
 
 type TimeFilter = "upcoming" | "this_week" | "this_month" | "past";
@@ -268,29 +269,23 @@ export default function EventsClient({ initialEvents, allPeaks, isLoggedIn, curr
             </div>
 
             {/* Peak filter */}
-            <select
+            <Select
               value={selectedPeakFilter || ""}
-              onChange={(e) => setSelectedPeakFilter(e.target.value || null)}
-              className="px-3 py-2 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20"
-            >
-              <option value="">All Peaks</option>
-              {allPeaks.map((peak) => (
-                <option key={peak.id} value={peak.id}>
-                  {peak.name}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setSelectedPeakFilter(v || null)}
+              placeholder="All Peaks"
+              options={allPeaks.map((peak) => ({ value: peak.id, label: peak.name }))}
+            />
 
             {/* Sort */}
-            <select
+            <Select
               value={sortBy}
-              onChange={(e) => handleSortChange(e.target.value as SortOption)}
-              className="px-3 py-2 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20"
-            >
-              <option value="soonest">Soonest</option>
-              <option value="popular">Most Popular</option>
-              <option value="newest">Newest</option>
-            </select>
+              onChange={(v) => handleSortChange(v as SortOption)}
+              options={[
+                { value: "soonest", label: "Soonest" },
+                { value: "popular", label: "Most Popular" },
+                { value: "newest", label: "Newest" },
+              ]}
+            />
           </div>
         </div>
       </div>

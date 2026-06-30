@@ -24,6 +24,8 @@ export async function getNotifications(userId: string, limit = 20): Promise<Noti
       post_id,
       comment_id,
       badge_id,
+      event_id,
+      report_id,
       message,
       is_read,
       created_at,

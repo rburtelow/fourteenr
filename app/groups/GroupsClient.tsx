@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Select from "@/app/components/Select";
 import Link from "next/link";
 import GroupCard from "./GroupCard";
 import CreateGroupModal from "./CreateGroupModal";
@@ -116,15 +117,15 @@ export default function GroupsClient({ initialGroups, allPeaks, isLoggedIn, sugg
 
         <div className="flex items-center gap-3">
           {/* Sort */}
-          <select
+          <Select
             value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-            className="px-3 py-2.5 rounded-xl bg-white border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] transition-colors"
-          >
-            <option value="newest">Newest</option>
-            <option value="most_members">Most Members</option>
-            <option value="recently_active">Recently Active</option>
-          </select>
+            onChange={(v) => setSort(v as SortOption)}
+            options={[
+              { value: "newest", label: "Newest" },
+              { value: "most_members", label: "Most Members" },
+              { value: "recently_active", label: "Recently Active" },
+            ]}
+          />
 
           {/* Create Group CTA */}
           {isLoggedIn ? (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useCallback } from "react";
+import Select from "@/app/components/Select";
 import { useRouter } from "next/navigation";
 import {
   updateGroup,
@@ -264,6 +265,7 @@ function DetailsTab({ group }: { group: Group }) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [privacy, setPrivacy] = useState<"public" | "private">(group.privacy);
+  const [category, setCategory] = useState(group.category);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -330,16 +332,13 @@ function DetailsTab({ group }: { group: Group }) {
         <label htmlFor="s-category" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
           Category
         </label>
-        <select
+        <Select
           id="s-category"
           name="category"
-          defaultValue={group.category}
-          className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] transition-colors"
-        >
-          {CATEGORIES.map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
+          value={category}
+          onChange={(v) => setCategory(v as typeof category)}
+          options={CATEGORIES.map(([value, label]) => ({ value, label }))}
+        />
       </div>
 
       <div>
@@ -463,16 +462,17 @@ function MemberRow({
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Role selector — only admin can change roles; skip current user */}
         {isAdmin && !isCurrentUser && member.role !== "admin" && (
-          <select
+          <Select
             value={currentRole}
             disabled={isPending}
-            onChange={(e) => handleRoleChange(e.target.value)}
-            className="text-xs px-2.5 py-1.5 rounded-lg border border-[var(--color-border-app)] bg-white text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-brand-primary)]/30 disabled:opacity-50 cursor-pointer"
-          >
-            <option value="member">Member</option>
-            <option value="moderator">Moderator</option>
-            <option value="admin">Admin</option>
-          </select>
+            onChange={handleRoleChange}
+            size="sm"
+            options={[
+              { value: "member", label: "Member" },
+              { value: "moderator", label: "Moderator" },
+              { value: "admin", label: "Admin" },
+            ]}
+          />
         )}
 
         {/* Transfer admin for admin-to-admin rows */}
@@ -563,17 +563,16 @@ function TransferAdminSection({
       />
       {error && <ErrorBanner message={error} />}
       <div className="flex items-center gap-3 mt-3">
-        <select
+        <Select
+          className="flex-1"
           value={targetId}
-          onChange={(e) => { setTargetId(e.target.value); setShowConfirm(false); }}
-          className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)]"
-        >
-          <option value="">Select a member…</option>
-          {eligibleMembers.map((m) => {
-            const label = m.profiles.full_name || m.profiles.screen_name || m.user_id;
-            return <option key={m.user_id} value={m.user_id}>{label}</option>;
-          })}
-        </select>
+          onChange={(v) => { setTargetId(v); setShowConfirm(false); }}
+          placeholder="Select a member…"
+          options={eligibleMembers.map((m) => ({
+            value: m.user_id,
+            label: m.profiles.full_name || m.profiles.screen_name || m.user_id,
+          }))}
+        />
         {!showConfirm ? (
           <button
             disabled={!targetId}

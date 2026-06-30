@@ -1,0 +1,292 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e6]:
+        - link "My14er" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img [ref=e9]
+          - text: My14er
+        - generic [ref=e11]:
+          - link "Home" [ref=e12] [cursor=pointer]:
+            - /url: /
+          - link "Peaks" [ref=e13] [cursor=pointer]:
+            - /url: /peaks
+          - link "Trailheads" [ref=e14] [cursor=pointer]:
+            - /url: /trailheads
+          - link "Community" [ref=e15] [cursor=pointer]:
+            - /url: /community
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - link "Sign In" [ref=e18] [cursor=pointer]:
+              - /url: /auth/login
+            - link "Get Started" [ref=e19] [cursor=pointer]:
+              - /url: /auth/signup
+          - generic [ref=e20]:
+            - button "Toggle menu" [ref=e21]:
+              - img
+            - generic [ref=e23]:
+              - navigation [ref=e24]:
+                - link "Home" [ref=e25] [cursor=pointer]:
+                  - /url: /
+                  - img [ref=e26]
+                  - text: Home
+                - link "Peaks" [ref=e28] [cursor=pointer]:
+                  - /url: /peaks
+                  - img [ref=e29]
+                  - text: Peaks
+                - link "Trailheads" [ref=e31] [cursor=pointer]:
+                  - /url: /trailheads
+                  - img [ref=e32]
+                  - text: Trailheads
+                - link "Community" [ref=e36] [cursor=pointer]:
+                  - /url: /community
+                  - img [ref=e37]
+                  - text: Community
+              - generic [ref=e39]:
+                - link "Sign In" [ref=e40] [cursor=pointer]:
+                  - /url: /auth/login
+                - link "Get Started" [ref=e41] [cursor=pointer]:
+                  - /url: /auth/signup
+  - main [ref=e42]:
+    - generic [ref=e43]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e48]: Colorado's 58 Peaks
+          - heading "Conquerthe Clouds" [level=1] [ref=e49]
+          - paragraph [ref=e50]: Track summits. Share stories. Join a community of high-altitude adventurers pushing above 14,000 feet.
+          - generic [ref=e51]:
+            - link "Start Your Journey" [ref=e52] [cursor=pointer]:
+              - /url: /auth/signup
+              - generic [ref=e53]:
+                - text: Start Your Journey
+                - img [ref=e54]
+            - link "Explore Peaks" [ref=e56] [cursor=pointer]:
+              - /url: /peaks
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - img [ref=e62]
+            - generic [ref=e66]:
+              - paragraph [ref=e67]: Your Dashboard
+              - paragraph [ref=e68]: Summit Tracker
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - paragraph [ref=e71]: "58"
+              - paragraph [ref=e72]: Fourteeners
+            - generic [ref=e73]:
+              - paragraph [ref=e74]: 14,000 ft
+              - paragraph [ref=e75]: Minimum Elevation
+            - generic [ref=e76]:
+              - paragraph [ref=e77]: 12K+
+              - paragraph [ref=e78]: Active Hikers
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - generic [ref=e82]: A
+              - generic [ref=e83]: B
+              - generic [ref=e84]: C
+              - generic [ref=e85]: D
+            - paragraph [ref=e86]: 2,847 online now
+      - generic [ref=e88]: Scroll
+    - generic [ref=e90]:
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - text: The Collection
+          - heading "Colorado's Highest" [level=2] [ref=e93]
+        - paragraph [ref=e94]: Fifty-eight peaks above 14,000 feet. Each one a story waiting to be written.
+      - generic [ref=e95]:
+        - table [ref=e97]:
+          - rowgroup [ref=e98]:
+            - row "Peak Region Elevation Class" [ref=e99]:
+              - columnheader "Peak" [ref=e100]
+              - columnheader "Region" [ref=e101]
+              - columnheader "Elevation" [ref=e102]
+              - columnheader "Class" [ref=e103]
+              - columnheader [ref=e104]
+          - rowgroup [ref=e105]:
+            - row "01Mount Elbert Sawatch Range 14,433' Class 1" [ref=e106]:
+              - cell "01Mount Elbert" [ref=e107]:
+                - link "01Mount Elbert" [ref=e108] [cursor=pointer]:
+                  - /url: /peaks/mount-elbert
+              - cell "Sawatch Range" [ref=e109]:
+                - link "Sawatch Range" [ref=e110] [cursor=pointer]:
+                  - /url: /peaks/mount-elbert
+              - cell "14,433'" [ref=e111]:
+                - link "14,433'" [ref=e112] [cursor=pointer]:
+                  - /url: /peaks/mount-elbert
+              - cell "Class 1" [ref=e113]:
+                - link "Class 1" [ref=e114] [cursor=pointer]:
+                  - /url: /peaks/mount-elbert
+              - cell [ref=e115]:
+                - link:
+                  - /url: /peaks/mount-elbert
+                  - img
+            - row "02Mount Massive Sawatch Range 14,421' Class 2" [ref=e117]:
+              - cell "02Mount Massive" [ref=e118]:
+                - link "02Mount Massive" [ref=e119] [cursor=pointer]:
+                  - /url: /peaks/mount-massive
+              - cell "Sawatch Range" [ref=e120]:
+                - link "Sawatch Range" [ref=e121] [cursor=pointer]:
+                  - /url: /peaks/mount-massive
+              - cell "14,421'" [ref=e122]:
+                - link "14,421'" [ref=e123] [cursor=pointer]:
+                  - /url: /peaks/mount-massive
+              - cell "Class 2" [ref=e124]:
+                - link "Class 2" [ref=e125] [cursor=pointer]:
+                  - /url: /peaks/mount-massive
+              - cell [ref=e126]:
+                - link:
+                  - /url: /peaks/mount-massive
+                  - img
+            - row "03Mount Harvard Sawatch Range 14,420' Class 2" [ref=e128]:
+              - cell "03Mount Harvard" [ref=e129]:
+                - link "03Mount Harvard" [ref=e130] [cursor=pointer]:
+                  - /url: /peaks/mount-harvard
+              - cell "Sawatch Range" [ref=e131]:
+                - link "Sawatch Range" [ref=e132] [cursor=pointer]:
+                  - /url: /peaks/mount-harvard
+              - cell "14,420'" [ref=e133]:
+                - link "14,420'" [ref=e134] [cursor=pointer]:
+                  - /url: /peaks/mount-harvard
+              - cell "Class 2" [ref=e135]:
+                - link "Class 2" [ref=e136] [cursor=pointer]:
+                  - /url: /peaks/mount-harvard
+              - cell [ref=e137]:
+                - link:
+                  - /url: /peaks/mount-harvard
+                  - img
+            - row "04Blanca Peak Sangre de Cristo Range 14,345' Class 2" [ref=e139]:
+              - cell "04Blanca Peak" [ref=e140]:
+                - link "04Blanca Peak" [ref=e141] [cursor=pointer]:
+                  - /url: /peaks/blanca-peak
+              - cell "Sangre de Cristo Range" [ref=e142]:
+                - link "Sangre de Cristo Range" [ref=e143] [cursor=pointer]:
+                  - /url: /peaks/blanca-peak
+              - cell "14,345'" [ref=e144]:
+                - link "14,345'" [ref=e145] [cursor=pointer]:
+                  - /url: /peaks/blanca-peak
+              - cell "Class 2" [ref=e146]:
+                - link "Class 2" [ref=e147] [cursor=pointer]:
+                  - /url: /peaks/blanca-peak
+              - cell [ref=e148]:
+                - link:
+                  - /url: /peaks/blanca-peak
+                  - img
+            - row "05La Plata Peak Sawatch Range 14,336' Class 2" [ref=e150]:
+              - cell "05La Plata Peak" [ref=e151]:
+                - link "05La Plata Peak" [ref=e152] [cursor=pointer]:
+                  - /url: /peaks/la-plata-peak
+              - cell "Sawatch Range" [ref=e153]:
+                - link "Sawatch Range" [ref=e154] [cursor=pointer]:
+                  - /url: /peaks/la-plata-peak
+              - cell "14,336'" [ref=e155]:
+                - link "14,336'" [ref=e156] [cursor=pointer]:
+                  - /url: /peaks/la-plata-peak
+              - cell "Class 2" [ref=e157]:
+                - link "Class 2" [ref=e158] [cursor=pointer]:
+                  - /url: /peaks/la-plata-peak
+              - cell [ref=e159]:
+                - link:
+                  - /url: /peaks/la-plata-peak
+                  - img
+        - generic [ref=e161]:
+          - paragraph [ref=e162]: Showing 5 of 58 peaks
+          - link "View All Peaks" [ref=e163] [cursor=pointer]:
+            - /url: /peaks
+            - text: View All Peaks
+            - img [ref=e164]
+    - generic [ref=e167]:
+      - generic [ref=e168]:
+        - text: Why My14er
+        - heading "Built for the Summit" [level=2] [ref=e169]
+        - paragraph [ref=e170]: Everything you need for your journey above 14,000 feet, crafted by hikers who know the terrain.
+      - generic [ref=e171]:
+        - generic [ref=e172]:
+          - img [ref=e174]
+          - heading "Precision Trail Data" [level=3] [ref=e176]
+          - paragraph [ref=e177]: High-resolution topographic maps, GPS waypoints, and real-time trail conditions from our network of weather stations.
+        - generic [ref=e178]:
+          - img [ref=e180]
+          - heading "Active Community" [level=3] [ref=e182]
+          - paragraph [ref=e183]: Connect with fellow peak baggers, share trip reports, and get conditions from hikers who were there this morning.
+        - generic [ref=e184]:
+          - img [ref=e186]
+          - heading "Track Your Legacy" [level=3] [ref=e188]
+          - paragraph [ref=e189]: Digital summit logs, progress badges, and a personal record of every peak you've conquered on your 14er journey.
+    - generic [ref=e192]:
+      - img [ref=e194]
+      - generic [ref=e196]:
+        - heading "Ready for the climb?" [level=2] [ref=e197]
+        - paragraph [ref=e198]: Join thousands of Colorado hikers already tracking their summits and sharing their stories.
+        - generic [ref=e199]:
+          - link "Create Free Account" [ref=e200] [cursor=pointer]:
+            - /url: /auth/signup
+            - generic [ref=e201]:
+              - text: Create Free Account
+              - img [ref=e202]
+          - link "Learn More" [ref=e204] [cursor=pointer]:
+            - /url: /peaks
+  - contentinfo [ref=e205]:
+    - generic [ref=e206]:
+      - generic [ref=e207]:
+        - generic [ref=e208]:
+          - link "My14er" [ref=e209] [cursor=pointer]:
+            - /url: /
+            - img [ref=e211]
+            - text: My14er
+          - paragraph [ref=e213]: The definitive platform for Colorado's high-altitude community.
+        - generic [ref=e214]:
+          - heading "Explore" [level=4] [ref=e215]
+          - list [ref=e216]:
+            - listitem [ref=e217]:
+              - link "All 58 Peaks" [ref=e218] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e219]:
+              - link "Trip Reports" [ref=e220] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e221]:
+              - link "Trail Conditions" [ref=e222] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e223]:
+              - link "Weather Stations" [ref=e224] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e225]:
+          - heading "Community" [level=4] [ref=e226]
+          - list [ref=e227]:
+            - listitem [ref=e228]:
+              - link "Forums" [ref=e229] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e230]:
+              - link "Events" [ref=e231] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e232]:
+              - link "Leaderboards" [ref=e233] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e234]:
+              - link "Gear Guides" [ref=e235] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e236]:
+          - heading "Support" [level=4] [ref=e237]
+          - list [ref=e238]:
+            - listitem [ref=e239]:
+              - link "Safety Guide" [ref=e240] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e241]:
+              - link "Contact Us" [ref=e242] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e243]:
+              - link "Privacy" [ref=e244] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e245]:
+              - link "Terms of Service" [ref=e246] [cursor=pointer]:
+                - /url: /terms
+      - generic [ref=e247]:
+        - paragraph [ref=e248]: © 2026 My14er. Hike responsibly.
+        - generic [ref=e249]:
+          - link "Instagram" [ref=e250] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e251]
+          - link "Twitter" [ref=e255] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e256]
+          - link "YouTube" [ref=e258] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e259]

@@ -71,6 +71,7 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
         follow_id,
         group_id,
         event_id,
+        report_id,
         message,
         is_read,
         created_at,
@@ -164,7 +165,7 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
             const { data } = await supabase
               .from("notifications")
               .select(`
-                id, user_id, actor_id, type, post_id, comment_id, badge_id, follow_id, group_id, event_id,
+                id, user_id, actor_id, type, post_id, comment_id, badge_id, follow_id, group_id, event_id, report_id,
                 message, is_read, created_at,
                 actor:actor_id (screen_name, full_name, avatar_url),
                 group:group_id (slug)
@@ -345,6 +346,14 @@ export default function NotificationBell({ initialCount, userId }: NotificationB
             </svg>
           </div>
         );
+      case "mention":
+        return (
+          <div className="w-6 h-6 rounded-full bg-[var(--color-brand-primary)]/10 flex items-center justify-center flex-shrink-0">
+            <svg className="w-3.5 h-3.5 text-[var(--color-brand-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9" />
+            </svg>
+          </div>
+        );
     }
   };
 
@@ -436,7 +445,10 @@ function NotificationItem({
     if (!notification.is_read) {
       onMarkAsRead(notification.id);
     }
-    if (notification.type === "event_updated" && notification.event_id) {
+    if (notification.report_id) {
+      onNavigate();
+      router.push(`/reports/${notification.report_id}`);
+    } else if (notification.event_id) {
       onNavigate();
       router.push(`/events/${notification.event_id}`);
     } else if (notification.post_id) {

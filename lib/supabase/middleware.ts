@@ -48,26 +48,31 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // If user is authenticated but has no screen_name, redirect to setup
-  // (except if already on the setup page or auth callback)
-  if (
-    user &&
-    !request.nextUrl.pathname.startsWith("/auth/setup-profile") &&
-    !request.nextUrl.pathname.startsWith("/auth/callback") &&
-    !request.nextUrl.pathname.startsWith("/auth/login") &&
-    !request.nextUrl.pathname.startsWith("/auth/signup")
-  ) {
-    // Check if user has a screen_name set
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("screen_name")
-      .eq("id", user.id)
-      .single();
+  // If user is authenticated but has no screen_name, redirect to setup.
+  // We cache the result in a short-lived cookie (_pp_ok) so we only hit
+  // the DB once per browser session rather than on every request.
+  const skipPaths = ["/auth/setup-profile", "/auth/callback", "/auth/login", "/auth/signup"];
+  if (user && !skipPaths.some((p) => request.nextUrl.pathname.startsWith(p))) {
+    const profileOkCookie = request.cookies.get("_pp_ok");
+    if (!profileOkCookie) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("screen_name")
+        .eq("id", user.id)
+        .single();
 
-    if (profile && !profile.screen_name) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/auth/setup-profile";
-      return NextResponse.redirect(url);
+      if (profile && !profile.screen_name) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/auth/setup-profile";
+        return NextResponse.redirect(url);
+      }
+      // Profile is complete — cache for 24 hours so we skip the DB call.
+      supabaseResponse.cookies.set("_pp_ok", "1", {
+        maxAge: 60 * 60 * 24,
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+      });
     }
   }
 

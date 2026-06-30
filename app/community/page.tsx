@@ -1,12 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { getRecentBadges } from "@/lib/badges";
-import { getPosts, getRecommendedPosts, getGroupFeedPosts, getUpcomingEvents, getTrendingPeaks } from "@/lib/community";
+import { getPosts, getRecommendedPosts, getGroupFeedPosts, getSidebarUpcomingEvents, getTrendingPeaks } from "@/lib/community";
+import type { SidebarEvent } from "@/lib/community";
 import { getUserGroupsForSidebar } from "@/lib/groups";
 import { CATEGORY_COLORS } from "@/lib/groups.types";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import { getBulkFollowStatuses, getFollowerCount, getFollowingCount } from "@/lib/follows";
+import { getNavPeaks } from "@/lib/peaks";
 import type { FollowStatus } from "@/lib/follows";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
@@ -16,140 +18,96 @@ import SavedQuickLink from "./SavedQuickLink";
 import BadgeIcon from "../components/badges/BadgeIcon";
 
 export default async function CommunityPage() {
-  // Get auth state
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getServerUser() is React-cached per-request; getPosts/getUpcomingEvents also call
+  // it internally, so all three share one auth round-trip instead of making three.
+  const [user, navPeaks, trendingPeaks, recentBadges, upcomingEvents] =
+    await Promise.all([
+      getSessionUser(),
+      getNavPeaks(),
+      getTrendingPeaks(5),
+      getRecentBadges(5),
+      getSidebarUpcomingEvents(3),
+    ]);
 
   let userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null = null;
   let userProfile: { full_name: string | null; screen_name: string | null; avatar_url: string | null } | null = null;
   let summitCount = 0;
+  let feedPosts: Awaited<ReturnType<typeof getPosts>> = [];
+  let recommendedPosts: Awaited<ReturnType<typeof getPosts>> = [];
+  let groupFeedPosts: Awaited<ReturnType<typeof getPosts>> = [];
+  let followStatuses: Record<string, FollowStatus> = {};
+  let watchedPeakIds: string[] = [];
+  let watchedPeaks: { peak_id: string; name: string; elevation: number; slug: string }[] = [];
+  let savedPostCount = 0;
+  let unreadNotificationCount = 0;
+  let friendsCount = 0;
+  let sidebarGroups: Awaited<ReturnType<typeof getUserGroupsForSidebar>> = [];
+  let userGroupCount = 0;
+  let userEventCount = 0;
 
   if (user) {
-    const [{ data: profile }, { count }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("screen_name, full_name, avatar_url")
-        .eq("id", user.id)
-        .single(),
-      supabase
-        .from("summit_logs")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id),
+    // All user-specific queries in one parallel batch.
+    const supabase = await createClient();
+    const [
+      profileResult,
+      summitCountResult,
+      feedPostsResult,
+      recommendedPostsResult,
+      groupFeedPostsResult,
+      watchlistResult,
+      savedCountResult,
+      notifCount,
+      followers,
+      following,
+      sidebarGroupsResult,
+      groupCountResult,
+      eventCountResult,
+    ] = await Promise.all([
+      supabase.from("profiles").select("screen_name, full_name, avatar_url").eq("id", user.id).single(),
+      supabase.from("summit_logs").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+      getPosts({ limit: 20 }),
+      getRecommendedPosts({ limit: 30 }),
+      getGroupFeedPosts({ limit: 20 }),
+      supabase.from("peak_watchlist").select("peak_id, peaks(name, elevation, slug)").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("post_saves").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+      getUnreadNotificationCount(user.id),
+      getFollowerCount(user.id),
+      getFollowingCount(user.id),
+      getUserGroupsForSidebar(user.id, 5),
+      supabase.from("group_members").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "active"),
+      supabase.from("event_attendees").select("*, community_events!inner(status, event_date)", { count: "exact", head: true }).eq("user_id", user.id).eq("community_events.status", "active").gte("community_events.event_date", new Date().toISOString()),
     ]);
 
-    userNav = {
-      email: user.email || "",
-      screen_name: profile?.screen_name || null,
-      avatar_url: profile?.avatar_url || null,
-    };
-    userProfile = {
-      full_name: profile?.full_name || null,
-      screen_name: profile?.screen_name || null,
-      avatar_url: profile?.avatar_url || null,
-    };
-    summitCount = count ?? 0;
-  }
+    const profile = profileResult.data;
+    userNav = { email: user.email || "", screen_name: profile?.screen_name || null, avatar_url: profile?.avatar_url || null };
+    userProfile = { full_name: profile?.full_name || null, screen_name: profile?.screen_name || null, avatar_url: profile?.avatar_url || null };
+    summitCount = summitCountResult.count ?? 0;
+    feedPosts = feedPostsResult;
+    recommendedPosts = recommendedPostsResult;
+    groupFeedPosts = groupFeedPostsResult;
 
-  // Fetch community posts for all three feed tabs
-  const [feedPosts, recommendedPosts, groupFeedPosts] = await Promise.all([
-    getPosts({ limit: 20 }),
-    user ? getRecommendedPosts({ limit: 30 }) : Promise.resolve([]),
-    user ? getGroupFeedPosts({ limit: 20 }) : Promise.resolve([]),
-  ]);
-
-  // Fetch follow statuses for all post authors
-  let followStatuses: Record<string, FollowStatus> = {};
-  if (user) {
+    // Follow statuses for feed authors (derived from feedPosts already fetched above).
     const authorIds = [...new Set(feedPosts.map((p) => p.user_id))];
     const statusMap = await getBulkFollowStatuses(user.id, authorIds);
     followStatuses = Object.fromEntries(statusMap);
-  }
 
-  // Fetch user's peak watchlist
-  let watchedPeakIds: string[] = [];
-  let watchedPeaks: { peak_id: string; name: string; elevation: number; slug: string }[] = [];
-  if (user) {
-    const { data: watchlist } = await supabase
-      .from("peak_watchlist")
-      .select("peak_id, peaks(name, elevation, slug)")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-    watchedPeakIds = watchlist?.map((w) => w.peak_id) || [];
-    watchedPeaks = (watchlist || []).map((w) => ({
+    const watchlist = watchlistResult.data || [];
+    watchedPeakIds = watchlist.map((w) => w.peak_id);
+    watchedPeaks = watchlist.map((w) => ({
       peak_id: w.peak_id,
       name: (w.peaks as unknown as { name: string; elevation: number; slug: string }).name,
       elevation: (w.peaks as unknown as { name: string; elevation: number; slug: string }).elevation,
       slug: (w.peaks as unknown as { name: string; elevation: number; slug: string }).slug,
     }));
-  }
 
-  // Get all peaks for the post composer dropdown
-  const { data: allPeaks } = await supabase
-    .from("peaks")
-    .select("id, name, slug, elevation")
-    .order("name");
-
-  // Fetch saved post count for current user
-  let savedPostCount = 0;
-  if (user) {
-    const { count } = await supabase
-      .from("post_saves")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id);
-    savedPostCount = count ?? 0;
-  }
-
-  // Fetch recent badges for the community sidebar
-  const recentBadges = await getRecentBadges(5);
-
-  // Fetch upcoming events for sidebar
-  const upcomingEvents = await getUpcomingEvents({ limit: 3 });
-
-  // Fetch trending peaks from cache
-  const trendingPeaks = await getTrendingPeaks(5);
-
-  // Fetch unread notification count and friends count
-  let unreadNotificationCount = 0;
-  let friendsCount = 0;
-  if (user) {
-    const [notifCount, followers, following] = await Promise.all([
-      getUnreadNotificationCount(user.id),
-      getFollowerCount(user.id),
-      getFollowingCount(user.id),
-    ]);
+    savedPostCount = savedCountResult.count ?? 0;
     unreadNotificationCount = notifCount;
     friendsCount = followers + following;
-  }
-
-  // Fetch "My Groups" sidebar data
-  let sidebarGroups: Awaited<ReturnType<typeof getUserGroupsForSidebar>> = [];
-  if (user) {
-    sidebarGroups = await getUserGroupsForSidebar(user.id, 5);
-  }
-
-  // Get count of groups the user belongs to
-  let userGroupCount = 0;
-  if (user) {
-    const { count } = await supabase
-      .from("group_members")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("status", "active");
-    userGroupCount = count ?? 0;
-  }
-
-  // Get count of events the user is attending
-  let userEventCount = 0;
-  if (user) {
-    const { count } = await supabase
-      .from("event_attendees")
-      .select("*, community_events!inner(status, event_date)", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("community_events.status", "active")
-      .gte("community_events.event_date", new Date().toISOString());
-    userEventCount = count ?? 0;
+    sidebarGroups = sidebarGroupsResult;
+    userGroupCount = groupCountResult.count ?? 0;
+    userEventCount = eventCountResult.count ?? 0;
+  } else {
+    feedPosts = await getPosts({ limit: 20 });
   }
 
   // Derive display values for profile card
@@ -168,7 +126,7 @@ export default async function CommunityPage() {
         user={userNav}
         userId={user?.id}
         unreadNotificationCount={unreadNotificationCount}
-        peaks={(allPeaks || []).map((p) => ({ id: p.id, name: p.name, slug: p.slug, elevation: p.elevation }))}
+        peaks={user ? navPeaks : []}
       />
 
       {/* Page Header */}
@@ -378,7 +336,7 @@ export default async function CommunityPage() {
             isLoggedIn={!!user}
             currentUserId={user?.id}
             initialWatchedPeakIds={watchedPeakIds}
-            allPeaks={allPeaks || []}
+            allPeaks={navPeaks}
             followStatuses={followStatuses}
           />
 

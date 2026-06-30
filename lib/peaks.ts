@@ -1,4 +1,6 @@
+import { unstable_cache } from "next/cache";
 import { createClient } from "./supabase/server";
+import { createPublicClient } from "./supabase/public";
 import type { Peak, RouteWithTrailhead, PeakWithRoutesAndTrailheads } from "./database.types";
 
 export async function getPeakBySlug(slug: string): Promise<PeakWithRoutesAndTrailheads | null> {
@@ -87,22 +89,35 @@ export async function getAllPeaksWithRouteCounts(): Promise<PeakWithRouteCount[]
   }));
 }
 
-export async function getTopPeaks(limit: number = 5): Promise<Peak[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("peaks")
-    .select("*")
-    .order("rank", { ascending: true })
-    .limit(limit)
-    .returns<Peak[]>();
+export const getTopPeaks = unstable_cache(
+  async (limit: number = 5): Promise<Peak[]> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("peaks")
+      .select("*")
+      .order("rank", { ascending: true })
+      .limit(limit)
+      .returns<Peak[]>();
+    if (error) { console.error("Error fetching top peaks:", error); return []; }
+    return data || [];
+  },
+  ["peaks-top"],
+  { revalidate: 3600, tags: ["peaks"] }
+);
 
-  if (error) {
-    console.error("Error fetching top peaks:", error);
-    return [];
-  }
-
-  return data || [];
-}
+// Cached list of all peaks (id/name/slug/elevation) for nav dropdowns.
+export const getNavPeaks = unstable_cache(
+  async (): Promise<{ id: string; name: string; slug: string; elevation: number }[]> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("peaks")
+      .select("id, name, slug, elevation")
+      .order("name");
+    return (data || []) as { id: string; name: string; slug: string; elevation: number }[];
+  },
+  ["peaks-nav"],
+  { revalidate: 3600, tags: ["peaks"] }
+);
 
 export async function getPeakSlugs(): Promise<string[]> {
   const supabase = await createClient();

@@ -1,4 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { CommunityPost, PostComment, CommunityEvent, EventAttendee } from "@/lib/community.types";
 
 export type { CommunityPost, PostComment, CommunityEvent, EventAttendee };
@@ -10,10 +12,7 @@ export async function getPosts(options?: {
   userId?: string;
   groupId?: string;
 }): Promise<CommunityPost[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [supabase, user] = await Promise.all([createClient(), getSessionUser()]);
 
   const limit = options?.limit ?? 20;
 
@@ -173,10 +172,7 @@ export async function getUpcomingEvents(options?: {
   search?: string;
   sort?: "soonest" | "popular" | "newest";
 }): Promise<CommunityEvent[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [supabase, user] = await Promise.all([createClient(), getSessionUser()]);
 
   const limit = options?.limit ?? 20;
   const filter = options?.filter ?? "upcoming";
@@ -426,45 +422,64 @@ export type TrendingPeak = {
   calculated_at: string;
 };
 
-export async function getTrendingPeaks(limit = 5): Promise<TrendingPeak[]> {
-  const supabase = await createClient();
+// Lightweight cached sidebar events — no auth, no per-user RSVP status.
+export type SidebarEvent = { id: string; title: string; location: string; event_date: string; attendee_count: number };
+export const getSidebarUpcomingEvents = unstable_cache(
+  async (limit = 3): Promise<SidebarEvent[]> => {
+    const supabase = createPublicClient();
+    const now = new Date().toISOString();
+    const { data: events } = await supabase
+      .from("community_events")
+      .select("id, title, location, event_date")
+      .gte("event_date", now)
+      .eq("status", "active")
+      .order("event_date", { ascending: true })
+      .limit(limit);
+    if (!events || events.length === 0) return [];
+    // Fetch attendee counts in one query
+    const eventIds = events.map((e) => e.id);
+    const { data: attendees } = await supabase
+      .from("event_attendees")
+      .select("event_id")
+      .in("event_id", eventIds);
+    const counts: Record<string, number> = {};
+    for (const a of attendees || []) counts[a.event_id] = (counts[a.event_id] || 0) + 1;
+    return events.map((e) => ({ ...e, attendee_count: counts[e.id] || 0 }));
+  },
+  ["events-sidebar"],
+  { revalidate: 300, tags: ["events"] }
+);
 
-  const { data, error } = await supabase
-    .from("trending_peaks_cache")
-    .select(
-      `
-      peak_id,
-      rank,
-      report_count,
-      trend_pct,
-      calculated_at,
-      peaks:peak_id (
-        name,
-        slug
+export const getTrendingPeaks = unstable_cache(
+  async (limit = 5): Promise<TrendingPeak[]> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("trending_peaks_cache")
+      .select(
+        `peak_id, rank, report_count, trend_pct, calculated_at, peaks:peak_id (name, slug)`
       )
-    `
-    )
-    .order("rank", { ascending: true })
-    .limit(limit);
-
-  if (error || !data || data.length === 0) {
-    if (error) console.error("Error fetching trending peaks:", error);
-    return [];
-  }
-
-  return data.map((row) => {
-    const peak = row.peaks as unknown as { name: string; slug: string };
-    return {
-      peak_id: row.peak_id,
-      rank: row.rank,
-      report_count: row.report_count,
-      trend_pct: row.trend_pct,
-      name: peak?.name ?? "Unknown Peak",
-      slug: peak?.slug ?? "",
-      calculated_at: row.calculated_at,
-    };
-  });
-}
+      .order("rank", { ascending: true })
+      .limit(limit);
+    if (error || !data || data.length === 0) {
+      if (error) console.error("Error fetching trending peaks:", error);
+      return [];
+    }
+    return data.map((row) => {
+      const peak = row.peaks as unknown as { name: string; slug: string };
+      return {
+        peak_id: row.peak_id,
+        rank: row.rank,
+        report_count: row.report_count,
+        trend_pct: row.trend_pct,
+        name: peak?.name ?? "Unknown Peak",
+        slug: peak?.slug ?? "",
+        calculated_at: row.calculated_at,
+      };
+    });
+  },
+  ["trending-peaks"],
+  { revalidate: 300, tags: ["trending"] }
+);
 
 export async function getSavedPosts(): Promise<CommunityPost[]> {
   const supabase = await createClient();
@@ -705,10 +720,7 @@ async function enrichPostsWithEngagement(
 export async function getRecommendedPosts(options?: {
   limit?: number;
 }): Promise<CommunityPost[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [supabase, user] = await Promise.all([createClient(), getSessionUser()]);
 
   if (!user) return [];
 
@@ -770,10 +782,7 @@ export async function getRecommendedPosts(options?: {
 export async function getGroupFeedPosts(options?: {
   limit?: number;
 }): Promise<CommunityPost[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [supabase, user] = await Promise.all([createClient(), getSessionUser()]);
 
   if (!user) return [];
 

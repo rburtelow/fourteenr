@@ -1,0 +1,1272 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - banner [ref=f8e3]:
+      - navigation [ref=f8e4]:
+        - generic [ref=f8e6]:
+          - link "My14er" [ref=f8e7] [cursor=pointer]:
+            - /url: /
+            - img [ref=f8e9]
+            - generic [ref=f8e11]: My14er
+          - generic [ref=f8e12]:
+            - link "Home" [ref=f8e13] [cursor=pointer]:
+              - /url: /
+            - link "Peaks" [ref=f8e14] [cursor=pointer]:
+              - /url: /peaks
+            - link "Trailheads" [ref=f8e15] [cursor=pointer]:
+              - /url: /trailheads
+            - link "Community" [ref=f8e16] [cursor=pointer]:
+              - /url: /community
+            - link "Events" [ref=f8e17] [cursor=pointer]:
+              - /url: /events
+            - link "Groups" [ref=f8e18] [cursor=pointer]:
+              - /url: /groups
+            - link "Profile" [ref=f8e19] [cursor=pointer]:
+              - /url: /profile
+          - generic [ref=f8e20]:
+            - button "Log a Summit" [ref=f8e21]:
+              - img [ref=f8e22]
+              - text: Log a Summit
+            - button "Notifications (2 unread)" [ref=f8e25]:
+              - img [ref=f8e26]
+              - generic [ref=f8e28]: "2"
+            - button "rburtelow" [ref=f8e30]:
+              - img "rburtelow" [ref=f8e31]
+    - generic [ref=f8e34]:
+      - text: The Community
+      - heading "Trail Talk" [level=1] [ref=f8e35]
+    - generic [ref=f8e37]:
+      - complementary [ref=f8e38]:
+        - generic [ref=f8e39]:
+          - generic [ref=f8e40]:
+            - img "rburtelow" [ref=f8e43]
+            - generic [ref=f8e44]:
+              - heading "rburtelow" [level=3] [ref=f8e45]
+              - paragraph [ref=f8e46]: "@rburtelow"
+              - generic [ref=f8e47]:
+                - generic [ref=f8e48]:
+                  - paragraph [ref=f8e49]: "43"
+                  - paragraph [ref=f8e50]: Summits
+                - generic [ref=f8e51]:
+                  - paragraph [ref=f8e52]: 74%
+                  - paragraph [ref=f8e53]: Complete
+                - generic [ref=f8e54]:
+                  - paragraph [ref=f8e55]: "15"
+                  - paragraph [ref=f8e56]: Remaining
+          - generic [ref=f8e57]:
+            - heading "Quick Links" [level=3] [ref=f8e58]
+            - navigation [ref=f8e59]:
+              - button "Peaks Watched 3" [ref=f8e60]:
+                - img [ref=f8e62]
+                - generic [ref=f8e65]: Peaks Watched
+                - generic [ref=f8e66]: "3"
+              - link "Friends 2" [ref=f8e67] [cursor=pointer]:
+                - /url: /friends
+                - img [ref=f8e69]
+                - generic [ref=f8e71]: Friends
+                - generic [ref=f8e72]: "2"
+              - link "Events 1" [ref=f8e73] [cursor=pointer]:
+                - /url: /events
+                - img [ref=f8e75]
+                - generic [ref=f8e77]: Events
+                - generic [ref=f8e78]: "1"
+              - link "Groups 1" [ref=f8e79] [cursor=pointer]:
+                - /url: /groups
+                - img [ref=f8e81]
+                - generic [ref=f8e83]: Groups
+                - generic [ref=f8e84]: "1"
+              - link "Saved 0" [ref=f8e85] [cursor=pointer]:
+                - /url: /community/saved
+                - img [ref=f8e87]
+                - generic [ref=f8e89]: Saved
+                - generic [ref=f8e90]: "0"
+          - generic [ref=f8e91]:
+            - generic [ref=f8e92]:
+              - heading "My Groups" [level=3] [ref=f8e93]
+              - link "See All" [ref=f8e94] [cursor=pointer]:
+                - /url: /groups?tab=my-groups
+            - link "Ultralight Peak Baggers Ultralight Peak Baggers" [ref=f8e96] [cursor=pointer]:
+              - /url: /groups/ultralight-peak-baggers
+              - img "Ultralight Peak Baggers" [ref=f8e98]
+              - generic [ref=f8e99]: Ultralight Peak Baggers
+          - generic [ref=f8e101]:
+            - heading "Trending This Week" [level=3] [ref=f8e102]
+            - link "01 Mount Massive 2 reports +100%" [ref=f8e104] [cursor=pointer]:
+              - /url: /peaks/mount-massive
+              - generic [ref=f8e105]: "01"
+              - generic [ref=f8e106]:
+                - paragraph [ref=f8e107]: Mount Massive
+                - paragraph [ref=f8e108]: 2 reports
+              - generic [ref=f8e109]: +100%
+      - generic [ref=f8e110]:
+        - generic [ref=f8e111]:
+          - button "Recommended" [ref=f8e112]:
+            - img [ref=f8e113]
+            - text: Recommended
+          - button "Latest" [ref=f8e115]:
+            - img [ref=f8e116]
+            - text: Latest
+          - button "Groups" [ref=f8e118]:
+            - img [ref=f8e119]
+            - text: Groups
+        - generic [ref=f8e122]:
+          - generic [ref=f8e123]: R
+          - generic [ref=f8e124]:
+            - textbox "Share your trail story... use @ to tag peaks, trailheads, and people" [ref=f8e126]
+            - generic [ref=f8e127]:
+              - generic [ref=f8e128]:
+                - button [ref=f8e129]:
+                  - img [ref=f8e130]
+                - button [ref=f8e132]:
+                  - img [ref=f8e133]
+                - button "Select peak" [ref=f8e136]:
+                  - img [ref=f8e137]
+              - button "Post" [disabled] [ref=f8e139]
+        - article [ref=f8e140]:
+          - generic [ref=f8e141]:
+            - generic [ref=f8e142]:
+              - generic [ref=f8e143]:
+                - img "rburtelow" [ref=f8e144]
+                - generic [ref=f8e145]:
+                  - generic [ref=f8e147]: rburtelow
+                  - generic [ref=f8e149]: Mar 20
+              - button [ref=f8e151]:
+                - img [ref=f8e152]
+            - generic [ref=f8e156]:
+              - img [ref=f8e160] [cursor=pointer]
+              - generic [ref=f8e162]:
+                - paragraph [ref=f8e163]: Badge Earned
+                - paragraph [ref=f8e164]: First Summit
+                - paragraph [ref=f8e165]: Conquer your first Colorado 14er
+            - link "Mount Elbert • 14,433'" [ref=f8e166] [cursor=pointer]:
+              - /url: /peaks/mount-elbert
+              - img [ref=f8e167]
+              - generic [ref=f8e169]: Mount Elbert
+              - generic [ref=f8e170]: •
+              - generic [ref=f8e171]: 14,433'
+          - generic [ref=f8e173]:
+            - generic [ref=f8e174]:
+              - button "0" [ref=f8e175]:
+                - img [ref=f8e177]
+                - generic [ref=f8e179]: "0"
+              - button "0" [ref=f8e180]:
+                - img [ref=f8e182]
+                - generic [ref=f8e184]: "0"
+            - button [ref=f8e185]:
+              - img [ref=f8e187]
+        - article [ref=f8e189]:
+          - generic [ref=f8e190]:
+            - generic [ref=f8e191]:
+              - generic [ref=f8e192]:
+                - img "rburtelow" [ref=f8e193]
+                - generic [ref=f8e194]:
+                  - generic [ref=f8e196]: rburtelow
+                  - generic [ref=f8e198]: Mar 20
+              - button [ref=f8e200]:
+                - img [ref=f8e201]
+            - generic [ref=f8e204]:
+              - generic [ref=f8e205]:
+                - img [ref=f8e207]
+                - generic [ref=f8e209]:
+                  - paragraph [ref=f8e210]: Summit Logged
+                  - paragraph [ref=f8e211]: Mar 21, 2026
+              - link "Mount Elbert 14,433' via South Mount Elbert Trail" [ref=f8e212] [cursor=pointer]:
+                - /url: /reports/67be5f82-34ae-412a-a27b-b83f8608a567
+                - paragraph [ref=f8e213]: Mount Elbert
+                - paragraph [ref=f8e214]: 14,433' via South Mount Elbert Trail
+            - link "Mount Elbert • 14,433'" [ref=f8e215] [cursor=pointer]:
+              - /url: /peaks/mount-elbert
+              - img [ref=f8e216]
+              - generic [ref=f8e218]: Mount Elbert
+              - generic [ref=f8e219]: •
+              - generic [ref=f8e220]: 14,433'
+          - generic [ref=f8e222]:
+            - generic [ref=f8e223]:
+              - button "1" [ref=f8e224]:
+                - img [ref=f8e226]
+                - generic [ref=f8e228]: "1"
+              - button "1" [ref=f8e229]:
+                - img [ref=f8e231]
+                - generic [ref=f8e233]: "1"
+            - button [ref=f8e234]:
+              - img [ref=f8e236]
+        - article [ref=f8e238]:
+          - generic [ref=f8e239]:
+            - generic [ref=f8e240]:
+              - generic [ref=f8e241]:
+                - img "rburtelow" [ref=f8e242]
+                - generic [ref=f8e243]:
+                  - generic [ref=f8e245]: rburtelow
+                  - generic [ref=f8e247]: Mar 16
+              - button [ref=f8e249]:
+                - img [ref=f8e250]
+            - paragraph [ref=f8e252]:
+              - generic [ref=f8e253]: Just summited Mt. Elbert yesterday — trail conditions are excellent! A bit icy near the top but totally manageable with microspikes. Recommend an early start to beat afternoon storms.
+            - link "Mount Elbert • 14,433'" [ref=f8e254] [cursor=pointer]:
+              - /url: /peaks/mount-elbert
+              - img [ref=f8e255]
+              - generic [ref=f8e257]: Mount Elbert
+              - generic [ref=f8e258]: •
+              - generic [ref=f8e259]: 14,433'
+          - generic [ref=f8e261]:
+            - generic [ref=f8e262]:
+              - button "2" [ref=f8e263]:
+                - img [ref=f8e265]
+                - generic [ref=f8e267]: "2"
+              - button "3" [ref=f8e268]:
+                - img [ref=f8e270]
+                - generic [ref=f8e272]: "3"
+            - button [ref=f8e273]:
+              - img [ref=f8e275]
+        - article [ref=f8e277]:
+          - generic [ref=f8e278]:
+            - generic [ref=f8e279]:
+              - generic [ref=f8e280]:
+                - img "rburtelow" [ref=f8e281]
+                - generic [ref=f8e282]:
+                  - generic [ref=f8e284]: rburtelow
+                  - generic [ref=f8e286]: Mar 21
+              - button [ref=f8e288]:
+                - img [ref=f8e289]
+            - generic [ref=f8e292]:
+              - paragraph [ref=f8e294]: 2 Badges Earned
+              - generic [ref=f8e295]:
+                - generic [ref=f8e296]:
+                  - generic [ref=f8e298] [cursor=pointer]:
+                    - generic [ref=f8e299]: SDC
+                    - img [ref=f8e301]
+                  - generic [ref=f8e303]:
+                    - paragraph [ref=f8e304]: Sangre de Cristo Master
+                    - paragraph [ref=f8e305]: Complete all 10 Sangre de Cristo peaks
+                - generic [ref=f8e306]:
+                  - img [ref=f8e310] [cursor=pointer]
+                  - generic [ref=f8e312]:
+                    - paragraph [ref=f8e313]: Crestone Conqueror
+                    - paragraph [ref=f8e314]: Summit all 4 Crestone group peaks
+            - link "Blanca Peak • 14,345'" [ref=f8e315] [cursor=pointer]:
+              - /url: /peaks/blanca-peak
+              - img [ref=f8e316]
+              - generic [ref=f8e318]: Blanca Peak
+              - generic [ref=f8e319]: •
+              - generic [ref=f8e320]: 14,345'
+          - generic [ref=f8e322]:
+            - generic [ref=f8e323]:
+              - button "0" [ref=f8e324]:
+                - img [ref=f8e326]
+                - generic [ref=f8e328]: "0"
+              - button "0" [ref=f8e329]:
+                - img [ref=f8e331]
+                - generic [ref=f8e333]: "0"
+            - button [ref=f8e334]:
+              - img [ref=f8e336]
+        - article [ref=f8e338]:
+          - generic [ref=f8e339]:
+            - generic [ref=f8e340]:
+              - generic [ref=f8e341]:
+                - img "rburtelow" [ref=f8e342]
+                - generic [ref=f8e343]:
+                  - generic [ref=f8e345]: rburtelow
+                  - generic [ref=f8e347]: Mar 21
+              - button [ref=f8e349]:
+                - img [ref=f8e350]
+            - generic [ref=f8e354]:
+              - img [ref=f8e358] [cursor=pointer]
+              - generic [ref=f8e360]:
+                - paragraph [ref=f8e361]: Badge Earned
+                - paragraph [ref=f8e362]: Halfway There
+                - paragraph [ref=f8e363]: Summit 29 peaks - halfway to completion
+            - link "Wilson Peak • 14,017'" [ref=f8e364] [cursor=pointer]:
+              - /url: /peaks/wilson-peak
+              - img [ref=f8e365]
+              - generic [ref=f8e367]: Wilson Peak
+              - generic [ref=f8e368]: •
+              - generic [ref=f8e369]: 14,017'
+          - generic [ref=f8e371]:
+            - generic [ref=f8e372]:
+              - button "0" [ref=f8e373]:
+                - img [ref=f8e375]
+                - generic [ref=f8e377]: "0"
+              - button "0" [ref=f8e378]:
+                - img [ref=f8e380]
+                - generic [ref=f8e382]: "0"
+            - button [ref=f8e383]:
+              - img [ref=f8e385]
+        - article [ref=f8e387]:
+          - generic [ref=f8e388]:
+            - generic [ref=f8e390]:
+              - img "blah" [ref=f8e391]
+              - generic [ref=f8e392]:
+                - generic [ref=f8e393]:
+                  - generic [ref=f8e394]: blah
+                  - button "Following" [ref=f8e395]:
+                    - img [ref=f8e396]
+                    - generic [ref=f8e398]: Following
+                - generic [ref=f8e400]: Mar 21
+            - generic [ref=f8e403]:
+              - img [ref=f8e407] [cursor=pointer]
+              - generic [ref=f8e410]:
+                - paragraph [ref=f8e411]: Badge Earned
+                - paragraph [ref=f8e412]: Double Digits
+                - paragraph [ref=f8e413]: Reach 10 summited peaks
+            - link "Torreys Peak • 14,267'" [ref=f8e414] [cursor=pointer]:
+              - /url: /peaks/torreys-peak
+              - img [ref=f8e415]
+              - generic [ref=f8e417]: Torreys Peak
+              - generic [ref=f8e418]: •
+              - generic [ref=f8e419]: 14,267'
+          - generic [ref=f8e421]:
+            - generic [ref=f8e422]:
+              - button "0" [ref=f8e423]:
+                - img [ref=f8e425]
+                - generic [ref=f8e427]: "0"
+              - button "0" [ref=f8e428]:
+                - img [ref=f8e430]
+                - generic [ref=f8e432]: "0"
+            - button [ref=f8e433]:
+              - img [ref=f8e435]
+        - article [ref=f8e437]:
+          - generic [ref=f8e438]:
+            - generic [ref=f8e440]:
+              - img "blah" [ref=f8e441]
+              - generic [ref=f8e442]:
+                - generic [ref=f8e443]:
+                  - generic [ref=f8e444]: blah
+                  - button "Following" [ref=f8e445]:
+                    - img [ref=f8e446]
+                    - generic [ref=f8e448]: Following
+                - generic [ref=f8e450]: Mar 21
+            - generic [ref=f8e453]:
+              - generic [ref=f8e455] [cursor=pointer]:
+                - generic [ref=f8e456]: FR
+                - img [ref=f8e458]
+              - generic [ref=f8e460]:
+                - paragraph [ref=f8e461]: Badge Earned
+                - paragraph [ref=f8e462]: Front Range Master
+                - paragraph [ref=f8e463]: Complete all 6 Front Range peaks
+            - link "Grays Peak • 14,270'" [ref=f8e464] [cursor=pointer]:
+              - /url: /peaks/grays-peak
+              - img [ref=f8e465]
+              - generic [ref=f8e467]: Grays Peak
+              - generic [ref=f8e468]: •
+              - generic [ref=f8e469]: 14,270'
+          - generic [ref=f8e471]:
+            - generic [ref=f8e472]:
+              - button "0" [ref=f8e473]:
+                - img [ref=f8e475]
+                - generic [ref=f8e477]: "0"
+              - button "0" [ref=f8e478]:
+                - img [ref=f8e480]
+                - generic [ref=f8e482]: "0"
+            - button [ref=f8e483]:
+              - img [ref=f8e485]
+        - article [ref=f8e487]:
+          - generic [ref=f8e488]:
+            - generic [ref=f8e490]:
+              - img "blah" [ref=f8e491]
+              - generic [ref=f8e492]:
+                - generic [ref=f8e493]:
+                  - generic [ref=f8e494]: blah
+                  - button "Following" [ref=f8e495]:
+                    - img [ref=f8e496]
+                    - generic [ref=f8e498]: Following
+                - generic [ref=f8e500]: Mar 21
+            - generic [ref=f8e503]:
+              - img [ref=f8e507] [cursor=pointer]
+              - generic [ref=f8e509]:
+                - paragraph [ref=f8e510]: Badge Earned
+                - paragraph [ref=f8e511]: Prominence Pioneer
+                - paragraph [ref=f8e512]: Summit Pikes Peak, the most prominent 14er
+            - link "Pikes Peak • 14,110'" [ref=f8e513] [cursor=pointer]:
+              - /url: /peaks/pikes-peak
+              - img [ref=f8e514]
+              - generic [ref=f8e516]: Pikes Peak
+              - generic [ref=f8e517]: •
+              - generic [ref=f8e518]: 14,110'
+          - generic [ref=f8e520]:
+            - generic [ref=f8e521]:
+              - button "0" [ref=f8e522]:
+                - img [ref=f8e524]
+                - generic [ref=f8e526]: "0"
+              - button "0" [ref=f8e527]:
+                - img [ref=f8e529]
+                - generic [ref=f8e531]: "0"
+            - button [ref=f8e532]:
+              - img [ref=f8e534]
+        - article [ref=f8e536]:
+          - generic [ref=f8e537]:
+            - generic [ref=f8e539]:
+              - img "blah" [ref=f8e540]
+              - generic [ref=f8e541]:
+                - generic [ref=f8e542]:
+                  - generic [ref=f8e543]: blah
+                  - button "Following" [ref=f8e544]:
+                    - img [ref=f8e545]
+                    - generic [ref=f8e547]: Following
+                - generic [ref=f8e549]: Mar 20
+            - generic [ref=f8e552]:
+              - img [ref=f8e556] [cursor=pointer]
+              - generic [ref=f8e558]:
+                - paragraph [ref=f8e559]: Badge Earned
+                - paragraph [ref=f8e560]: Technical Climber
+                - paragraph [ref=f8e561]: Summit any Class 3 peak
+            - link "Snowmass Mountain • 14,092'" [ref=f8e562] [cursor=pointer]:
+              - /url: /peaks/snowmass-mountain
+              - img [ref=f8e563]
+              - generic [ref=f8e565]: Snowmass Mountain
+              - generic [ref=f8e566]: •
+              - generic [ref=f8e567]: 14,092'
+          - generic [ref=f8e569]:
+            - generic [ref=f8e570]:
+              - button "0" [ref=f8e571]:
+                - img [ref=f8e573]
+                - generic [ref=f8e575]: "0"
+              - button "0" [ref=f8e576]:
+                - img [ref=f8e578]
+                - generic [ref=f8e580]: "0"
+            - button [ref=f8e581]:
+              - img [ref=f8e583]
+        - article [ref=f8e585]:
+          - generic [ref=f8e586]:
+            - generic [ref=f8e588]:
+              - img "blah" [ref=f8e589]
+              - generic [ref=f8e590]:
+                - generic [ref=f8e591]:
+                  - generic [ref=f8e592]: blah
+                  - button "Following" [ref=f8e593]:
+                    - img [ref=f8e594]
+                    - generic [ref=f8e596]: Following
+                - generic [ref=f8e598]: Mar 20
+            - generic [ref=f8e601]:
+              - img [ref=f8e605] [cursor=pointer]
+              - generic [ref=f8e607]:
+                - paragraph [ref=f8e608]: Badge Earned
+                - paragraph [ref=f8e609]: Maroon Survivor
+                - paragraph [ref=f8e610]: Survive the Deadly Bells - summit either Maroon Bell
+            - link "Maroon Peak • 14,156'" [ref=f8e611] [cursor=pointer]:
+              - /url: /peaks/maroon-peak
+              - img [ref=f8e612]
+              - generic [ref=f8e614]: Maroon Peak
+              - generic [ref=f8e615]: •
+              - generic [ref=f8e616]: 14,156'
+          - generic [ref=f8e618]:
+            - generic [ref=f8e619]:
+              - button "1" [ref=f8e620]:
+                - img [ref=f8e622]
+                - generic [ref=f8e624]: "1"
+              - button "1" [ref=f8e625]:
+                - img [ref=f8e627]
+                - generic [ref=f8e629]: "1"
+            - button [ref=f8e630]:
+              - img [ref=f8e632]
+        - article [ref=f8e634]:
+          - generic [ref=f8e635]:
+            - generic [ref=f8e637]:
+              - img "blah" [ref=f8e638]
+              - generic [ref=f8e639]:
+                - generic [ref=f8e640]:
+                  - generic [ref=f8e641]: blah
+                  - button "Following" [ref=f8e642]:
+                    - img [ref=f8e643]
+                    - generic [ref=f8e645]: Following
+                - generic [ref=f8e647]: Mar 20
+            - generic [ref=f8e650]:
+              - img [ref=f8e654] [cursor=pointer]
+              - generic [ref=f8e656]:
+                - paragraph [ref=f8e657]: Badge Earned
+                - paragraph [ref=f8e658]: Expert Mountaineer
+                - paragraph [ref=f8e659]: Summit any Class 4 peak
+            - link "Capitol Peak • 14,130'" [ref=f8e660] [cursor=pointer]:
+              - /url: /peaks/capitol-peak
+              - img [ref=f8e661]
+              - generic [ref=f8e663]: Capitol Peak
+              - generic [ref=f8e664]: •
+              - generic [ref=f8e665]: 14,130'
+          - generic [ref=f8e667]:
+            - generic [ref=f8e668]:
+              - button "0" [ref=f8e669]:
+                - img [ref=f8e671]
+                - generic [ref=f8e673]: "0"
+              - button "0" [ref=f8e674]:
+                - img [ref=f8e676]
+                - generic [ref=f8e678]: "0"
+            - button [ref=f8e679]:
+              - img [ref=f8e681]
+        - article [ref=f8e683]:
+          - generic [ref=f8e684]:
+            - generic [ref=f8e686]:
+              - img "blah" [ref=f8e687]
+              - generic [ref=f8e688]:
+                - generic [ref=f8e689]:
+                  - generic [ref=f8e690]: blah
+                  - button "Following" [ref=f8e691]:
+                    - img [ref=f8e692]
+                    - generic [ref=f8e694]: Following
+                - generic [ref=f8e696]: Mar 20
+            - generic [ref=f8e699]:
+              - generic [ref=f8e701] [cursor=pointer]:
+                - generic [ref=f8e702]: ELK
+                - img [ref=f8e704]
+              - generic [ref=f8e706]:
+                - paragraph [ref=f8e707]: Badge Earned
+                - paragraph [ref=f8e708]: Elk Range Master
+                - paragraph [ref=f8e709]: Complete all 7 Elk Range peaks
+            - link "Castle Peak • 14,265'" [ref=f8e710] [cursor=pointer]:
+              - /url: /peaks/castle-peak
+              - img [ref=f8e711]
+              - generic [ref=f8e713]: Castle Peak
+              - generic [ref=f8e714]: •
+              - generic [ref=f8e715]: 14,265'
+          - generic [ref=f8e717]:
+            - generic [ref=f8e718]:
+              - button "0" [ref=f8e719]:
+                - img [ref=f8e721]
+                - generic [ref=f8e723]: "0"
+              - button "0" [ref=f8e724]:
+                - img [ref=f8e726]
+                - generic [ref=f8e728]: "0"
+            - button [ref=f8e729]:
+              - img [ref=f8e731]
+        - article [ref=f8e733]:
+          - generic [ref=f8e734]:
+            - generic [ref=f8e736]:
+              - img "blah" [ref=f8e737]
+              - generic [ref=f8e738]:
+                - generic [ref=f8e739]:
+                  - generic [ref=f8e740]: blah
+                  - button "Following" [ref=f8e741]:
+                    - img [ref=f8e742]
+                    - generic [ref=f8e744]: Following
+                - generic [ref=f8e746]: Mar 20
+            - generic [ref=f8e749]:
+              - img [ref=f8e753] [cursor=pointer]
+              - generic [ref=f8e755]:
+                - paragraph [ref=f8e756]: Badge Earned
+                - paragraph [ref=f8e757]: High Five
+                - paragraph [ref=f8e758]: Summit 5 Colorado 14ers
+            - link "Snowmass Mountain • 14,092'" [ref=f8e759] [cursor=pointer]:
+              - /url: /peaks/snowmass-mountain
+              - img [ref=f8e760]
+              - generic [ref=f8e762]: Snowmass Mountain
+              - generic [ref=f8e763]: •
+              - generic [ref=f8e764]: 14,092'
+          - generic [ref=f8e766]:
+            - generic [ref=f8e767]:
+              - button "0" [ref=f8e768]:
+                - img [ref=f8e770]
+                - generic [ref=f8e772]: "0"
+              - button "0" [ref=f8e773]:
+                - img [ref=f8e775]
+                - generic [ref=f8e777]: "0"
+            - button [ref=f8e778]:
+              - img [ref=f8e780]
+        - article [ref=f8e782]:
+          - generic [ref=f8e783]:
+            - generic [ref=f8e784]:
+              - generic [ref=f8e785]:
+                - img "rburtelow" [ref=f8e786]
+                - generic [ref=f8e787]:
+                  - generic [ref=f8e789]: rburtelow
+                  - generic [ref=f8e791]: Mar 20
+              - button [ref=f8e793]:
+                - img [ref=f8e794]
+            - generic [ref=f8e798]:
+              - generic [ref=f8e800] [cursor=pointer]:
+                - generic [ref=f8e801]: MOS
+                - img [ref=f8e803]
+              - generic [ref=f8e805]:
+                - paragraph [ref=f8e806]: Badge Earned
+                - paragraph [ref=f8e807]: Mosquito Master
+                - paragraph [ref=f8e808]: Complete all 5 Mosquito Range peaks
+            - link "Mount Lincoln • 14,286'" [ref=f8e809] [cursor=pointer]:
+              - /url: /peaks/mount-lincoln
+              - img [ref=f8e810]
+              - generic [ref=f8e812]: Mount Lincoln
+              - generic [ref=f8e813]: •
+              - generic [ref=f8e814]: 14,286'
+          - generic [ref=f8e816]:
+            - generic [ref=f8e817]:
+              - button "0" [ref=f8e818]:
+                - img [ref=f8e820]
+                - generic [ref=f8e822]: "0"
+              - button "0" [ref=f8e823]:
+                - img [ref=f8e825]
+                - generic [ref=f8e827]: "0"
+            - button [ref=f8e828]:
+              - img [ref=f8e830]
+        - article [ref=f8e832]:
+          - generic [ref=f8e833]:
+            - generic [ref=f8e834]:
+              - generic [ref=f8e835]:
+                - img "rburtelow" [ref=f8e836]
+                - generic [ref=f8e837]:
+                  - generic [ref=f8e839]: rburtelow
+                  - generic [ref=f8e841]: Mar 20
+              - button [ref=f8e843]:
+                - img [ref=f8e844]
+            - generic [ref=f8e848]:
+              - img [ref=f8e852] [cursor=pointer]
+              - generic [ref=f8e855]:
+                - paragraph [ref=f8e856]: Badge Earned
+                - paragraph [ref=f8e857]: Double Digits
+                - paragraph [ref=f8e858]: Reach 10 summited peaks
+            - link "Snowmass Mountain • 14,092'" [ref=f8e859] [cursor=pointer]:
+              - /url: /peaks/snowmass-mountain
+              - img [ref=f8e860]
+              - generic [ref=f8e862]: Snowmass Mountain
+              - generic [ref=f8e863]: •
+              - generic [ref=f8e864]: 14,092'
+          - generic [ref=f8e866]:
+            - generic [ref=f8e867]:
+              - button "0" [ref=f8e868]:
+                - img [ref=f8e870]
+                - generic [ref=f8e872]: "0"
+              - button "0" [ref=f8e873]:
+                - img [ref=f8e875]
+                - generic [ref=f8e877]: "0"
+            - button [ref=f8e878]:
+              - img [ref=f8e880]
+        - article [ref=f8e882]:
+          - generic [ref=f8e883]:
+            - generic [ref=f8e884]:
+              - generic [ref=f8e885]:
+                - img "rburtelow" [ref=f8e886]
+                - generic [ref=f8e887]:
+                  - generic [ref=f8e889]: rburtelow
+                  - generic [ref=f8e891]: Mar 20
+              - button [ref=f8e893]:
+                - img [ref=f8e894]
+            - generic [ref=f8e898]:
+              - img [ref=f8e902] [cursor=pointer]
+              - generic [ref=f8e904]:
+                - paragraph [ref=f8e905]: Badge Earned
+                - paragraph [ref=f8e906]: Expert Mountaineer
+                - paragraph [ref=f8e907]: Summit any Class 4 peak
+            - link "Capitol Peak • 14,130'" [ref=f8e908] [cursor=pointer]:
+              - /url: /peaks/capitol-peak
+              - img [ref=f8e909]
+              - generic [ref=f8e911]: Capitol Peak
+              - generic [ref=f8e912]: •
+              - generic [ref=f8e913]: 14,130'
+          - generic [ref=f8e915]:
+            - generic [ref=f8e916]:
+              - button "0" [ref=f8e917]:
+                - img [ref=f8e919]
+                - generic [ref=f8e921]: "0"
+              - button "0" [ref=f8e922]:
+                - img [ref=f8e924]
+                - generic [ref=f8e926]: "0"
+            - button [ref=f8e927]:
+              - img [ref=f8e929]
+        - article [ref=f8e931]:
+          - generic [ref=f8e932]:
+            - generic [ref=f8e933]:
+              - generic [ref=f8e934]:
+                - img "rburtelow" [ref=f8e935]
+                - generic [ref=f8e936]:
+                  - generic [ref=f8e938]: rburtelow
+                  - generic [ref=f8e940]: Mar 20
+              - button [ref=f8e942]:
+                - img [ref=f8e943]
+            - generic [ref=f8e947]:
+              - generic [ref=f8e949] [cursor=pointer]:
+                - generic [ref=f8e950]: ELK
+                - img [ref=f8e952]
+              - generic [ref=f8e954]:
+                - paragraph [ref=f8e955]: Badge Earned
+                - paragraph [ref=f8e956]: Elk Range Master
+                - paragraph [ref=f8e957]: Complete all 7 Elk Range peaks
+            - link "Castle Peak • 14,265'" [ref=f8e958] [cursor=pointer]:
+              - /url: /peaks/castle-peak
+              - img [ref=f8e959]
+              - generic [ref=f8e961]: Castle Peak
+              - generic [ref=f8e962]: •
+              - generic [ref=f8e963]: 14,265'
+          - generic [ref=f8e965]:
+            - generic [ref=f8e966]:
+              - button "0" [ref=f8e967]:
+                - img [ref=f8e969]
+                - generic [ref=f8e971]: "0"
+              - button "0" [ref=f8e972]:
+                - img [ref=f8e974]
+                - generic [ref=f8e976]: "0"
+            - button [ref=f8e977]:
+              - img [ref=f8e979]
+        - article [ref=f8e981]:
+          - generic [ref=f8e982]:
+            - generic [ref=f8e983]:
+              - generic [ref=f8e984]:
+                - img "rburtelow" [ref=f8e985]
+                - generic [ref=f8e986]:
+                  - generic [ref=f8e988]: rburtelow
+                  - generic [ref=f8e990]: Mar 20
+              - button [ref=f8e992]:
+                - img [ref=f8e993]
+            - generic [ref=f8e997]:
+              - img [ref=f8e1001] [cursor=pointer]
+              - generic [ref=f8e1003]:
+                - paragraph [ref=f8e1004]: Badge Earned
+                - paragraph [ref=f8e1005]: Maroon Survivor
+                - paragraph [ref=f8e1006]: Survive the Deadly Bells - summit either Maroon Bell
+            - link "Maroon Peak • 14,156'" [ref=f8e1007] [cursor=pointer]:
+              - /url: /peaks/maroon-peak
+              - img [ref=f8e1008]
+              - generic [ref=f8e1010]: Maroon Peak
+              - generic [ref=f8e1011]: •
+              - generic [ref=f8e1012]: 14,156'
+          - generic [ref=f8e1014]:
+            - generic [ref=f8e1015]:
+              - button "0" [ref=f8e1016]:
+                - img [ref=f8e1018]
+                - generic [ref=f8e1020]: "0"
+              - button "0" [ref=f8e1021]:
+                - img [ref=f8e1023]
+                - generic [ref=f8e1025]: "0"
+            - button [ref=f8e1026]:
+              - img [ref=f8e1028]
+        - article [ref=f8e1030]:
+          - generic [ref=f8e1031]:
+            - generic [ref=f8e1032]:
+              - generic [ref=f8e1033]:
+                - img "rburtelow" [ref=f8e1034]
+                - generic [ref=f8e1035]:
+                  - generic [ref=f8e1037]: rburtelow
+                  - generic [ref=f8e1039]: Mar 20
+              - button [ref=f8e1041]:
+                - img [ref=f8e1042]
+            - generic [ref=f8e1046]:
+              - img [ref=f8e1050] [cursor=pointer]
+              - generic [ref=f8e1052]:
+                - paragraph [ref=f8e1053]: Badge Earned
+                - paragraph [ref=f8e1054]: Quarter Pounder
+                - paragraph [ref=f8e1055]: Complete 15 of Colorado's 14ers
+            - link "Mount Massive • 14,421'" [ref=f8e1056] [cursor=pointer]:
+              - /url: /peaks/mount-massive
+              - img [ref=f8e1057]
+              - generic [ref=f8e1059]: Mount Massive
+              - generic [ref=f8e1060]: •
+              - generic [ref=f8e1061]: 14,421'
+          - generic [ref=f8e1063]:
+            - generic [ref=f8e1064]:
+              - button "0" [ref=f8e1065]:
+                - img [ref=f8e1067]
+                - generic [ref=f8e1069]: "0"
+              - button "0" [ref=f8e1070]:
+                - img [ref=f8e1072]
+                - generic [ref=f8e1074]: "0"
+            - button [ref=f8e1075]:
+              - img [ref=f8e1077]
+        - article [ref=f8e1079]:
+          - generic [ref=f8e1080]:
+            - generic [ref=f8e1081]:
+              - generic [ref=f8e1082]:
+                - img "rburtelow" [ref=f8e1083]
+                - generic [ref=f8e1084]:
+                  - generic [ref=f8e1086]: rburtelow
+                  - generic [ref=f8e1088]: Mar 20
+              - button [ref=f8e1090]:
+                - img [ref=f8e1091]
+            - generic [ref=f8e1095]:
+              - img [ref=f8e1099] [cursor=pointer]
+              - generic [ref=f8e1101]:
+                - paragraph [ref=f8e1102]: Badge Earned
+                - paragraph [ref=f8e1103]: Winter Warrior
+                - paragraph [ref=f8e1104]: Summit a 14er during winter (Dec-Feb)
+            - link "Grays Peak • 14,270'" [ref=f8e1105] [cursor=pointer]:
+              - /url: /peaks/grays-peak
+              - img [ref=f8e1106]
+              - generic [ref=f8e1108]: Grays Peak
+              - generic [ref=f8e1109]: •
+              - generic [ref=f8e1110]: 14,270'
+          - generic [ref=f8e1112]:
+            - generic [ref=f8e1113]:
+              - button "0" [ref=f8e1114]:
+                - img [ref=f8e1116]
+                - generic [ref=f8e1118]: "0"
+              - button "0" [ref=f8e1119]:
+                - img [ref=f8e1121]
+                - generic [ref=f8e1123]: "0"
+            - button [ref=f8e1124]:
+              - img [ref=f8e1126]
+        - article [ref=f8e1128]:
+          - generic [ref=f8e1129]:
+            - generic [ref=f8e1130]:
+              - generic [ref=f8e1131]:
+                - img "rburtelow" [ref=f8e1132]
+                - generic [ref=f8e1133]:
+                  - generic [ref=f8e1135]: rburtelow
+                  - generic [ref=f8e1137]: Mar 20
+              - button [ref=f8e1139]:
+                - img [ref=f8e1140]
+            - generic [ref=f8e1144]:
+              - img [ref=f8e1148] [cursor=pointer]
+              - generic [ref=f8e1150]:
+                - paragraph [ref=f8e1151]: Badge Earned
+                - paragraph [ref=f8e1152]: High Five
+                - paragraph [ref=f8e1153]: Summit 5 Colorado 14ers
+            - link "Torreys Peak • 14,267'" [ref=f8e1154] [cursor=pointer]:
+              - /url: /peaks/torreys-peak
+              - img [ref=f8e1155]
+              - generic [ref=f8e1157]: Torreys Peak
+              - generic [ref=f8e1158]: •
+              - generic [ref=f8e1159]: 14,267'
+          - generic [ref=f8e1161]:
+            - generic [ref=f8e1162]:
+              - button "0" [ref=f8e1163]:
+                - img [ref=f8e1165]
+                - generic [ref=f8e1167]: "0"
+              - button "0" [ref=f8e1168]:
+                - img [ref=f8e1170]
+                - generic [ref=f8e1172]: "0"
+            - button [ref=f8e1173]:
+              - img [ref=f8e1175]
+        - article [ref=f8e1177]:
+          - generic [ref=f8e1178]:
+            - generic [ref=f8e1179]:
+              - generic [ref=f8e1180]:
+                - img "rburtelow" [ref=f8e1181]
+                - generic [ref=f8e1182]:
+                  - generic [ref=f8e1184]: rburtelow
+                  - generic [ref=f8e1186]: Mar 20
+              - button [ref=f8e1188]:
+                - img [ref=f8e1189]
+            - generic [ref=f8e1193]:
+              - generic [ref=f8e1195] [cursor=pointer]:
+                - generic [ref=f8e1196]: FR
+                - img [ref=f8e1198]
+              - generic [ref=f8e1200]:
+                - paragraph [ref=f8e1201]: Badge Earned
+                - paragraph [ref=f8e1202]: Front Range Master
+                - paragraph [ref=f8e1203]: Complete all 6 Front Range peaks
+            - link "Mount Evans • 14,264'" [ref=f8e1204] [cursor=pointer]:
+              - /url: /peaks/mount-evans
+              - img [ref=f8e1205]
+              - generic [ref=f8e1207]: Mount Evans
+              - generic [ref=f8e1208]: •
+              - generic [ref=f8e1209]: 14,264'
+          - generic [ref=f8e1211]:
+            - generic [ref=f8e1212]:
+              - button "0" [ref=f8e1213]:
+                - img [ref=f8e1215]
+                - generic [ref=f8e1217]: "0"
+              - button "0" [ref=f8e1218]:
+                - img [ref=f8e1220]
+                - generic [ref=f8e1222]: "0"
+            - button [ref=f8e1223]:
+              - img [ref=f8e1225]
+        - article [ref=f8e1227]:
+          - generic [ref=f8e1228]:
+            - generic [ref=f8e1229]:
+              - generic [ref=f8e1230]:
+                - img "rburtelow" [ref=f8e1231]
+                - generic [ref=f8e1232]:
+                  - generic [ref=f8e1234]: rburtelow
+                  - generic [ref=f8e1236]: Mar 20
+              - button [ref=f8e1238]:
+                - img [ref=f8e1239]
+            - generic [ref=f8e1243]:
+              - img [ref=f8e1247] [cursor=pointer]
+              - generic [ref=f8e1249]:
+                - paragraph [ref=f8e1250]: Badge Earned
+                - paragraph [ref=f8e1251]: Technical Climber
+                - paragraph [ref=f8e1252]: Summit any Class 3 peak
+            - link "Longs Peak • 14,255'" [ref=f8e1253] [cursor=pointer]:
+              - /url: /peaks/longs-peak
+              - img [ref=f8e1254]
+              - generic [ref=f8e1256]: Longs Peak
+              - generic [ref=f8e1257]: •
+              - generic [ref=f8e1258]: 14,255'
+          - generic [ref=f8e1260]:
+            - generic [ref=f8e1261]:
+              - button "0" [ref=f8e1262]:
+                - img [ref=f8e1264]
+                - generic [ref=f8e1266]: "0"
+              - button "0" [ref=f8e1267]:
+                - img [ref=f8e1269]
+                - generic [ref=f8e1271]: "0"
+            - button [ref=f8e1272]:
+              - img [ref=f8e1274]
+        - article [ref=f8e1276]:
+          - generic [ref=f8e1277]:
+            - generic [ref=f8e1278]:
+              - generic [ref=f8e1279]:
+                - img "rburtelow" [ref=f8e1280]
+                - generic [ref=f8e1281]:
+                  - generic [ref=f8e1283]: rburtelow
+                  - generic [ref=f8e1285]: Mar 20
+              - button [ref=f8e1287]:
+                - img [ref=f8e1288]
+            - generic [ref=f8e1292]:
+              - img [ref=f8e1296] [cursor=pointer]
+              - generic [ref=f8e1298]:
+                - paragraph [ref=f8e1299]: Badge Earned
+                - paragraph [ref=f8e1300]: Prominence Pioneer
+                - paragraph [ref=f8e1301]: Summit Pikes Peak, the most prominent 14er
+            - link "Pikes Peak • 14,110'" [ref=f8e1302] [cursor=pointer]:
+              - /url: /peaks/pikes-peak
+              - img [ref=f8e1303]
+              - generic [ref=f8e1305]: Pikes Peak
+              - generic [ref=f8e1306]: •
+              - generic [ref=f8e1307]: 14,110'
+          - generic [ref=f8e1309]:
+            - generic [ref=f8e1310]:
+              - button "0" [ref=f8e1311]:
+                - img [ref=f8e1313]
+                - generic [ref=f8e1315]: "0"
+              - button "0" [ref=f8e1316]:
+                - img [ref=f8e1318]
+                - generic [ref=f8e1320]: "0"
+            - button [ref=f8e1321]:
+              - img [ref=f8e1323]
+        - article [ref=f8e1325]:
+          - generic [ref=f8e1326]:
+            - generic [ref=f8e1327]:
+              - generic [ref=f8e1328]:
+                - img "rburtelow" [ref=f8e1329]
+                - generic [ref=f8e1330]:
+                  - generic [ref=f8e1332]: rburtelow
+                  - generic [ref=f8e1334]: Mar 20
+              - button [ref=f8e1336]:
+                - img [ref=f8e1337]
+            - generic [ref=f8e1340]:
+              - generic [ref=f8e1341]:
+                - img [ref=f8e1343]
+                - generic [ref=f8e1345]:
+                  - paragraph [ref=f8e1346]: Summit Logged
+                  - paragraph [ref=f8e1347]: Mar 22, 2026
+              - link "Mount Massive 14,421' via Mount Massive Trail" [ref=f8e1348] [cursor=pointer]:
+                - /url: /reports/585863cb-5404-448f-ad13-61be4655a386
+                - paragraph [ref=f8e1349]: Mount Massive
+                - paragraph [ref=f8e1350]: 14,421' via Mount Massive Trail
+            - link "Mount Massive • 14,421'" [ref=f8e1351] [cursor=pointer]:
+              - /url: /peaks/mount-massive
+              - img [ref=f8e1352]
+              - generic [ref=f8e1354]: Mount Massive
+              - generic [ref=f8e1355]: •
+              - generic [ref=f8e1356]: 14,421'
+          - generic [ref=f8e1358]:
+            - generic [ref=f8e1359]:
+              - button "0" [ref=f8e1360]:
+                - img [ref=f8e1362]
+                - generic [ref=f8e1364]: "0"
+              - button "0" [ref=f8e1365]:
+                - img [ref=f8e1367]
+                - generic [ref=f8e1369]: "0"
+            - button [ref=f8e1370]:
+              - img [ref=f8e1372]
+        - article [ref=f8e1374]:
+          - generic [ref=f8e1375]:
+            - generic [ref=f8e1377]:
+              - img "blah" [ref=f8e1378]
+              - generic [ref=f8e1379]:
+                - generic [ref=f8e1380]:
+                  - generic [ref=f8e1381]: blah
+                  - button "Following" [ref=f8e1382]:
+                    - img [ref=f8e1383]
+                    - generic [ref=f8e1385]: Following
+                - generic [ref=f8e1387]: Mar 20
+            - paragraph [ref=f8e1388]:
+              - generic [ref=f8e1389]: Anyone hike La Plata peak this week?
+            - link "La Plata Peak • 14,336'" [ref=f8e1390] [cursor=pointer]:
+              - /url: /peaks/la-plata-peak
+              - img [ref=f8e1391]
+              - generic [ref=f8e1393]: La Plata Peak
+              - generic [ref=f8e1394]: •
+              - generic [ref=f8e1395]: 14,336'
+          - generic [ref=f8e1397]:
+            - generic [ref=f8e1398]:
+              - button "2" [ref=f8e1399]:
+                - img [ref=f8e1401]
+                - generic [ref=f8e1403]: "2"
+              - button "1" [ref=f8e1404]:
+                - img [ref=f8e1406]
+                - generic [ref=f8e1408]: "1"
+            - button [ref=f8e1409]:
+              - img [ref=f8e1411]
+        - article [ref=f8e1413]:
+          - generic [ref=f8e1414]:
+            - generic [ref=f8e1416]:
+              - img "blah" [ref=f8e1417]
+              - generic [ref=f8e1418]:
+                - generic [ref=f8e1419]:
+                  - generic [ref=f8e1420]: blah
+                  - button "Following" [ref=f8e1421]:
+                    - img [ref=f8e1422]
+                    - generic [ref=f8e1424]: Following
+                - generic [ref=f8e1426]: Mar 19
+            - generic [ref=f8e1429]:
+              - img [ref=f8e1433] [cursor=pointer]
+              - generic [ref=f8e1435]:
+                - paragraph [ref=f8e1436]: Badge Earned
+                - paragraph [ref=f8e1437]: First Summit
+                - paragraph [ref=f8e1438]: Conquer your first Colorado 14er
+            - link "Blanca Peak • 14,345'" [ref=f8e1439] [cursor=pointer]:
+              - /url: /peaks/blanca-peak
+              - img [ref=f8e1440]
+              - generic [ref=f8e1442]: Blanca Peak
+              - generic [ref=f8e1443]: •
+              - generic [ref=f8e1444]: 14,345'
+          - generic [ref=f8e1446]:
+            - generic [ref=f8e1447]:
+              - button "1" [ref=f8e1448]:
+                - img [ref=f8e1450]
+                - generic [ref=f8e1452]: "1"
+              - button "0" [ref=f8e1453]:
+                - img [ref=f8e1455]
+                - generic [ref=f8e1457]: "0"
+            - button [ref=f8e1458]:
+              - img [ref=f8e1460]
+        - article [ref=f8e1462]:
+          - generic [ref=f8e1463]:
+            - generic [ref=f8e1465]:
+              - img "blah" [ref=f8e1466]
+              - generic [ref=f8e1467]:
+                - generic [ref=f8e1468]:
+                  - generic [ref=f8e1469]: blah
+                  - button "Following" [ref=f8e1470]:
+                    - img [ref=f8e1471]
+                    - generic [ref=f8e1473]: Following
+                - generic [ref=f8e1475]: Mar 19
+            - generic [ref=f8e1477]:
+              - generic [ref=f8e1478]:
+                - img [ref=f8e1480]
+                - generic [ref=f8e1482]:
+                  - paragraph [ref=f8e1483]: Summit Logged
+                  - paragraph [ref=f8e1484]: Mar 19, 2026
+              - link "Blanca Peak 14,345'" [ref=f8e1485] [cursor=pointer]:
+                - /url: /reports/0dc1942f-9969-44fc-a1f0-4a7a71691b21
+                - paragraph [ref=f8e1486]: Blanca Peak
+                - paragraph [ref=f8e1487]: 14,345'
+            - link "Blanca Peak • 14,345'" [ref=f8e1488] [cursor=pointer]:
+              - /url: /peaks/blanca-peak
+              - img [ref=f8e1489]
+              - generic [ref=f8e1491]: Blanca Peak
+              - generic [ref=f8e1492]: •
+              - generic [ref=f8e1493]: 14,345'
+          - generic [ref=f8e1495]:
+            - generic [ref=f8e1496]:
+              - button "0" [ref=f8e1497]:
+                - img [ref=f8e1499]
+                - generic [ref=f8e1501]: "0"
+              - button "0" [ref=f8e1502]:
+                - img [ref=f8e1504]
+                - generic [ref=f8e1506]: "0"
+            - button [ref=f8e1507]:
+              - img [ref=f8e1509]
+        - article [ref=f8e1511]:
+          - generic [ref=f8e1512]:
+            - generic [ref=f8e1513]:
+              - generic [ref=f8e1514]:
+                - img "rburtelow" [ref=f8e1515]
+                - generic [ref=f8e1516]:
+                  - generic [ref=f8e1518]: rburtelow
+                  - generic [ref=f8e1520]: Mar 18
+              - button [ref=f8e1522]:
+                - img [ref=f8e1523]
+            - paragraph [ref=f8e1525]:
+              - generic [ref=f8e1526]: Great summit of Elbert
+          - generic [ref=f8e1528]:
+            - generic [ref=f8e1529]:
+              - button "0" [ref=f8e1530]:
+                - img [ref=f8e1532]
+                - generic [ref=f8e1534]: "0"
+              - button "0" [ref=f8e1535]:
+                - img [ref=f8e1537]
+                - generic [ref=f8e1539]: "0"
+            - button [ref=f8e1540]:
+              - img [ref=f8e1542]
+        - article [ref=f8e1544]:
+          - generic [ref=f8e1545]:
+            - generic [ref=f8e1546]:
+              - generic [ref=f8e1547]:
+                - img "rburtelow" [ref=f8e1548]
+                - generic [ref=f8e1549]:
+                  - generic [ref=f8e1551]: rburtelow
+                  - generic [ref=f8e1553]: Mar 16
+              - button [ref=f8e1555]:
+                - img [ref=f8e1556]
+            - link "📅 Grays & Torreys Traverse — Group Hike Sat, Aug 15, 5:00 AM • Bakerville Trailhead, I-70 Exit 221 Join me for a classic double-summit day on Grays and Torreys! We'll meet at the Bakerville trailhead at 5am. Bring microspikes just in case. View event details →" [ref=f8e1559] [cursor=pointer]:
+              - /url: /events/d633749a-7067-4112-9767-428df062fcca
+              - generic [ref=f8e1560]:
+                - generic [ref=f8e1561]:
+                  - paragraph [ref=f8e1562]: 📅 Grays & Torreys Traverse — Group Hike
+                  - paragraph [ref=f8e1563]: Sat, Aug 15, 5:00 AM • Bakerville Trailhead, I-70 Exit 221
+                - paragraph [ref=f8e1564]: Join me for a classic double-summit day on Grays and Torreys! We'll meet at the Bakerville trailhead at 5am. Bring microspikes just in case.
+                - generic [ref=f8e1565]: View event details →
+            - link "Grays Peak • 14,270'" [ref=f8e1566] [cursor=pointer]:
+              - /url: /peaks/grays-peak
+              - img [ref=f8e1567]
+              - generic [ref=f8e1569]: Grays Peak
+              - generic [ref=f8e1570]: •
+              - generic [ref=f8e1571]: 14,270'
+          - generic [ref=f8e1573]:
+            - generic [ref=f8e1574]:
+              - button "0" [ref=f8e1575]:
+                - img [ref=f8e1577]
+                - generic [ref=f8e1579]: "0"
+              - button "0" [ref=f8e1580]:
+                - img [ref=f8e1582]
+                - generic [ref=f8e1584]: "0"
+            - button [ref=f8e1585]:
+              - img [ref=f8e1587]
+        - button "Load More Stories" [ref=f8e1590]
+      - complementary [ref=f8e1591]:
+        - generic [ref=f8e1592]:
+          - generic [ref=f8e1593]:
+            - heading "Peaks Watched3" [level=3] [ref=f8e1594]
+            - generic [ref=f8e1595]:
+              - link "01 Mount Elbert 14,433′" [ref=f8e1596] [cursor=pointer]:
+                - /url: /peaks/mount-elbert
+                - generic [ref=f8e1597]: "01"
+                - generic [ref=f8e1598]:
+                  - paragraph [ref=f8e1599]: Mount Elbert
+                  - paragraph [ref=f8e1600]: 14,433′
+                - img [ref=f8e1601]
+              - link "02 Mount Antero 14,269′" [ref=f8e1603] [cursor=pointer]:
+                - /url: /peaks/mount-antero
+                - generic [ref=f8e1604]: "02"
+                - generic [ref=f8e1605]:
+                  - paragraph [ref=f8e1606]: Mount Antero
+                  - paragraph [ref=f8e1607]: 14,269′
+                - img [ref=f8e1608]
+              - link "03 Mount Harvard 14,420′" [ref=f8e1610] [cursor=pointer]:
+                - /url: /peaks/mount-harvard
+                - generic [ref=f8e1611]: "03"
+                - generic [ref=f8e1612]:
+                  - paragraph [ref=f8e1613]: Mount Harvard
+                  - paragraph [ref=f8e1614]: 14,420′
+                - img [ref=f8e1615]
+          - generic [ref=f8e1617]:
+            - heading "Recent Achievements" [level=3] [ref=f8e1618]
+            - generic [ref=f8e1619]:
+              - generic [ref=f8e1620]:
+                - generic [ref=f8e1621] [cursor=pointer]:
+                  - generic [ref=f8e1622]: SDC
+                  - img [ref=f8e1624]
+                - generic [ref=f8e1626]:
+                  - paragraph [ref=f8e1627]: Sangre de Cristo Master
+                  - paragraph [ref=f8e1628]:
+                    - link "@rburtelow" [ref=f8e1629] [cursor=pointer]:
+                      - /url: /u/rburtelow
+                    - text: • Mar 21
+              - generic [ref=f8e1630]:
+                - img [ref=f8e1633] [cursor=pointer]
+                - generic [ref=f8e1635]:
+                  - paragraph [ref=f8e1636]: Crestone Conqueror
+                  - paragraph [ref=f8e1637]:
+                    - link "@rburtelow" [ref=f8e1638] [cursor=pointer]:
+                      - /url: /u/rburtelow
+                    - text: • Mar 21
+              - generic [ref=f8e1639]:
+                - img [ref=f8e1642] [cursor=pointer]
+                - generic [ref=f8e1644]:
+                  - paragraph [ref=f8e1645]: Halfway There
+                  - paragraph [ref=f8e1646]:
+                    - link "@rburtelow" [ref=f8e1647] [cursor=pointer]:
+                      - /url: /u/rburtelow
+                    - text: • Mar 21
+              - generic [ref=f8e1648]:
+                - generic [ref=f8e1649] [cursor=pointer]:
+                  - generic [ref=f8e1650]: MOS
+                  - img [ref=f8e1652]
+                - generic [ref=f8e1654]:
+                  - paragraph [ref=f8e1655]: Mosquito Master
+                  - paragraph [ref=f8e1656]:
+                    - link "@rburtelow" [ref=f8e1657] [cursor=pointer]:
+                      - /url: /u/rburtelow
+                    - text: • Mar 20
+              - generic [ref=f8e1658]:
+                - img [ref=f8e1661] [cursor=pointer]
+                - generic [ref=f8e1664]:
+                  - paragraph [ref=f8e1665]: Double Digits
+                  - paragraph [ref=f8e1666]:
+                    - link "@rburtelow" [ref=f8e1667] [cursor=pointer]:
+                      - /url: /u/rburtelow
+                    - text: • Mar 20
+          - generic [ref=f8e1668]:
+            - heading "Upcoming Events" [level=3] [ref=f8e1669]
+            - link "Aug 15 Grays & Torreys Traverse — Group Hike Bakerville Trailhead, I-70 Exit 221 • 2 going" [ref=f8e1671] [cursor=pointer]:
+              - /url: /events/d633749a-7067-4112-9767-428df062fcca
+              - generic [ref=f8e1672]:
+                - generic [ref=f8e1673]:
+                  - generic [ref=f8e1674]: Aug
+                  - generic [ref=f8e1675]: "15"
+                - generic [ref=f8e1676]:
+                  - paragraph [ref=f8e1677]: Grays & Torreys Traverse — Group Hike
+                  - paragraph [ref=f8e1678]: Bakerville Trailhead, I-70 Exit 221 • 2 going
+            - link "View All Events" [ref=f8e1679] [cursor=pointer]:
+              - /url: /events
+          - generic [ref=f8e1680]:
+            - heading "Summit Weather" [level=3] [ref=f8e1682]
+            - generic [ref=f8e1683]:
+              - generic [ref=f8e1684]: 28°
+              - generic [ref=f8e1685]:
+                - paragraph [ref=f8e1686]: Winds 25-35 mph
+                - paragraph [ref=f8e1687]: Clear skies
+            - paragraph [ref=f8e1688]: Mt. Elbert summit forecast
+    - contentinfo [ref=f8e1689]:
+      - generic [ref=f8e1690]:
+        - generic [ref=f8e1691]:
+          - generic [ref=f8e1692]:
+            - link "My14er" [ref=f8e1693] [cursor=pointer]:
+              - /url: /
+              - img [ref=f8e1695]
+              - generic [ref=f8e1697]: My14er
+            - paragraph [ref=f8e1698]: The definitive platform for Colorado's high-altitude community.
+          - generic [ref=f8e1699]:
+            - heading "Explore" [level=4] [ref=f8e1700]
+            - list [ref=f8e1701]:
+              - listitem [ref=f8e1702]:
+                - link "All 58 Peaks" [ref=f8e1703] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f8e1704]:
+                - link "Trip Reports" [ref=f8e1705] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f8e1706]:
+                - link "Trail Conditions" [ref=f8e1707] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f8e1708]:
+                - link "Weather Stations" [ref=f8e1709] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f8e1710]:
+            - heading "Community" [level=4] [ref=f8e1711]
+            - list [ref=f8e1712]:
+              - listitem [ref=f8e1713]:
+                - link "Forums" [ref=f8e1714] [cursor=pointer]:
+                  - /url: /community
+              - listitem [ref=f8e1715]:
+                - link "Events" [ref=f8e1716] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f8e1717]:
+                - link "Leaderboards" [ref=f8e1718] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f8e1719]:
+                - link "Gear Guides" [ref=f8e1720] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f8e1721]:
+            - heading "Support" [level=4] [ref=f8e1722]
+            - list [ref=f8e1723]:
+              - listitem [ref=f8e1724]:
+                - link "Safety Guide" [ref=f8e1725] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f8e1726]:
+                - link "Contact Us" [ref=f8e1727] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f8e1728]:
+                - link "Privacy" [ref=f8e1729] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=f8e1730]:
+                - link "Terms of Service" [ref=f8e1731] [cursor=pointer]:
+                  - /url: /terms
+        - generic [ref=f8e1732]:
+          - paragraph [ref=f8e1733]: © 2026 My14er. Hike responsibly.
+          - generic [ref=f8e1734]:
+            - link "Instagram" [ref=f8e1735] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=f8e1736]
+            - link "Twitter" [ref=f8e1740] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=f8e1741]
+            - link "YouTube" [ref=f8e1743] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=f8e1744]
+  - button "Open Next.js Dev Tools" [ref=f8e1751] [cursor=pointer]:
+    - img [ref=f8e1752]

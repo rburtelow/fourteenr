@@ -15,6 +15,9 @@ import { createPost, deletePost, toggleLike, toggleSave } from "./actions";
 import { pinGroupPost, unpinGroupPost, removeGroupPost } from "@/app/groups/actions";
 import type { CommunityPost, PostComment } from "@/lib/community.types";
 import CommentThread from "./CommentThread";
+import MentionInput from "../components/MentionInput";
+import MentionText from "../components/MentionText";
+import { mentionsToPlainText } from "@/lib/mentions";
 import FollowButton from "../components/FollowButton";
 import type { FollowStatus } from "@/lib/follows";
 import BadgeIcon from "../components/badges/BadgeIcon";
@@ -906,11 +909,12 @@ export default function CommunityFeed({
               {avatarInitials}
             </div>
             <div className="flex-1">
-              <textarea
-                placeholder="Share your trail story..."
+              <MentionInput
+                placeholder="Share your trail story... use @ to tag peaks, trailheads, and people"
                 rows={3}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={setContent}
+                maxLength={2000}
                 className="w-full resize-none bg-[var(--color-surface-subtle)] rounded-xl px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 transition-all"
               />
 
@@ -1206,7 +1210,7 @@ export default function CommunityFeed({
                 <EventPostContent content={post.content} eventId={post.linked_event_id} />
               ) : (
                 <p className="mt-4 text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
-                  {post.content}
+                  <MentionText content={post.content} />
                 </p>
               )}
 
@@ -1480,9 +1484,9 @@ function BadgeEarnedPostContent({
 function EventPostContent({ content, eventId }: { content: string; eventId: string | null }) {
   const lines = content.split("\n");
   // Line 0: "📅 {title}" or "❌ [CANCELLED] {title}"
-  const rawTitle = lines[0].replace(/^\S+\s*/, ""); // strip leading emoji
+  const rawTitle = mentionsToPlainText(lines[0].replace(/^\S+\s*/, "")); // strip leading emoji
   const dateLocation = lines[1] || null;
-  const description = lines.slice(2).join("\n").trim() || null;
+  const description = mentionsToPlainText(lines.slice(2).join("\n").trim()) || null;
   const isCancelled = content.startsWith("\u{274C}");
 
   const inner = (

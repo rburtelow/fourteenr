@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useMemo } from "react";
+import Select from "@/app/components/Select";
 import type { TrailheadWithRouteCount } from "@/lib/trailheads";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -141,17 +142,11 @@ export default function TrailheadsClient({
                   className="w-full pl-10 pr-4 py-3 rounded-2xl border border-[var(--color-border-app)] bg-white text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-brand-primary)]/40 transition-colors"
                 />
               </div>
-              <select
+              <Select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-3 rounded-2xl border border-[var(--color-border-app)] bg-white text-sm text-[var(--color-text-primary)] outline-none cursor-pointer"
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    Sort: {o.label}
-                  </option>
-                ))}
-              </select>
+                onChange={setSortBy}
+                options={SORT_OPTIONS.map((o) => ({ value: o.value, label: `Sort: ${o.label}` }))}
+              />
             </div>
 
             {/* Filter pills */}

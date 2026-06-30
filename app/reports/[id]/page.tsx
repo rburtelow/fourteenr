@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { TripReportSections } from "@/lib/database.types";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import MentionText from "../../components/MentionText";
 import Navbar from "../../components/Navbar";
 
 const TRAILHEAD_LABELS: Record<string, string> = {
@@ -333,7 +334,7 @@ export default async function TripReportPage({
               {/* Summary */}
               <div>
                 <h2 className="text-sm font-semibold text-[var(--color-text-muted-green)] uppercase tracking-wider mb-3">Summary</h2>
-                <p className="text-[var(--color-text-primary)] leading-relaxed">{report.summary}</p>
+                <p className="text-[var(--color-text-primary)] leading-relaxed"><MentionText content={report.summary} /></p>
               </div>
 
               {/* Narrative */}
@@ -341,7 +342,7 @@ export default async function TripReportPage({
                 <div>
                   <h2 className="text-sm font-semibold text-[var(--color-text-muted-green)] uppercase tracking-wider mb-3">Full Report</h2>
                   <div className="text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
-                    {report.narrative}
+                    <MentionText content={report.narrative} />
                   </div>
                 </div>
               )}

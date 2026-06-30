@@ -1,10 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getTopPeaks } from "@/lib/peaks";
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { getTopPeaks, getNavPeaks } from "@/lib/peaks";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+
+// Cached for 5 minutes — same content for all visitors.
+const getRecentTripReports = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const { data } = await supabase
+      .from("trip_reports")
+      .select("summary, created_at, peaks(name, elevation), profiles(screen_name)")
+      .gte("created_at", oneWeekAgo.toISOString())
+      .order("created_at", { ascending: false })
+      .limit(20);
+    return data || [];
+  },
+  ["landing-trip-reports"],
+  { revalidate: 300 }
+);
 
 const stats = [
   { value: "58", label: "Fourteeners", suffix: "" },
@@ -24,42 +44,36 @@ function formatTimeAgo(date: Date): string {
 }
 
 export default async function LandingPage() {
-  const peaks = await getTopPeaks(5);
-
-  // Get auth state
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Auth, cached peaks, cached nav peaks, and cached trip reports all start together.
+  // getServerUser() is memoized per-request via React cache(), so lib functions that
+  // also call it (e.g. getPosts) share the same in-flight promise.
+  const [user, peaks, navPeaks, rawReports] = await Promise.all([
+    getSessionUser(),
+    getTopPeaks(5),
+    getNavPeaks(),
+    getRecentTripReports(),
+  ]);
 
   let userNav: { email: string; screen_name: string | null; avatar_url: string | null } | null = null;
-  let navPeaks: { id: string; name: string; slug: string; elevation: number }[] = [];
   let unreadNotificationCount = 0;
 
   if (user) {
-    const [{ data: profile }, { data: peaksData }, notifCount] = await Promise.all([
+    const supabase = await createClient();
+    const [profileResult, notifCount] = await Promise.all([
       supabase.from("profiles").select("screen_name, avatar_url").eq("id", user.id).single(),
-      supabase.from("peaks").select("id, name, slug, elevation").order("name"),
       getUnreadNotificationCount(user.id),
     ]);
-    userNav = {
-      email: user.email || "",
-      screen_name: profile?.screen_name || null,
-      avatar_url: profile?.avatar_url || null,
-    };
-    navPeaks = peaksData || [];
+    if (profileResult.data) {
+      userNav = {
+        email: user.email || "",
+        screen_name: profileResult.data.screen_name || null,
+        avatar_url: profileResult.data.avatar_url || null,
+      };
+    }
     unreadNotificationCount = notifCount;
   }
 
-  // Fetch up to 3 random trip reports from the last 7 days
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const { data: recentReports } = await supabase
-    .from("trip_reports")
-    .select("summary, created_at, peaks(name, elevation), profiles(screen_name)")
-    .gte("created_at", oneWeekAgo.toISOString())
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const recentReports = rawReports;
 
   // Pick up to 3 random reports from the results
   const shuffled = (recentReports || []).sort(() => Math.random() - 0.5);
@@ -83,7 +97,7 @@ export default async function LandingPage() {
         user={userNav}
         userId={user?.id}
         unreadNotificationCount={unreadNotificationCount}
-        peaks={navPeaks}
+        peaks={user ? navPeaks : []}
       />
 
       <main>

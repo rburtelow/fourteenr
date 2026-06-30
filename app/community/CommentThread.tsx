@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState, useTransition, useCallback, useEffect } from "react";
 import { addComment, deleteComment } from "./actions";
+import MentionInput from "@/app/components/MentionInput";
+import MentionText from "@/app/components/MentionText";
 import type { PostComment } from "@/lib/community.types";
 
 function getAvatarInitials(
@@ -135,7 +137,7 @@ export default function CommentThread({
                       </span>
                     </div>
                     <p className="mt-0.5 text-sm text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
-                      {comment.content}
+                      <MentionText content={comment.content} />
                     </p>
                   </div>
                   {isOwn && (
@@ -160,18 +162,14 @@ export default function CommentThread({
             {/* Current user avatar handled via initials; could be enhanced */}
           </div>
           <div className="flex-1 flex items-center gap-2">
-            <input
-              type="text"
+            <MentionInput
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddComment();
-                }
-              }}
+              onChange={setNewComment}
+              onSubmit={handleAddComment}
+              rows={1}
               placeholder="Write a comment..."
-              className="flex-1 bg-[var(--color-surface-subtle)] rounded-xl px-3.5 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 transition-all"
+              wrapperClassName="flex-1"
+              className="w-full resize-none bg-[var(--color-surface-subtle)] rounded-xl px-3.5 py-2 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 transition-all"
             />
             <button
               onClick={handleAddComment}
