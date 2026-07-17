@@ -1,0 +1,16 @@
+[    3028ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[    3039ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   31650ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   31798ms] [LOG] [Fast Refresh] done in 250ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   36557ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   36787ms] [LOG] [Fast Refresh] done in 331ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   63382ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=SJZsqT3YRHlqx8E3j7kxh' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/12nr_next_dist_client_09_81bz._.js:13422
+[   64789ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   66475ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   66497ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   66780ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[   66864ms] [LOG] [Fast Refresh] done in 186ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  188366ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/auth/login:0
+[  188370ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  188426ms] [LOG] [Fast Refresh] done in 157ms @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477
+[  193244ms] [WARNING] %c%s%c Using the user object as returned from supabase.auth.getSession() or from some supabase.auth.onAuthStateChange() events could be insecure! This value comes directly from the storage medium (usually cookies on the server) and may not be authentic. Use supabase.auth.getUser() instead which authenticates the data by contacting the Supabase Auth server. background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3000/_next/static/chunks/12nr_next_dist_00jeri6._.js:2477

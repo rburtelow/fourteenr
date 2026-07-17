@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { CommunityEvent } from "@/lib/community.types";
+import { mentionsToPlainText } from "@/lib/mentions";
 import { toggleEventAttendance } from "./actions";
 import EventCard from "./EventCard";
 import Select from "@/app/components/Select";
@@ -164,7 +165,7 @@ export default function EventsClient({ initialEvents, allPeaks, isLoggedIn, curr
       result = result.filter(
         (e) =>
           e.title.toLowerCase().includes(q) ||
-          e.location.toLowerCase().includes(q)
+          mentionsToPlainText(e.location).toLowerCase().includes(q)
       );
     }
 

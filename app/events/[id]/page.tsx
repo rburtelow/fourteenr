@@ -7,6 +7,7 @@ import { getUnreadNotificationCount } from "@/lib/notifications";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import EventDetailClient from "./EventDetailClient";
+import MentionText from "../../components/MentionText";
 
 export default async function EventDetailPage({
   params,
@@ -172,7 +173,9 @@ export default async function EventDetailPage({
                     <MapPinIcon className="w-5 h-5 text-[var(--color-brand-primary)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text-primary)]">{event.location}</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">
+                      <MentionText content={event.location} />
+                    </p>
                   </div>
                 </div>
 
@@ -217,7 +220,7 @@ export default async function EventDetailPage({
                     About this event
                   </h2>
                   <p className="text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
-                    {event.description}
+                    <MentionText content={event.description} />
                   </p>
                 </div>
               )}

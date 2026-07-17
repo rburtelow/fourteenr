@@ -870,6 +870,67 @@ export interface Database {
           }
         ];
       };
+      gps_tracks: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          peak_id: string | null;
+          started_at: string;
+          ended_at: string;
+          duration_seconds: number;
+          distance_meters: number;
+          elevation_gain_meters: number;
+          max_elevation_meters: number | null;
+          point_count: number;
+          points: [number, number, number, number][];
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          user_id: string;
+          name: string;
+          peak_id?: string | null;
+          started_at: string;
+          ended_at: string;
+          duration_seconds?: number;
+          distance_meters?: number;
+          elevation_gain_meters?: number;
+          max_elevation_meters?: number | null;
+          point_count?: number;
+          points?: [number, number, number, number][];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          peak_id?: string | null;
+          started_at?: string;
+          ended_at?: string;
+          duration_seconds?: number;
+          distance_meters?: number;
+          elevation_gain_meters?: number;
+          max_elevation_meters?: number | null;
+          point_count?: number;
+          points?: [number, number, number, number][];
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "gps_tracks_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "gps_tracks_peak_id_fkey";
+            columns: ["peak_id"];
+            referencedRelation: "peaks";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       trending_peaks_cache: {
         Row: {
           id: number;
@@ -1213,6 +1274,7 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Peak = Database["public"]["Tables"]["peaks"]["Row"];
 export type Route = Database["public"]["Tables"]["routes"]["Row"];
 export type SummitLog = Database["public"]["Tables"]["summit_logs"]["Row"];
+export type GpsTrack = Database["public"]["Tables"]["gps_tracks"]["Row"];
 export type PeakWatchlistItem = Database["public"]["Tables"]["peak_watchlist"]["Row"];
 export type PeakForecast = Database["public"]["Tables"]["peak_forecasts"]["Row"];
 export type PeakWithRoutes = Peak & { routes: Route[] };

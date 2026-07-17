@@ -1,0 +1,110 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - navigation [ref=e4]:
+        - generic [ref=e6]:
+          - link [ref=e7] [cursor=pointer]:
+            - /url: /
+            - img "Fourteenr" [ref=e8]
+          - generic [ref=e9]:
+            - link "Home" [ref=e10] [cursor=pointer]:
+              - /url: /
+            - link "Peaks" [ref=e11] [cursor=pointer]:
+              - /url: /peaks
+            - link "Trailheads" [ref=e12] [cursor=pointer]:
+              - /url: /trailheads
+            - link "Community" [ref=e13] [cursor=pointer]:
+              - /url: /community
+          - generic [ref=e15]:
+            - link "Sign In" [ref=e16] [cursor=pointer]:
+              - /url: /auth/login
+            - link "Get Started" [ref=e17] [cursor=pointer]:
+              - /url: /auth/signup
+    - generic [ref=e19]:
+      - generic [ref=e21]:
+        - text: Community
+        - heading "Events" [level=1] [ref=e22]
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - button "Upcoming" [ref=e26]
+          - button "This Week" [ref=e27]
+          - button "This Month" [ref=e28]
+          - button "Past" [ref=e29]
+        - generic [ref=e30]:
+          - textbox "Search events..." [ref=e34]
+          - button "All Peaks" [ref=e36] [cursor=pointer]
+          - button "Soonest" [ref=e41] [cursor=pointer]
+      - generic [ref=e48] [cursor=pointer]:
+        - generic [ref=e49]:
+          - generic [ref=e50]: Aug
+          - generic [ref=e51]: "15"
+        - generic [ref=e52]:
+          - heading "Grays & Torreys Traverse — Group Hike" [level=3] [ref=e54]
+          - generic [ref=e55]:
+            - generic [ref=e59]: Bakerville Trailhead, I-70 Exit 221
+            - generic [ref=e61]: 5:00 AM
+          - generic [ref=e62]: Grays Peak
+          - generic [ref=e67]: 1 going / 10
+    - contentinfo [ref=e72]:
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - link "My14er" [ref=e76] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e81]: The definitive platform for Colorado's high-altitude community.
+          - generic [ref=e82]:
+            - heading "Explore" [level=4] [ref=e83]
+            - list [ref=e84]:
+              - listitem [ref=e85]:
+                - link "All 58 Peaks" [ref=e86] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e87]:
+                - link "Trip Reports" [ref=e88] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e89]:
+                - link "Trail Conditions" [ref=e90] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e91]:
+                - link "Weather Stations" [ref=e92] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e93]:
+            - heading "Community" [level=4] [ref=e94]
+            - list [ref=e95]:
+              - listitem [ref=e96]:
+                - link "Forums" [ref=e97] [cursor=pointer]:
+                  - /url: /community
+              - listitem [ref=e98]:
+                - link "Events" [ref=e99] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e100]:
+                - link "Leaderboards" [ref=e101] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e102]:
+                - link "Gear Guides" [ref=e103] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e104]:
+            - heading "Support" [level=4] [ref=e105]
+            - list [ref=e106]:
+              - listitem [ref=e107]:
+                - link "Safety Guide" [ref=e108] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e109]:
+                - link "Contact Us" [ref=e110] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e111]:
+                - link "Privacy" [ref=e112] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=e113]:
+                - link "Terms of Service" [ref=e114] [cursor=pointer]:
+                  - /url: /terms
+        - generic [ref=e115]:
+          - paragraph [ref=e116]: © 2026 My14er. Hike responsibly.
+          - generic [ref=e117]:
+            - link "Instagram" [ref=e118] [cursor=pointer]:
+              - /url: "#"
+            - link "Twitter" [ref=e123] [cursor=pointer]:
+              - /url: "#"
+            - link "YouTube" [ref=e126] [cursor=pointer]:
+              - /url: "#"
+  - button "Open Next.js Dev Tools" [ref=e134] [cursor=pointer]
+  - alert [ref=e138]

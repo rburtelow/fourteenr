@@ -16,6 +16,7 @@ import CommunityFeed from "./CommunityFeed";
 import PeaksWatchedPanel from "./PeaksWatchedPanel";
 import SavedQuickLink from "./SavedQuickLink";
 import BadgeIcon from "../components/badges/BadgeIcon";
+import PresenceTracker from "../components/PresenceTracker";
 
 export default async function CommunityPage() {
   // getServerUser() is React-cached per-request; getPosts/getUpcomingEvents also call
@@ -122,6 +123,7 @@ export default async function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-page)] antialiased">
+      {user?.id && <PresenceTracker userId={user.id} />}
       <Navbar
         user={userNav}
         userId={user?.id}

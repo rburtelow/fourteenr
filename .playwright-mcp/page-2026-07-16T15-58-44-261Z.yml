@@ -1,0 +1,151 @@
+- generic [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - banner [ref=f7e3]:
+      - navigation [ref=f7e4]:
+        - generic [ref=f7e6]:
+          - link [ref=f7e7] [cursor=pointer]:
+            - /url: /
+            - img "Fourteenr" [ref=f7e8]
+          - generic [ref=f7e9]:
+            - link "Home" [ref=f7e10] [cursor=pointer]:
+              - /url: /
+            - link "Peaks" [ref=f7e11] [cursor=pointer]:
+              - /url: /peaks
+            - link "Trailheads" [ref=f7e12] [cursor=pointer]:
+              - /url: /trailheads
+            - link "Community" [ref=f7e13] [cursor=pointer]:
+              - /url: /community
+            - link "Events" [ref=f7e14] [cursor=pointer]:
+              - /url: /events
+            - link "Groups" [ref=f7e15] [cursor=pointer]:
+              - /url: /groups
+            - link "Profile" [ref=f7e16] [cursor=pointer]:
+              - /url: /profile
+          - generic [ref=f7e17]:
+            - button "Log a Summit" [ref=f7e18]
+            - button "Notifications" [ref=f7e22]
+            - button [ref=f7e26]:
+              - img "rburtelow" [ref=f7e27]
+    - generic [ref=f7e29]:
+      - generic [ref=f7e30]:
+        - generic [ref=f7e31]:
+          - text: Community
+          - heading "Events" [level=1] [ref=f7e32]
+        - button "Create Event" [ref=f7e33]
+      - generic [ref=f7e37]:
+        - generic [ref=f7e38]:
+          - button "Upcoming" [ref=f7e39]
+          - button "This Week" [ref=f7e40]
+          - button "This Month" [ref=f7e41]
+          - button "Past" [ref=f7e42]
+        - generic [ref=f7e43]:
+          - textbox "Search events..." [ref=f7e47]
+          - button "All Peaks" [ref=f7e49] [cursor=pointer]
+          - button "Soonest" [ref=f7e54] [cursor=pointer]
+      - generic [ref=f7e59]:
+        - generic [ref=f7e61] [cursor=pointer]:
+          - generic [ref=f7e62]:
+            - generic [ref=f7e63]: Aug
+            - generic [ref=f7e64]: "15"
+          - generic [ref=f7e65]:
+            - heading "Grays & Torreys Traverse — Group Hike" [level=3] [ref=f7e67]
+            - generic [ref=f7e68]:
+              - generic [ref=f7e72]: Bakerville Trailhead, I-70 Exit 221
+              - generic [ref=f7e74]: 5:00 AM
+            - generic [ref=f7e75]: Grays Peak
+            - generic [ref=f7e80]: 1 going / 10
+        - button "RSVP" [ref=f7e86]
+    - contentinfo [ref=f7e87]:
+      - generic [ref=f7e88]:
+        - generic [ref=f7e89]:
+          - generic [ref=f7e90]:
+            - link "My14er" [ref=f7e91] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f7e96]: The definitive platform for Colorado's high-altitude community.
+          - generic [ref=f7e97]:
+            - heading "Explore" [level=4] [ref=f7e98]
+            - list [ref=f7e99]:
+              - listitem [ref=f7e100]:
+                - link "All 58 Peaks" [ref=f7e101] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e102]:
+                - link "Trip Reports" [ref=f7e103] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e104]:
+                - link "Trail Conditions" [ref=f7e105] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e106]:
+                - link "Weather Stations" [ref=f7e107] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f7e108]:
+            - heading "Community" [level=4] [ref=f7e109]
+            - list [ref=f7e110]:
+              - listitem [ref=f7e111]:
+                - link "Forums" [ref=f7e112] [cursor=pointer]:
+                  - /url: /community
+              - listitem [ref=f7e113]:
+                - link "Events" [ref=f7e114] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e115]:
+                - link "Leaderboards" [ref=f7e116] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e117]:
+                - link "Gear Guides" [ref=f7e118] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f7e119]:
+            - heading "Support" [level=4] [ref=f7e120]
+            - list [ref=f7e121]:
+              - listitem [ref=f7e122]:
+                - link "Safety Guide" [ref=f7e123] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e124]:
+                - link "Contact Us" [ref=f7e125] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e126]:
+                - link "Privacy" [ref=f7e127] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=f7e128]:
+                - link "Terms of Service" [ref=f7e129] [cursor=pointer]:
+                  - /url: /terms
+        - generic [ref=f7e130]:
+          - paragraph [ref=f7e131]: © 2026 My14er. Hike responsibly.
+          - generic [ref=f7e132]:
+            - link "Instagram" [ref=f7e133] [cursor=pointer]:
+              - /url: "#"
+            - link "Twitter" [ref=f7e138] [cursor=pointer]:
+              - /url: "#"
+            - link "YouTube" [ref=f7e141] [cursor=pointer]:
+              - /url: "#"
+  - button "Open Next.js Dev Tools" [ref=f7e149] [cursor=pointer]
+  - alert [ref=f7e153]
+  - dialog "Create Event" [ref=f7e156]:
+    - generic [ref=f7e157]:
+      - heading "Create Event" [level=2] [ref=f7e158]
+      - button [ref=f7e159]
+    - generic [ref=f7e163]:
+      - generic [ref=f7e164]:
+        - generic [ref=f7e165]: Event Title *
+        - textbox "Event Title *" [ref=f7e166]:
+          - /placeholder: e.g., 14er Sunrise Hike
+      - generic [ref=f7e167]:
+        - generic [ref=f7e168]: Description
+        - textbox "Description" [ref=f7e170]:
+          - /placeholder: Tell people about this event... Use @ to tag peaks, trailheads, and people.
+      - generic [ref=f7e171]:
+        - generic [ref=f7e172]:
+          - generic [ref=f7e173]: Date & Time *
+          - textbox "Date & Time *" [ref=f7e174]
+        - button "+ Add end time" [ref=f7e177]
+      - generic [ref=f7e178]:
+        - generic [ref=f7e179]: Location *
+        - textbox "Location *" [active] [ref=f7e181]:
+          - /placeholder: e.g., Quandary Peak Trailhead. Use @ to tag peaks, trailheads, and people.
+      - generic [ref=f7e182]:
+        - generic [ref=f7e183]: Link to a 14er
+        - button "Select a peak (optional)" [ref=f7e185]
+      - generic [ref=f7e186]:
+        - generic [ref=f7e187]: Max Attendees
+        - spinbutton "Max Attendees" [ref=f7e188]
+      - generic [ref=f7e189]:
+        - button "Cancel" [ref=f7e190]
+        - button "Create Event" [ref=f7e191]

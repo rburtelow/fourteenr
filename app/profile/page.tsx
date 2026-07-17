@@ -15,6 +15,8 @@ import TripReportsList from "./TripReportsList";
 import type { TripReportData } from "./TripReportsList";
 import AvatarUpload from "./AvatarUpload";
 import SummitHistoryGrid from "./SummitHistoryGrid";
+import SavedHikesList from "./SavedHikesList";
+import type { SavedHikeData } from "./SavedHikesList";
 
 const TOTAL_14ERS = 58; // canonical count of Colorado 14ers
 
@@ -61,6 +63,15 @@ export default async function ProfilePage() {
         .select("id, peak_id, route_id, hike_date, start_time, end_time, total_time_minutes, summary, narrative, difficulty_rating, condition_severity_score, objective_risk_score, trailhead_access_rating, overall_recommendation, snow_present, sections_json, created_at")
         .eq("user_id", user.id)
         .order("hike_date", { ascending: false })
+    : { data: null };
+
+  // Fetch GPS tracks (hikes recorded + synced from the mobile app)
+  const { data: gpsTracks } = user
+    ? await supabase
+        .from("gps_tracks")
+        .select("id, name, peak_id, started_at, ended_at, duration_seconds, distance_meters, elevation_gain_meters, max_elevation_meters, point_count, points")
+        .eq("user_id", user.id)
+        .order("started_at", { ascending: false })
     : { data: null };
 
   // Collect route IDs from both summit logs and trip reports
@@ -258,6 +269,54 @@ export default async function ProfilePage() {
       snowPresent: report.snow_present,
       sections: report.sections_json,
     }];
+  });
+
+  // Build saved-hike (GPS track) display data
+  const METERS_TO_MILES = 0.000621371;
+  const METERS_TO_FEET = 3.28084;
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.round((seconds % 3600) / 60);
+    if (h === 0) return `${m}m`;
+    return m === 0 ? `${h}h` : `${h}h ${m}m`;
+  };
+  // Downsample a track's points to keep the payload light while preserving shape.
+  const samplePath = (points: [number, number, number, number][], max = 250): [number, number][] => {
+    if (points.length <= max) return points.map((p) => [p[0], p[1]]);
+    const step = Math.ceil(points.length / max);
+    const out: [number, number][] = [];
+    for (let i = 0; i < points.length; i += step) out.push([points[i][0], points[i][1]]);
+    // Always include the final point so the track closes where it ended.
+    const last = points[points.length - 1];
+    if (out[out.length - 1][0] !== last[0] || out[out.length - 1][1] !== last[1]) {
+      out.push([last[0], last[1]]);
+    }
+    return out;
+  };
+
+  const savedHikes: SavedHikeData[] = (gpsTracks || []).map((track) => {
+    const peak = track.peak_id ? peakMap.get(track.peak_id) : null;
+    const miles = track.distance_meters * METERS_TO_MILES;
+    return {
+      id: track.id,
+      name: track.name,
+      peakName: peak?.name ?? null,
+      peakSlug: peak?.slug ?? null,
+      date: new Date(track.started_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      startedAtRaw: track.started_at,
+      distanceMiles: miles.toFixed(1),
+      elevationGainFt: Math.round(track.elevation_gain_meters * METERS_TO_FEET).toLocaleString(),
+      maxElevationFt: track.max_elevation_meters != null
+        ? Math.round(track.max_elevation_meters * METERS_TO_FEET).toLocaleString()
+        : null,
+      duration: formatDuration(track.duration_seconds),
+      pointCount: track.point_count,
+      path: samplePath((track.points as [number, number, number, number][]) || []),
+    };
   });
 
   // Split events into upcoming and past
@@ -490,6 +549,7 @@ export default async function ProfilePage() {
                 <SidebarLink icon={<UsersIcon />} label="Friends" count={friendsCount} href="/friends" />
                 <SidebarLink icon={<CalendarIcon className="w-5 h-5" />} label="My Events" count={userEvents.length} href="#my-events" />
                 <SidebarLink icon={<DocumentIcon />} label="Trip Reports" count={tripReportCount} href="#trip-reports" />
+                <SidebarLink icon={<MapIcon />} label="Saved Hikes" count={savedHikes.length} href="#saved-hikes" />
                 <SidebarLink icon={<TrophyIcon />} label="Achievements" count={2} />
               </nav>
             </div>
@@ -667,6 +727,27 @@ export default async function ProfilePage() {
               </div>
 
               <SummitHistoryGrid peaks={completedPeaks} />
+            </section>
+
+            {/* Saved Hikes Section */}
+            <section id="saved-hikes" className="bg-white rounded-2xl border border-[var(--color-border-app)] overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-[var(--color-border-app)]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
+                      Saved Hikes
+                    </h2>
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                      GPS tracks recorded &amp; synced from the mobile app
+                    </p>
+                  </div>
+                  <span className="px-3 py-1.5 text-xs font-semibold text-[var(--color-brand-primary)] bg-[var(--color-surface-subtle)] rounded-lg">
+                    {savedHikes.length} hikes
+                  </span>
+                </div>
+              </div>
+
+              <SavedHikesList hikes={savedHikes} />
             </section>
 
             {/* Trip Reports Section */}

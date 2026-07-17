@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CommunityEvent } from "@/lib/community.types";
+import MentionText from "@/app/components/MentionText";
 
 
 interface EventCardProps {
@@ -52,7 +53,7 @@ export default function EventCard({ event, isLoggedIn, onToggleRsvp, rsvpPending
 
             <div className="mt-1.5 flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
               <MapPinIcon className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">{event.location}</span>
+              <MentionText content={event.location} className="truncate" />
               <span className="w-1 h-1 rounded-full bg-[var(--color-text-secondary)]/30 flex-shrink-0" />
               <span className="flex-shrink-0">{timeStr}</span>
             </div>

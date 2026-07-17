@@ -1,0 +1,119 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e134] [cursor=pointer]
+  - alert [ref=e138]
+  - generic [ref=e139]:
+    - banner [ref=e140]:
+      - navigation [ref=e141]:
+        - generic [ref=e143]:
+          - link [ref=e144] [cursor=pointer]:
+            - /url: /
+            - img "Fourteenr" [ref=e145]
+          - generic [ref=e146]:
+            - link "Home" [ref=e147] [cursor=pointer]:
+              - /url: /
+            - link "Peaks" [ref=e148] [cursor=pointer]:
+              - /url: /peaks
+            - link "Trailheads" [ref=e149] [cursor=pointer]:
+              - /url: /trailheads
+            - link "Community" [ref=e150] [cursor=pointer]:
+              - /url: /community
+          - generic [ref=e152]:
+            - link "Sign In" [ref=e153] [cursor=pointer]:
+              - /url: /auth/login
+            - link "Get Started" [ref=e154] [cursor=pointer]:
+              - /url: /auth/signup
+    - generic [ref=e156]:
+      - link "Back to Events" [ref=e157] [cursor=pointer]:
+        - /url: /events
+      - generic [ref=e161]:
+        - generic [ref=e163]:
+          - heading "Grays & Torreys Traverse — Group Hike" [level=1] [ref=e164]
+          - generic [ref=e165]:
+            - img "rburtelow" [ref=e166]
+            - generic [ref=e167]: Hosted by rburtelow
+        - generic [ref=e168]:
+          - generic [ref=e173]:
+            - paragraph [ref=e174]: Saturday, August 15, 2026
+            - paragraph [ref=e175]: 5:00 AM
+          - paragraph [ref=e182]: Bakerville Trailhead, I-70 Exit 221
+          - link [ref=e183] [cursor=pointer]:
+            - /url: /peaks/grays-peak
+            - generic [ref=e187]:
+              - paragraph [ref=e188]: Grays Peak
+              - paragraph [ref=e189]: 14,270' elevation
+          - paragraph [ref=e195]: 1 attendee / 10 spots
+        - generic [ref=e196]:
+          - heading "About this event" [level=2] [ref=e197]
+          - paragraph [ref=e198]: Join me for a classic double-summit day on Grays and Torreys! We'll meet at the Bakerville trailhead at 5am. Bring microspikes just in case.
+        - paragraph [ref=e200]:
+          - link "Sign in" [ref=e201] [cursor=pointer]:
+            - /url: /auth/login
+          - text: to RSVP to this event
+        - generic [ref=e202]:
+          - heading "Attendees (1)" [level=2] [ref=e203]
+          - generic [ref=e205]:
+            - img "blah" [ref=e206]
+            - generic [ref=e207]: blah
+        - link "View discussion in community feed" [ref=e209] [cursor=pointer]:
+          - /url: /community
+    - contentinfo [ref=e212]:
+      - generic [ref=e213]:
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - link "My14er" [ref=e216] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e221]: The definitive platform for Colorado's high-altitude community.
+          - generic [ref=e222]:
+            - heading "Explore" [level=4] [ref=e223]
+            - list [ref=e224]:
+              - listitem [ref=e225]:
+                - link "All 58 Peaks" [ref=e226] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e227]:
+                - link "Trip Reports" [ref=e228] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e229]:
+                - link "Trail Conditions" [ref=e230] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e231]:
+                - link "Weather Stations" [ref=e232] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e233]:
+            - heading "Community" [level=4] [ref=e234]
+            - list [ref=e235]:
+              - listitem [ref=e236]:
+                - link "Forums" [ref=e237] [cursor=pointer]:
+                  - /url: /community
+              - listitem [ref=e238]:
+                - link "Events" [ref=e239] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e240]:
+                - link "Leaderboards" [ref=e241] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e242]:
+                - link "Gear Guides" [ref=e243] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e244]:
+            - heading "Support" [level=4] [ref=e245]
+            - list [ref=e246]:
+              - listitem [ref=e247]:
+                - link "Safety Guide" [ref=e248] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e249]:
+                - link "Contact Us" [ref=e250] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e251]:
+                - link "Privacy" [ref=e252] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=e253]:
+                - link "Terms of Service" [ref=e254] [cursor=pointer]:
+                  - /url: /terms
+        - generic [ref=e255]:
+          - paragraph [ref=e256]: © 2026 My14er. Hike responsibly.
+          - generic [ref=e257]:
+            - link "Instagram" [ref=e258] [cursor=pointer]:
+              - /url: "#"
+            - link "Twitter" [ref=e263] [cursor=pointer]:
+              - /url: "#"
+            - link "YouTube" [ref=e266] [cursor=pointer]:
+              - /url: "#"

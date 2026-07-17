@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import UserNav from "./UserNav";
 import MobileNav from "./MobileNav";
 import NotificationBell from "@/app/community/NotificationBell";
@@ -45,6 +47,10 @@ export default function Navbar({
 }: NavbarProps) {
   const pathname = usePathname();
   const navLinks = user ? LOGGED_IN_LINKS : LOGGED_OUT_LINKS;
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    setIsAdmin(document.cookie.split(";").some((c) => c.trim() === "_adm=1"));
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -52,12 +58,17 @@ export default function Navbar({
         <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg border border-[var(--color-border-app)]">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-[var(--color-brand-primary)] rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6">
-                <MountainLogo className="w-6 h-6 text-white" />
-              </div>
+            <Link href="/" className="flex items-center gap-2 group">
+              <Image
+                src="/new_logo.png"
+                alt="Fourteenr"
+                width={1408}
+                height={768}
+                className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
+                priority
+              />
               <span className="text-lg font-bold tracking-tight text-[var(--color-brand-primary)]">
-                My14er
+                Fourteenr
               </span>
             </Link>
 
@@ -68,6 +79,11 @@ export default function Navbar({
                   {label}
                 </NavLink>
               ))}
+              {isAdmin && (
+                <NavLink href="/admin" active={pathname.startsWith("/admin")}>
+                  Admin
+                </NavLink>
+              )}
             </div>
 
             {/* Right Side */}
@@ -120,14 +136,6 @@ function NavLink({
     >
       {children}
     </Link>
-  );
-}
-
-function MountainLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L2 22h20L12 2zm0 5.5L17.5 19h-11L12 7.5z" />
-    </svg>
   );
 }
 

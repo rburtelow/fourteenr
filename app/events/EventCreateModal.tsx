@@ -29,6 +29,7 @@ export default function EventCreateModal({ isOpen, onClose, allPeaks, onEventCre
   const [showPeakSelector, setShowPeakSelector] = useState(false);
   const [peakSearch, setPeakSearch] = useState("");
   const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
   const peakSelectorRef = useRef<HTMLDivElement>(null);
   const peakSearchRef = useRef<HTMLInputElement>(null);
 
@@ -41,6 +42,7 @@ export default function EventCreateModal({ isOpen, onClose, allPeaks, onEventCre
       setShowPeakSelector(false);
       setPeakSearch("");
       setDescription("");
+      setLocation("");
     }
   }, [isOpen]);
 
@@ -71,6 +73,11 @@ export default function EventCreateModal({ isOpen, onClose, allPeaks, onEventCre
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+
+    if (!location.trim()) {
+      setError("Location is required");
+      return;
+    }
 
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -194,13 +201,15 @@ export default function EventCreateModal({ isOpen, onClose, allPeaks, onEventCre
           <label htmlFor="event-location" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             Location *
           </label>
-          <input
+          <MentionInput
             id="event-location"
             name="location"
-            type="text"
-            required
-            placeholder="e.g., Quandary Peak Trailhead"
-            className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)]"
+            value={location}
+            onChange={setLocation}
+            rows={1}
+            maxLength={200}
+            placeholder="e.g., Quandary Peak Trailhead. Use @ to tag peaks, trailheads, and people."
+            className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] resize-none"
           />
         </div>
 

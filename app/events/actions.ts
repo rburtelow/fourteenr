@@ -45,6 +45,10 @@ export async function createEvent(formData: FormData) {
     return { error: "Location is required" };
   }
 
+  if (location.length > 200) {
+    return { error: "Location must be 200 characters or less" };
+  }
+
   if (maxAttendees !== null && (isNaN(maxAttendees) || maxAttendees <= 0)) {
     return { error: "Max attendees must be a positive number" };
   }
@@ -161,6 +165,10 @@ export async function updateEvent(eventId: string, formData: FormData) {
 
   if (!location) {
     return { error: "Location is required" };
+  }
+
+  if (location.length > 200) {
+    return { error: "Location must be 200 characters or less" };
   }
 
   if (maxAttendees !== null && (isNaN(maxAttendees) || maxAttendees <= 0)) {

@@ -1,0 +1,119 @@
+- generic [ref=f7e1]:
+  - button "Open Next.js Dev Tools" [ref=f7e149] [cursor=pointer]
+  - alert [ref=f7e153]
+  - generic [ref=f7e242]:
+    - banner [ref=f7e243]:
+      - navigation [ref=f7e244]:
+        - generic [ref=f7e246]:
+          - link [ref=f7e247] [cursor=pointer]:
+            - /url: /
+            - img "Fourteenr" [ref=f7e248]
+          - generic [ref=f7e249]:
+            - link "Home" [ref=f7e250] [cursor=pointer]:
+              - /url: /
+            - link "Peaks" [ref=f7e251] [cursor=pointer]:
+              - /url: /peaks
+            - link "Trailheads" [ref=f7e252] [cursor=pointer]:
+              - /url: /trailheads
+            - link "Community" [ref=f7e253] [cursor=pointer]:
+              - /url: /community
+            - link "Events" [ref=f7e254] [cursor=pointer]:
+              - /url: /events
+            - link "Groups" [ref=f7e255] [cursor=pointer]:
+              - /url: /groups
+            - link "Profile" [ref=f7e256] [cursor=pointer]:
+              - /url: /profile
+          - generic [ref=f7e257]:
+            - button "Log a Summit" [ref=f7e258]
+            - button "Notifications" [ref=f7e262]
+            - button [ref=f7e266]:
+              - img "rburtelow" [ref=f7e267]
+    - generic [ref=f7e269]:
+      - link "Back to Events" [ref=f7e270] [cursor=pointer]:
+        - /url: /events
+      - generic [ref=f7e274]:
+        - generic [ref=f7e276]:
+          - heading "Mention Test Hike" [level=1] [ref=f7e277]
+          - generic [ref=f7e278]:
+            - img "rburtelow" [ref=f7e279]
+            - generic [ref=f7e280]: Hosted by rburtelow
+        - generic [ref=f7e281]:
+          - generic [ref=f7e286]:
+            - paragraph [ref=f7e287]: Saturday, August 1, 2026
+            - paragraph [ref=f7e288]: 2:00 PM
+          - paragraph [ref=f7e295]:
+            - generic [ref=f7e296]: Quandary Peak Trailhead
+          - paragraph [ref=f7e306]: 1 attendee
+        - generic [ref=f7e307]:
+          - button "Cancel RSVP" [ref=f7e308]
+          - generic [ref=f7e309]:
+            - button "Edit Event" [active] [ref=f7e310]
+            - button "Cancel Event" [ref=f7e311]
+        - generic [ref=f7e312]:
+          - heading "Attendees (1)" [level=2] [ref=f7e313]
+          - generic [ref=f7e315]:
+            - img "rburtelow" [ref=f7e316]
+            - generic [ref=f7e317]: rburtelow
+        - link "View discussion in community feed" [ref=f7e319] [cursor=pointer]:
+          - /url: /community
+    - contentinfo [ref=f7e322]:
+      - generic [ref=f7e323]:
+        - generic [ref=f7e324]:
+          - generic [ref=f7e325]:
+            - link "My14er" [ref=f7e326] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f7e331]: The definitive platform for Colorado's high-altitude community.
+          - generic [ref=f7e332]:
+            - heading "Explore" [level=4] [ref=f7e333]
+            - list [ref=f7e334]:
+              - listitem [ref=f7e335]:
+                - link "All 58 Peaks" [ref=f7e336] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e337]:
+                - link "Trip Reports" [ref=f7e338] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e339]:
+                - link "Trail Conditions" [ref=f7e340] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e341]:
+                - link "Weather Stations" [ref=f7e342] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f7e343]:
+            - heading "Community" [level=4] [ref=f7e344]
+            - list [ref=f7e345]:
+              - listitem [ref=f7e346]:
+                - link "Forums" [ref=f7e347] [cursor=pointer]:
+                  - /url: /community
+              - listitem [ref=f7e348]:
+                - link "Events" [ref=f7e349] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e350]:
+                - link "Leaderboards" [ref=f7e351] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e352]:
+                - link "Gear Guides" [ref=f7e353] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f7e354]:
+            - heading "Support" [level=4] [ref=f7e355]
+            - list [ref=f7e356]:
+              - listitem [ref=f7e357]:
+                - link "Safety Guide" [ref=f7e358] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e359]:
+                - link "Contact Us" [ref=f7e360] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f7e361]:
+                - link "Privacy" [ref=f7e362] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=f7e363]:
+                - link "Terms of Service" [ref=f7e364] [cursor=pointer]:
+                  - /url: /terms
+        - generic [ref=f7e365]:
+          - paragraph [ref=f7e366]: © 2026 My14er. Hike responsibly.
+          - generic [ref=f7e367]:
+            - link "Instagram" [ref=f7e368] [cursor=pointer]:
+              - /url: "#"
+            - link "Twitter" [ref=f7e373] [cursor=pointer]:
+              - /url: "#"
+            - link "YouTube" [ref=f7e376] [cursor=pointer]:
+              - /url: "#"

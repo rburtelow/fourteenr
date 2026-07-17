@@ -1,0 +1,125 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - banner [ref=f6e3]:
+      - navigation [ref=f6e4]:
+        - generic [ref=f6e6]:
+          - link [ref=f6e7] [cursor=pointer]:
+            - /url: /
+            - img "Fourteenr" [ref=f6e8]
+          - generic [ref=f6e9]:
+            - link "Home" [ref=f6e10] [cursor=pointer]:
+              - /url: /
+            - link "Peaks" [ref=f6e11] [cursor=pointer]:
+              - /url: /peaks
+            - link "Trailheads" [ref=f6e12] [cursor=pointer]:
+              - /url: /trailheads
+            - link "Community" [ref=f6e13] [cursor=pointer]:
+              - /url: /community
+            - link "Events" [ref=f6e14] [cursor=pointer]:
+              - /url: /events
+            - link "Groups" [ref=f6e15] [cursor=pointer]:
+              - /url: /groups
+            - link "Profile" [ref=f6e16] [cursor=pointer]:
+              - /url: /profile
+          - generic [ref=f6e17]:
+            - button "Log a Summit" [ref=f6e18]
+            - button "Notifications" [ref=f6e22]
+            - button [ref=f6e26]:
+              - img "rburtelow" [ref=f6e27]
+    - generic [ref=f6e29]:
+      - link "Back to Events" [ref=f6e30] [cursor=pointer]:
+        - /url: /events
+      - generic [ref=f6e34]:
+        - generic [ref=f6e36]:
+          - heading "Grays & Torreys Traverse — Group Hike" [level=1] [ref=f6e37]
+          - generic [ref=f6e38]:
+            - img "rburtelow" [ref=f6e39]
+            - generic [ref=f6e40]: Hosted by rburtelow
+        - generic [ref=f6e41]:
+          - generic [ref=f6e46]:
+            - paragraph [ref=f6e47]: Saturday, August 15, 2026
+            - paragraph [ref=f6e48]: 5:00 AM
+          - paragraph [ref=f6e55]: Bakerville Trailhead, I-70 Exit 221
+          - link [ref=f6e56] [cursor=pointer]:
+            - /url: /peaks/grays-peak
+            - generic [ref=f6e60]:
+              - paragraph [ref=f6e61]: Grays Peak
+              - paragraph [ref=f6e62]: 14,270' elevation
+          - paragraph [ref=f6e68]: 1 attendee / 10 spots
+        - generic [ref=f6e69]:
+          - heading "About this event" [level=2] [ref=f6e70]
+          - paragraph [ref=f6e71]: Join me for a classic double-summit day on Grays and Torreys! We'll meet at the Bakerville trailhead at 5am. Bring microspikes just in case.
+        - generic [ref=f6e72]:
+          - button "RSVP to this event" [ref=f6e73]
+          - generic [ref=f6e74]:
+            - button "Edit Event" [ref=f6e75]
+            - button "Cancel Event" [ref=f6e76]
+        - generic [ref=f6e77]:
+          - heading "Attendees (1)" [level=2] [ref=f6e78]
+          - generic [ref=f6e80]:
+            - img "blah" [ref=f6e81]
+            - generic [ref=f6e82]: blah
+        - link "View discussion in community feed" [ref=f6e84] [cursor=pointer]:
+          - /url: /community
+    - contentinfo [ref=f6e87]:
+      - generic [ref=f6e88]:
+        - generic [ref=f6e89]:
+          - generic [ref=f6e90]:
+            - link "My14er" [ref=f6e91] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f6e96]: The definitive platform for Colorado's high-altitude community.
+          - generic [ref=f6e97]:
+            - heading "Explore" [level=4] [ref=f6e98]
+            - list [ref=f6e99]:
+              - listitem [ref=f6e100]:
+                - link "All 58 Peaks" [ref=f6e101] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f6e102]:
+                - link "Trip Reports" [ref=f6e103] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f6e104]:
+                - link "Trail Conditions" [ref=f6e105] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f6e106]:
+                - link "Weather Stations" [ref=f6e107] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f6e108]:
+            - heading "Community" [level=4] [ref=f6e109]
+            - list [ref=f6e110]:
+              - listitem [ref=f6e111]:
+                - link "Forums" [ref=f6e112] [cursor=pointer]:
+                  - /url: /community
+              - listitem [ref=f6e113]:
+                - link "Events" [ref=f6e114] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f6e115]:
+                - link "Leaderboards" [ref=f6e116] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f6e117]:
+                - link "Gear Guides" [ref=f6e118] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=f6e119]:
+            - heading "Support" [level=4] [ref=f6e120]
+            - list [ref=f6e121]:
+              - listitem [ref=f6e122]:
+                - link "Safety Guide" [ref=f6e123] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f6e124]:
+                - link "Contact Us" [ref=f6e125] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=f6e126]:
+                - link "Privacy" [ref=f6e127] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=f6e128]:
+                - link "Terms of Service" [ref=f6e129] [cursor=pointer]:
+                  - /url: /terms
+        - generic [ref=f6e130]:
+          - paragraph [ref=f6e131]: © 2026 My14er. Hike responsibly.
+          - generic [ref=f6e132]:
+            - link "Instagram" [ref=f6e133] [cursor=pointer]:
+              - /url: "#"
+            - link "Twitter" [ref=f6e138] [cursor=pointer]:
+              - /url: "#"
+            - link "YouTube" [ref=f6e141] [cursor=pointer]:
+              - /url: "#"
+  - button "Open Next.js Dev Tools" [ref=f6e149] [cursor=pointer]

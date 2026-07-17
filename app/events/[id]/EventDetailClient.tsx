@@ -37,6 +37,7 @@ export default function EventDetailClient({
   const [editError, setEditError] = useState<string | null>(null);
   const [editPeakId, setEditPeakId] = useState(initialEvent.peak_id || "");
   const [editDescription, setEditDescription] = useState(initialEvent.description || "");
+  const [editLocation, setEditLocation] = useState(initialEvent.location);
 
   const isFull = event.max_attendees !== null && event.attendee_count >= event.max_attendees;
   const isCancelled = event.status === "cancelled";
@@ -80,6 +81,12 @@ export default function EventDetailClient({
   const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setEditError(null);
+
+    if (!editLocation.trim()) {
+      setEditError("Location is required");
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
@@ -255,13 +262,15 @@ export default function EventDetailClient({
             <label htmlFor="edit-location" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
               Location *
             </label>
-            <input
+            <MentionInput
               id="edit-location"
               name="location"
-              type="text"
-              required
-              defaultValue={event.location}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)]"
+              value={editLocation}
+              onChange={setEditLocation}
+              rows={1}
+              maxLength={200}
+              placeholder="Use @ to tag peaks, trailheads, and people."
+              className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-surface-subtle)] border border-[var(--color-border-app)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20 focus:border-[var(--color-brand-primary)] resize-none"
             />
           </div>
 

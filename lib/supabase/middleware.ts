@@ -36,7 +36,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes: redirect to login if not authenticated
-  const protectedPaths = ["/profile", "/community"];
+  const protectedPaths = ["/profile", "/community", "/admin"];
   const isProtectedRoute = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -46,6 +46,41 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/auth/login";
     url.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
+  }
+
+  // Admin routes: verify admin role, cache result in _adm cookie (mirrors _pp_ok pattern)
+  if (user && request.nextUrl.pathname.startsWith("/admin")) {
+    const admCookie = request.cookies.get("_adm");
+    if (!admCookie) {
+      const { data: isAdminResult } = await supabase.rpc("is_admin", { uid: user.id });
+      if (!isAdminResult) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
+      supabaseResponse.cookies.set("_adm", "1", {
+        maxAge: 60 * 60, // 1 hour
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+      });
+    }
+  }
+
+  // Throttled last_seen update: write at most once per 5 minutes per user.
+  // The _seen cookie gates the write so we don't hit the DB on every request.
+  if (user && !request.nextUrl.pathname.startsWith("/auth")) {
+    const seenCookie = request.cookies.get("_seen");
+    if (!seenCookie) {
+      supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", user.id)
+        .then(() => {});
+      supabaseResponse.cookies.set("_seen", "1", {
+        maxAge: 60 * 5, // 5 minutes
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+      });
+    }
   }
 
   // If user is authenticated but has no screen_name, redirect to setup.

@@ -321,3 +321,26 @@ a:focus-visible {
   font-size: 11px;
   color: #4C9A59;
 }
+
+/* Saved-hikes track maps: keep the required attribution as a small ⓘ that
+   expands on click, rather than a large always-open label. */
+.hike-track-map .maplibregl-ctrl-attrib.maplibregl-compact {
+  min-height: 20px;
+  font-size: 10px;
+  border-radius: 9999px;
+}
+.hike-track-map .maplibregl-ctrl-attrib-button {
+  width: 20px;
+  height: 20px;
+}
+.hike-track-map .maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-inner {
+  display: none;
+}
+.hike-track-map .maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-compact-show .maplibregl-ctrl-attrib-inner {
+  display: block;
+  padding: 2px 24px 2px 8px;
+}
+/* Shrink the default control margin so the badge hugs the corner on small cards. */
+.hike-track-map .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+  margin: 0 4px 4px 0;
+}
